@@ -1,0 +1,19 @@
+# data (DO NOT upload)
+data/
+*.csv
+*.npy
+*.pt
+
+# python
+__pycache__/
+*.pyc
+
+# notebooks
+.ipynb_checkpoints/
+
+# temp
+tmp/
+
+# system
+.DS_Store
+Thumbs.db
