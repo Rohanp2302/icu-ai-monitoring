@@ -11,8 +11,14 @@ import json
 from pathlib import Path
 import io
 import csv
+import os
 
-app = Flask(__name__, template_folder='templates', static_folder='static')
+# Get absolute paths for templates and static
+BASE_DIR = Path(__file__).parent.parent.parent  # /e/icu_project
+TEMPLATE_DIR = BASE_DIR / 'templates'
+STATIC_DIR = BASE_DIR / 'static'
+
+app = Flask(__name__, template_folder=str(TEMPLATE_DIR), static_folder=str(STATIC_DIR))
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max
 
 # In-memory storage for demo
@@ -215,15 +221,15 @@ if __name__ == '__main__':
     Path('static').mkdir(exist_ok=True)
 
     print("""
-    ╔════════════════════════════════════════════╗
-    ║  ICU Mortality Prediction Web Interface   ║
-    ║  Ensemble Model + Explainability          ║
-    ╠════════════════════════════════════════════╣
-    ║  Starting Flask app...                     ║
-    ║  Access at: http://localhost:5000          ║
-    ║  Upload CSV with patient data              ║
-    ║  Get predictions + risk factors            ║
-    ╚════════════════════════════════════════════╝
+    ============================================
+    ICU Mortality Prediction Web Interface
+    Ensemble Model + Explainability
+    ============================================
+    Starting Flask app...
+    Access at: http://localhost:5000
+    Upload CSV with patient data
+    Get predictions + risk factors
+    ============================================
     """)
 
     app.run(debug=True, port=5000)

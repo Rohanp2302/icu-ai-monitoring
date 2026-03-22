@@ -29,12 +29,12 @@ class BaselineModelBuilder:
         self.models = {}
         self.results = {}
 
-    def load_and_prepare_data(self, test_size: int = 5000):
+    def load_and_prepare_data(self, test_size: float = 0.2):
         """
         Load data and create simple features for baseline models.
 
         Args:
-            test_size: Size of test set for final evaluation
+            test_size: Proportion of data for test set (default 0.2 = 20%)
 
         Returns:
             X_train, y_train, X_test, y_test
@@ -88,10 +88,13 @@ class BaselineModelBuilder:
         logger.info(f"Extracted {len(X)} samples with {X.shape[1]} features")
         logger.info(f"Class distribution: {np.sum(y==0)} negative, {np.sum(y==1)} positive")
 
-        # Train/test split
-        n_train = len(X) - test_size
+        # Train/test split using proportion
+        n_test = max(1, int(len(X) * test_size))
+        n_train = len(X) - n_test
         X_train, X_test = X[:n_train], X[n_train:]
         y_train, y_test = y[:n_train], y[n_train:]
+
+        logger.info(f"Train set: {len(X_train)} samples, Test set: {len(X_test)} samples")
 
         # Normalize
         X_train = self.scaler.fit_transform(X_train)

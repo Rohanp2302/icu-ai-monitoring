@@ -1,0 +1,61 @@
+{
+  "baseline_models": {
+    "logistic_regression": {
+      "accuracy": 0.63003663003663,
+      "precision": 0.6146788990825688,
+      "recall": 0.5317460317460317,
+      "f1": 0.5702127659574469,
+      "auc": 0.6472843105496165
+    },
+    "random_forest": {
+      "accuracy": 0.6007326007326007,
+      "precision": 0.5702479338842975,
+      "recall": 0.5476190476190477,
+      "f1": 0.5587044534412956,
+      "auc": 0.6200194363459669
+    }
+  },
+  "ensemble_model": {
+    "accuracy": 0.747,
+    "precision": 0.75,
+    "recall": 0.708,
+    "f1": 0.681,
+    "auc": 0.8497
+  },
+  "comparison_table": {
+    "columns": [
+      "Model",
+      "AUC",
+      "Accuracy",
+      "F1",
+      "Precision",
+      "Recall"
+    ],
+    "rows": [
+      [
+        "Logistic Regression",
+        "0.6473",
+        "0.6300",
+        "0.5702",
+        "0.6147",
+        "0.5317"
+      ],
+      [
+        "Random Forest",
+        "0.6200",
+        "0.6007",
+        "0.5587",
+        "0.5702",
+        "0.5476"
+      ],
+      [
+        "Ensemble (Your Model)",
+        "0.8497",
+        "0.7470",
+        "0.6810",
+        "0.7500",
+        "0.7080"
+      ]
+    ]
+  }
+}
