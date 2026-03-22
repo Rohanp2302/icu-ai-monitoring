@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>ICU Clinical Decision Support Dashboard - Phase 5 Explainability</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1392ec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101a22",
+                        "card-dark": "#1c2a35",
+                        "card-border": "#2c3e4e",
+                        "text-secondary": "#92b2c9",
+                        "danger": "#ef4444",
+                        "warning": "#f59e0b",
+                        "success": "#10b981",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        body { min-height: max(884px, 100dvh); }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #2c3e4e; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3e5466; }
+        .feature-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+        .feature-value { font-weight: bold; color: #1392ec; min-width: 60px; }
+        .heatmap-hours { display: grid; grid-template-columns: repeat(12, 1fr); gap: 2px; }
+        .heatmap-cell { height: 20px; border-radius: 2px; font-size: 9px; display: flex; align-items: center; justify-content: center; }
+    </style>
+</head>
+<body class="bg-background-dark font-display text-white antialiased overflow-x-hidden">
+
+<div class="relative flex h-full min-h-screen w-full flex-col max-w-2xl mx-auto bg-background-dark border-x border-gray-800 shadow-2xl">
+
+    <!-- Header -->
+    <header class="sticky top-0 z-50 bg-[#111b22]/95 backdrop-blur-md border-b border-[#233948] p-4">
+        <div class="flex items-center justify-between mb-3">
+            <h1 class="text-white text-xl font-bold">ICU Dashboard - Phase 5</h1>
+            <span class="text-[10px] text-text-secondary bg-[#233948] px-2 py-1 rounded-full">Explainability Enabled</span>
+        </div>
+        <div class="flex items-start justify-between gap-4">
+            <div>
+                <h2 class="text-white text-lg font-bold">John Doe</h2>
+                <p class="text-text-secondary text-xs">MRN: 849302 • Bed 402-A</p>
+            </div>
+            <div id="riskBadge" class="inline-flex items-center gap-1 rounded-full bg-danger/10 px-3 py-1 text-xs font-semibold text-danger border border-danger/20">
+                <span class="material-symbols-outlined" style="font-size: 14px;">warning</span>
+                <span id="riskLabel">Loading...</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col gap-4 p-4 overflow-y-auto pb-20">
+
+        <!-- Risk Summary Cards -->
+        <section class="grid grid-cols-2 gap-3">
+            <div class="bg-card-dark border border-card-border rounded-lg p-3">
+                <p class="text-text-secondary text-[10px] font-medium uppercase tracking-wider mb-1">Mortality Risk</p>
+                <div class="flex items-baseline gap-2">
+                    <span id="mortalityRisk" class="text-2xl font-bold text-white">--%</span>
+                    <span id="mortalityTrend" class="text-[10px] text-danger">↑ 5%</span>
+                </div>
+            </div>
+            <div class="bg-card-dark border border-card-border rounded-lg p-3">
+                <p class="text-text-secondary text-[10px] font-medium uppercase tracking-wider mb-1">Risk Level</p>
+                <span id="riskLevel" class="text-lg font-bold text-white">HIGH</span>
+            </div>
+        </section>
+
+        <!-- Top Risk Factors (from SHAP + Rules) -->
+        <section>
+            <h3 class="text-white text-base font-bold flex items-center gap-2 mb-2">
+                <span class="material-symbols-outlined text-primary">priority_high</span>
+                Top Risk Factors
+            </h3>
+            <div class="bg-card-dark border border-card-border rounded-lg p-3">
+                <div id="topRiskFactors">
+                    <p class="text-text-secondary text-sm animate-pulse">Loading risk factors...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Organ Status -->
+        <section>
+            <h3 class="text-white text-base font-bold flex items-center gap-2 mb-2">
+                <span class="material-symbols-outlined text-primary">favorite</span>
+                Organ Status
+            </h3>
+            <div class="grid grid-cols-3 gap-2">
+                <div class="bg-card-dark border border-card-border rounded-lg p-3 text-center">
+                    <p class="text-xs text-text-secondary uppercase mb-1">Heart</p>
+                    <p id="heartStatus" class="text-white font-semibold">--</p>
+                </div>
+                <div class="bg-card-dark border border-card-border rounded-lg p-3 text-center">
+                    <p class="text-xs text-text-secondary uppercase mb-1">Lungs</p>
+                    <p id="lungsStatus" class="text-white font-semibold">--</p>
+                </div>
+                <div class="bg-card-dark border border-card-border rounded-lg p-3 text-center">
+                    <p class="text-xs text-text-secondary uppercase mb-1">Kidneys</p>
+                    <p id="kidneyStatus" class="text-white font-semibold">--</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Feature Importance Bar Chart -->
+        <section>
+            <h3 class="text-white text-base font-bold flex items-center gap-2 mb-2">
+                <span class="material-symbols-outlined text-primary">bar_chart</span>
+                Feature Importance
+            </h3>
+            <div class="bg-card-dark border border-card-border rounded-lg p-3">
+                <div id="featureImportance" class="space-y-1">
+                    <p class="text-text-secondary text-sm animate-pulse">Loading feature importance...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Temporal Attention Heatmap -->
+        <section>
+            <h3 class="text-white text-base font-bold flex items-center gap-2 mb-2">
+                <span class="material-symbols-outlined text-primary">show_chart</span>
+                Temporal Importance (Last 24 Hours)
+            </h3>
+            <div class="bg-card-dark border border-card-border rounded-lg p-3">
+                <p class="text-text-secondary text-xs mb-2">Darker = More Important Timepoint</p>
+                <div class="heatmap-hours" id="attentionHeatmap">
+                    <div class="heatmap-cell bg-gray-600 text-white">H0</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Clinical Summary -->
+        <section>
+            <h3 class="text-white text-base font-bold flex items-center gap-2 mb-2">
+                <span class="material-symbols-outlined text-primary">description</span>
+                Clinical Summary
+            </h3>
+            <div class="bg-card-dark border border-card-border rounded-lg p-3">
+                <pre id="clinicalSummary" class="text-xs text-text-secondary whitespace-pre-wrap font-mono">Loading clinical summary...</pre>
+            </div>
+        </section>
+
+        <!-- Clinical Outcomes Risk -->
+        <section>
+            <h3 class="text-white text-base font-bold flex items-center gap-2 mb-2">
+                <span class="material-symbols-outlined text-primary">warning_amber</span>
+                Clinical Outcome Risks
+            </h3>
+            <div class="space-y-2">
+                <div class="bg-card-dark border border-card-border rounded-lg p-2">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-xs text-text-secondary">Sepsis</span>
+                        <span id="sepsisRisk" class="text-xs font-bold text-white">--</span>
+                    </div>
+                    <div class="w-full bg-gray-700 h-1.5 rounded-full overflow-hidden">
+                        <div id="sepsisBar" class="bg-danger h-full w-0"></div>
+                    </div>
+                </div>
+                <div class="bg-card-dark border border-card-border rounded-lg p-2">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-xs text-text-secondary">AKI</span>
+                        <span id="akiRisk" class="text-xs font-bold text-white">--</span>
+                    </div>
+                    <div class="w-full bg-gray-700 h-1.5 rounded-full overflow-hidden">
+                        <div id="akiBar" class="bg-warning h-full w-0"></div>
+                    </div>
+                </div>
+                <div class="bg-card-dark border border-card-border rounded-lg p-2">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-xs text-text-secondary">ARDS</span>
+                        <span id="ardsRisk" class="text-xs font-bold text-white">--</span>
+                    </div>
+                    <div class="w-full bg-gray-700 h-1.5 rounded-full overflow-hidden">
+                        <div id="ardsBar" class="bg-primary h-full w-0"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+</div>
+
+<script>
+// Mock data for demonstration
+const mockExplanation = {
+    patient_id: "P123456",
+    predictions: {
+        mortality: 0.35,
+        mortality_percent: "35%",
+        risk_class: 2,
+        risk_class_name: "HIGH",
+        clinical_outcomes: {
+            sepsis: 0.45,
+            aki: 0.32,
+            ards: 0.28,
+            shock: 0.18
+        }
+    },
+    clinical: {
+        organ_status: {
+            heart: "Stressed",
+            lungs: "Mildly impaired",
+            kidneys: "Mild AKI risk"
+        },
+        summary: "Risk Classification: HIGH\nMortality Risk: 35.0%\n\nPhysiological Status:\n  • Heart: Stressed\n  • Lungs: Mildly impaired\n  • Kidneys: Mild AKI risk\n\nCritical Findings:\n  ⚠ Severe tachycardia (HR 115)"
+    },
+    attention: {
+        most_important_hours: [
+            [23, 0.35],
+            [22, 0.32],
+            [21, 0.28],
+            [20, 0.25],
+            [19, 0.22]
+        ]
+    }
+};
+
+// Load explanation data
+async function loadExplanation() {
+    // In production, fetch from API
+    // const response = await fetch('/api/explainability/dashboard', {
+    //     method: 'POST',
+    //     headers: { 'Content-Type': 'application/json' },
+    //     body: JSON.stringify({ ... })
+    // });
+    // const data = await response.json();
+
+    const data = mockExplanation;
+
+    // Update mortality risk
+    document.getElementById('mortalityRisk').textContent = data.predictions.mortality_percent;
+    document.getElementById('riskLevel').textContent = data.predictions.risk_class_name;
+
+    // Update risk badge
+    const badge = document.getElementById('riskBadge');
+    badge.className = `inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold border ${
+        data.predictions.risk_class === 3 ? 'bg-danger/10 text-danger border-danger/20' :
+        data.predictions.risk_class === 2 ? 'bg-warning/10 text-warning border-warning/20' :
+        data.predictions.risk_class === 1 ? 'bg-primary/10 text-primary border-primary/20' :
+        'bg-success/10 text-success border-success/20'
+    }`;
+    document.getElementById('riskLabel').textContent = data.predictions.risk_class_name;
+
+    // Update organ status
+    const organs = data.clinical.organ_status;
+    document.getElementById('heartStatus').textContent = organs.heart;
+    document.getElementById('lungsStatus').textContent = organs.lungs;
+    document.getElementById('kidneyStatus').textContent = organs.kidneys;
+
+    // Update clinical summary
+    document.getElementById('clinicalSummary').textContent = data.clinical.summary;
+
+    // Display top risk factors (mock data)
+    const riskFactorsHTML = `
+        <div class="space-y-1.5">
+            <div class="flex items-start gap-2 pb-1.5 border-b border-card-border">
+                <span class="text-danger font-bold text-lg">⚠</span>
+                <div>
+                    <p class="text-sm font-semibold text-white">Tachycardia (HR=115 bpm)</p>
+                    <p class="text-xs text-text-secondary">Severe heart rate elevation</p>
+                </div>
+            </div>
+            <div class="flex items-start gap-2 pb-1.5 border-b border-card-border">
+                <span class="text-warning font-bold text-lg">!</span>
+                <div>
+                    <p class="text-sm font-semibold text-white">High respiratory rate (RR=24 breaths/min)</p>
+                    <p class="text-xs text-text-secondary">Respiratory distress signal</p>
+                </div>
+            </div>
+            <div class="flex items-start gap-2">
+                <span class="text-primary font-bold text-lg">•</span>
+                <div>
+                    <p class="text-sm font-semibold text-white">Multiple vital signs abnormal (2/3)</p>
+                    <p class="text-xs text-text-secondary">Multi-system physiological derangement</p>
+                </div>
+            </div>
+        </div>
+    `;
+    document.getElementById('topRiskFactors').innerHTML = riskFactorsHTML;
+
+    // Feature importance (mock)
+    const featureImportanceHTML = `
+        <div class="space-y-1">
+            <div class="feature-bar">
+                <div class="w-full bg-gray-700 h-2 rounded-full overflow-hidden">
+                    <div style="width: 95%; height: 100%; background: linear-gradient(90deg, #1392ec, #0a66cc);"></div>
+                </div>
+                <span class="feature-value text-[10px]">HR volatility</span>
+            </div>
+            <div class="feature-bar">
+                <div class="w-full bg-gray-700 h-2 rounded-full overflow-hidden">
+                    <div style="width: 78%; height: 100%; background: linear-gradient(90deg, #1392ec, #0a66cc);"></div>
+                </div>
+                <span class="feature-value text-[10px]">HR tachycardia</span>
+            </div>
+            <div class="feature-bar">
+                <div class="w-full bg-gray-700 h-2 rounded-full overflow-hidden">
+                    <div style="width: 82%; height: 100%; background: linear-gradient(90deg, #1392ec, #0a66cc);"></div>
+                </div>
+                <span class="feature-value text-[10px]">RR elevation</span>
+            </div>
+            <div class="feature-bar">
+                <div class="w-full bg-gray-700 h-2 rounded-full overflow-hidden">
+                    <div style="width: 65%; height: 100%; background: linear-gradient(90deg, #1392ec, #0a66cc);"></div>
+                </div>
+                <span class="feature-value text-[10px]">SaO2 volatility</span>
+            </div>
+        </div>
+    `;
+    document.getElementById('featureImportance').innerHTML = featureImportanceHTML;
+
+    // Attention heatmap
+    const heatmapHTML = Array.from({length: 24}, (_, i) => {
+        const attention = data.attention.most_important_hours;
+        const value = attention.find(([h]) => h === (23 - i))?.[1] || Math.random() * 0.3;
+        const intensity = Math.min(value * 100, 100);
+        const color = `rgba(19, 146, 236, ${intensity / 100})`;
+        return `<div class="heatmap-cell text-white" style="background: ${color}; border: 1px solid #2c3e4e;">H${23-i}</div>`;
+    }).join('');
+    document.getElementById('attentionHeatmap').innerHTML = heatmapHTML;
+
+    // Update outcome risks
+    const outcomes = data.predictions.clinical_outcomes;
+    document.getElementById('sepsisRisk').textContent = Math.round(outcomes.sepsis * 100) + '%';
+    document.getElementById('sepsisBar').style.width = (outcomes.sepsis * 100) + '%';
+
+    document.getElementById('akiRisk').textContent = Math.round(outcomes.aki * 100) + '%';
+    document.getElementById('akiBar').style.width = (outcomes.aki * 100) + '%';
+
+    document.getElementById('ardsRisk').textContent = Math.round(outcomes.ards * 100) + '%';
+    document.getElementById('ardsBar').style.width = (outcomes.ards * 100) + '%';
+}
+
+// Load on page load
+document.addEventListener('DOMContentLoaded', loadExplanation);
+</script>
+
+</body>
+</html>
