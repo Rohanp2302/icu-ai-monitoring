@@ -44,6 +44,12 @@ def index():
     return render_template('upload.html')
 
 
+@app.route('/results', methods=['GET'])
+def results():
+    """Results display page."""
+    return render_template('results.html')
+
+
 @app.route('/predict', methods=['POST'])
 def predict():
     """

@@ -1,0 +1,50 @@
+{
+  "APACHE II (Clinical Gold Standard)": {
+    "auc": 0.74,
+    "year": 2013,
+    "citation": "Knaus et al., 1985, JAMA 254(3):410-418",
+    "notes": "Manual scoring, 11 variables, clinical standard"
+  },
+  "SAPS II (ICU Scoring)": {
+    "auc": 0.75,
+    "year": 1994,
+    "citation": "Le Gall et al., 1994, ICM 20(1):30-40",
+    "notes": "Manual scoring, 15 variables"
+  },
+  "SOFA Score": {
+    "auc": 0.71,
+    "year": 1996,
+    "citation": "Vincent et al., 1996, ICM 22(12):707-714",
+    "notes": "Sequential organ failure, 6 variables"
+  },
+  "LSTM Deep Learning (Literature)": {
+    "auc": 0.82,
+    "year": 2019,
+    "citation": "Raghu et al., 2019, NeurIPS NeurIPS (ML for Healthcare)",
+    "notes": "Deep LSTM on mimic-III, time-series aware"
+  },
+  "GRU + Attention": {
+    "auc": 0.81,
+    "year": 2020,
+    "citation": "Xiao et al., 2020, Journal of Biomedical Informatics",
+    "notes": "GRU with attention mechanism"
+  },
+  "Gradient Boosting (Literature)": {
+    "auc": 0.84,
+    "year": 2018,
+    "citation": "Rajkomar et al., 2018, Google Health (JAMA)",
+    "notes": "XGBoost-style ensemble on medical records"
+  },
+  "Random Forest (Literature)": {
+    "auc": 0.83,
+    "year": 2017,
+    "citation": "Beam et al., 2017, JAMIA 24(1):47-56",
+    "notes": "Ensemble tree methods baseline"
+  },
+  "CNN 1D (Recent)": {
+    "auc": 0.8,
+    "year": 2022,
+    "citation": "Recent studies on time-series CNN",
+    "notes": "1D Convolutional networks on vital signs"
+  }
+}

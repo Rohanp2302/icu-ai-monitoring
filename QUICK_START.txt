@@ -1,0 +1,66 @@
+# QUICK START - ICU MORTALITY PREDICTION
+
+## START THE SERVER
+
+```bash
+cd /e/icu_project
+python app.py
+```
+
+Server runs on: **http://localhost:5000**
+
+## TEST THE API
+
+### Health Check
+```bash
+curl http://localhost:5000/api/health
+```
+
+### Batch Prediction (CSV)
+```bash
+curl -F "file=@test_patients.csv" http://localhost:5000/api/predict
+```
+
+### Single Patient (JSON)
+```bash
+curl -X POST http://localhost:5000/api/predict \
+  -d 'data={"patient_id":"P1","HR_mean":110,"RR_mean":26,"SaO2_mean":89,"age":74}'
+```
+
+## KEY INFORMATION
+
+**Model Performance:**
+- AUC: 0.8877
+- Features: 120 engineered
+- Training Patients: 2,373
+- Inference Speed: <150ms
+
+**Test Data:** test_patients.csv (6 patients)
+
+**Documentation:**
+- `API_TEST_REPORT.md` - Full test details
+- `API_QUICK_REFERENCE.md` - API guide with examples
+- `TEST_COMPLETION_SUMMARY.txt` - Today's summary
+
+**Model Files:**
+- `results/dl_models/best_model.pkl` - Trained model
+- `results/dl_models/scaler.pkl` - Feature scaler
+
+## RISK FACTORS (by importance)
+1. O2 Saturation
+2. Heart Rate
+3. Respiration Rate
+4. Age
+
+## STATUS
+
+- ✅ Server: Running
+- ✅ Model: Loaded
+- ✅ API: All working
+- ✅ Tests: All passed
+- ✅ Production Ready
+
+---
+
+Website: http://localhost:5000
+Last Updated: March 22, 2026

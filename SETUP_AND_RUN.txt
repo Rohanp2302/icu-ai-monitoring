@@ -1,0 +1,172 @@
+# HOW TO RUN THE ICU PREDICTION SYSTEM
+
+## ✅ DEPENDENCIES INSTALLED
+
+Flask, Flask-CORS, Pandas, NumPy, and Scikit-learn are now installed in your conda environment.
+
+---
+
+## 🚀 QUICK START - Choose Your Method
+
+### METHOD 1: Double-Click Batch File (EASIEST)
+1. Open File Explorer
+2. Navigate to: `E:\icu_project`
+3. Double-click: `RUN_SYSTEM.bat`
+4. Wait for Flask to start
+5. Open browser: `http://localhost:5000/`
+
+---
+
+### METHOD 2: PowerShell Script
+1. Open PowerShell
+2. Run:
+```powershell
+cd E:\icu_project
+Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
+.\RUN_SYSTEM.ps1
+```
+3. Open browser: `http://localhost:5000/`
+
+---
+
+### METHOD 3: Command Line (Your Current Method)
+In your PowerShell or conda terminal:
+
+```powershell
+E:\ANACONDA\envs\icu_project\python.exe e:/icu_project/app.py
+```
+
+Or activate environment first:
+```powershell
+conda activate icu_project
+cd E:\icu_project
+python app.py
+```
+
+---
+
+### METHOD 4: From Conda Command Prompt
+1. Open "Anaconda Prompt" (Windows start menu)
+2. Type:
+```bash
+conda activate icu_project
+cd E:\icu_project
+python app.py
+```
+
+---
+
+## ✓ SUCCESS INDICATORS
+
+When the app starts, you should see:
+
+```
+======================================================================
+ICU MORTALITY PREDICTION - FLASK BACKEND
+======================================================================
+
+[PHASE 7-10] Initializing Multi-Modal ICU Prediction System...
+[PHASE 7] Multi-Modal Ensemble Predictor LOADED
+[PHASE 8] Medicine Tracking System INITIALIZED
+[PHASE 9] Family Explanation Engine INITIALIZED
+
+Starting Flask server...
+Dashboard: http://localhost:5000
+API Docs: http://localhost:5000/api/health
+======================================================================
+ * Running on http://0.0.0.0:5000
+```
+
+---
+
+## 🌐 ACCESS THE SYSTEM
+
+Once running:
+- **Home Page**: http://localhost:5000/
+- **Health Check**: http://localhost:5000/api/health
+- **Legacy Dashboard**: http://localhost:5000/dashboard
+
+---
+
+## 📋 WHAT TO DO NEXT
+
+1. **Home Page Opens Automatically** (when you run the app)
+   - You'll see patient input page
+   - CSV upload option on left
+   - Manual form option on right
+
+2. **Upload Patient Data**
+   - Download sample CSV (from home page)
+   - OR fill manual form
+   - OR drag-drop your own CSV
+
+3. **View Analysis**
+   - System automatically generates analysis
+   - Shows risk prediction
+   - Lists medicine interactions
+   - Provides family explanations
+
+4. **Print/Export**
+   - Use "Print Report" button on analysis page
+   - Save as PDF
+
+---
+
+## 🛑 IF YOU GET ERRORS
+
+### "Port 5000 in use"
+The port is already being used. Either:
+- Kill existing process using port 5000
+- Edit `app.py` line: `app.run(..., port=5001)`
+
+### "Module not found"
+Ensure you're using the correct Python:
+```powershell
+E:\ANACONDA\envs\icu_project\python.exe app.py
+```
+
+### "Permission denied"
+For PowerShell in windows:
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
+```
+
+### "Connection refused"
+- Make sure app is still running in terminal
+- App might have crashed - check terminal for errors
+
+---
+
+## 💾 TO STOP THE SERVER
+
+- In terminal: Press `Ctrl + C`
+- Or close the terminal window
+
+---
+
+## 📝 RECOMMENDED SETUP
+
+**For best experience:**
+
+1. Click `RUN_SYSTEM.bat` to start
+2. Let it run (terminal window stays open)
+3. Open browser: `http://localhost:5000/`
+4. Upload/enter patient data
+5. View analysis dashboard
+6. To stop: Close terminal or press Ctrl+C
+
+---
+
+## 🎯 YOU'RE ALL SET!
+
+Click `RUN_SYSTEM.bat` and enjoy! 🚀
+
+Questions? Check:
+- `QUICK_START_NOW.txt`
+- `UPDATED_SYSTEM_WORKFLOW.md`
+- `FINAL_SUMMARY.txt`
+
+---
+
+**System Status**: ✅ READY TO RUN
+**Last Updated**: March 22, 2026

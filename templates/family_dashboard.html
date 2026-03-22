@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient & Family Dashboard - ICU Status</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3/dist/chart.min.js"></script>
+    <style>
+        .risk-meter {
+            height: 12px;
+            border-radius: 6px;
+            background: linear-gradient(to right, #22c55e 0%, #eab308 33%, #ef4444 66%, #7c2d12 100%);
+            position: relative;
+        }
+
+        .risk-indicator {
+            position: absolute;
+            top: -4px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid #333;
+            transform: translateX(-50%);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .gradient-green {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+        }
+
+        .gradient-yellow {
+            background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%);
+        }
+
+        .gradient-red {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+
+        .gradient-darkred {
+            background: linear-gradient(135deg, #7c2d12 0%, #5a1d0d 100%);
+        }
+
+        @media (max-width: 768px) {
+            .mobile-stack {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div id="app">
+        <!-- Header with Language Selection -->
+        <header class="sticky top-0 z-50 bg-white shadow">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-900">Patient Status</h1>
+                        <p class="text-gray-600 mt-1" v-if="patientData">{{ patientData.patient_name }}</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <select v-model="currentLanguage" @change="changeLanguage" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="en">English</option>
+                            <option value="hi">हिंदी</option>
+                            <option value="ta">தமிழ்</option>
+                            <option value="te">తెలుగు</option>
+                            <option value="kn">ಕನ್ನಡ</option>
+                            <option value="mr">मराठी</option>
+                        </select>
+                        <div class="text-gray-600 text-sm">
+                            Last Updated:<br>
+                            <span class="font-semibold">{{ lastUpdated }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Overall Status Card -->
+            <div class="fade-in mb-8" v-if="patientData && patientData.overall_status">
+                <div :class="['rounded-lg p-8 text-white shadow-lg', getRiskGradient(patientData.overall_status.risk_class)]">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h2 class="text-4xl font-bold mb-2">{{ getRiskEmoji(patientData.overall_status.risk_class) }} {{ patientData.overall_status.risk_class }}</h2>
+                            <p class="text-lg opacity-90">{{ patientData.overall_status.main_message }}</p>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-5xl font-bold">{{ getRiskPercentage() }}%</div>
+                            <p class="text-sm opacity-75 mt-2">Risk Assessment</p>
+                        </div>
+                    </div>
+
+                    <!-- Risk Meter -->
+                    <div class="mt-6" v-if="false">
+                        <div class="risk-meter">
+                            <div class="risk-indicator" :style="{ left: getRiskPercentage() + '%' }"></div>
+                        </div>
+                    </div>
+
+                    <!-- Hope Message -->
+                    <div class="mt-6 pt-6 border-t border-white border-opacity-30">
+                        <p class="text-lg font-semibold">💙 {{ patientData.overall_status.hope_message }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Grid Layout -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                <!-- Column 1: Vital Signs -->
+                <div class="lg:col-span-2">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">What The Doctors Are Watching</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div v-for="(vital, idx) in getVitalDisplays()" :key="idx" class="bg-white rounded-lg p-6 shadow card-hover transition-all">
+                            <div class="flex justify-between items-start mb-3">
+                                <h4 class="text-lg font-semibold text-gray-900">{{ vital.name }}</h4>
+                                <span :class="['text-2xl px-3 py-1 rounded', getVitalStatusBg(vital.status)]">
+                                    {{ getVitalStatusIcon(vital.status) }}
+                                </span>
+                            </div>
+                            <div class="text-3xl font-bold text-blue-600 mb-2">{{ vital.value }}</div>
+                            <p class="text-gray-600 text-sm mb-3">{{ vital.status_msg }}</p>
+                            <p class="text-gray-700 text-sm italic">{{ vital.meaning }}</p>
+                            <div v-if="vital.affects.length > 0" class="mt-3 pt-3 border-t">
+                                <p class="text-xs text-gray-600 font-semibold mb-2">What affects this:</p>
+                                <div class="flex flex-wrap gap-2">
+                                    <span v-for="(affect, i) in vital.affects" :key="i" class="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
+                                        {{ affect }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Column 2: Doctor Actions -->
+                <div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">What The Doctors Are Doing</h3>
+                    <div class="bg-white rounded-lg p-6 shadow space-y-3">
+                        <div v-for="(action, idx) in getInterventions()" :key="idx" class="flex items-start gap-3">
+                            <span class="text-blue-600 text-xl font-bold mt-1">✓</span>
+                            <p class="text-gray-700">{{ action }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Update Info -->
+                    <div class="mt-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+                        <p class="text-sm text-blue-900 font-semibold mb-2">📊 Next Update:</p>
+                        <p class="text-sm text-blue-800">Ask doctors for an update in</p>
+                        <div class="text-lg font-bold text-blue-600 mt-2">
+                            {{ getNextUpdateTime() }} hours
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Risk Factors -->
+            <div class="mb-8" v-if="patientData && patientData.main_factors">
+                <h3 class="text-2xl font-bold text-gray-900 mb-4">Main Concerns Right Now</h3>
+                <div class="space-y-3">
+                    <div v-for="(factor, idx) in patientData.main_factors" :key="idx" class="bg-white rounded-lg p-6 shadow border-l-4 border-amber-500">
+                        <div class="flex items-start justify-between">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="inline-block w-8 h-8 bg-amber-100 text-amber-700 rounded-full text-center font-bold leading-8">
+                                        {{ idx + 1 }}
+                                    </span>
+                                    <h4 class="text-lg font-semibold text-gray-900">{{ factor.simple_name }}</h4>
+                                </div>
+                                <p class="text-gray-700 mb-2">{{ factor.family_explanation }}</p>
+                                <p class="text-sm text-blue-600 font-semibold">👨‍⚕️ Doctor's action: {{ factor.doctor_action }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- What Family Can Do -->
+            <div class="mb-8">
+                <h3 class="text-2xl font-bold text-gray-900 mb-4">What Family Can Do</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div v-for="(suggestion, idx) in getFamilySuggestions()" :key="idx" class="bg-green-50 border border-green-200 rounded-lg p-4">
+                        <div class="flex items-start gap-3">
+                            <span class="text-green-600 text-2xl">💚</span>
+                            <p class="text-gray-800">{{ suggestion }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Questions Section -->
+            <div class="mb-8">
+                <h3 class="text-2xl font-bold text-gray-900 mb-4">Ask The Doctors</h3>
+                <div class="bg-blue-50 border-l-4 border-blue-500 rounded-lg p-6">
+                    <p class="text-gray-700 mb-4">These are good questions to ask the doctors:</p>
+                    <ul class="space-y-2">
+                        <li v-for="(question, idx) in getQuestions()" :key="idx" class="flex items-start gap-3">
+                            <span class="text-blue-600 font-bold">?</span>
+                            <span class="text-gray-800">"{{ question }}"</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Support Resources -->
+            <div class="mb-8">
+                <h3 class="text-2xl font-bold text-gray-900 mb-4">Support Resources</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-white rounded-lg p-6 shadow">
+                        <h4 class="text-lg font-semibold text-gray-900 mb-2">🙏 Spiritual Support</h4>
+                        <p class="text-gray-700 text-sm">Hospital Chaplain - Available 24/7</p>
+                        <p class="text-gray-600 text-xs mt-2">Ask at the ICU desk for their contact</p>
+                    </div>
+                    <div class="bg-white rounded-lg p-6 shadow">
+                        <h4 class="text-lg font-semibold text-gray-900 mb-2">👥 Social Support</h4>
+                        <p class="text-gray-700 text-sm">Hospital Social Worker</p>
+                        <p class="text-gray-600 text-xs mt-2">Can help with logistics and emotional support</p>
+                    </div>
+                    <div class="bg-white rounded-lg p-6 shadow">
+                        <h4 class="text-lg font-semibold text-gray-900 mb-2">⚖️ Patient Advocate</h4>
+                        <p class="text-gray-700 text-sm">Protects patient rights and interests</p>
+                        <p class="text-gray-600 text-xs mt-2">Ask for their contact information</p>
+                    </div>
+                    <div class="bg-white rounded-lg p-6 shadow">
+                        <h4 class="text-lg font-semibold text-gray-900 mb-2">💬 Support Groups</h4>
+                        <p class="text-gray-700 text-sm">Family support groups</p>
+                        <p class="text-gray-600 text-xs mt-2">Connect with families in similar situations</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Important Reminder -->
+            <div class="bg-purple-50 border-l-4 border-purple-500 rounded-lg p-6 mb-8">
+                <h4 class="text-lg font-semibold text-purple-900 mb-2">📢 Important to Remember</h4>
+                <p class="text-purple-800">
+                    This dashboard shows one point in time. Your loved one's doctors know their complete medical history
+                    and are making decisions based on everything they know. Risk scores are tools to help, not predictions carved in stone.
+                    Many people recover even from serious conditions.
+                </p>
+            </div>
+
+            <!-- Emotion Support -->
+            <div class="bg-pink-50 border border-pink-200 rounded-lg p-6" v-if="patientData && patientData.overall_status">
+                <h4 class="text-lg font-semibold text-pink-900 mb-2">💙 For Your Heart and Mind</h4>
+                <p class="text-pink-900">{{ getEmotionSupport() }}</p>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-gray-900 text-white mt-16 py-8">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+                    <div>
+                        <h5 class="font-semibold mb-3">Emergency Contacts</h5>
+                        <p class="text-gray-400 text-sm">ICU Front Desk: [Hospital Phone]</p>
+                        <p class="text-gray-400 text-sm">Crisis Line: [Phone Number]</p>
+                    </div>
+                    <div>
+                        <h5 class="font-semibold mb-3">Patient Rights</h5>
+                        <p class="text-gray-400 text-sm">You have the right to:</p>
+                        <ul class="text-gray-400 text-sm list-disc list-inside">
+                            <li>Ask questions anytime</li>
+                            <li>Participate in decisions</li>
+                            <li>Get updates on progress</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h5 class="font-semibold mb-3">Information</h5>
+                        <p class="text-gray-400 text-sm">This system was built to help families understand their loved one's care.</p>
+                    </div>
+                </div>
+                <div class="border-t border-gray-700 pt-6 text-center text-gray-400 text-sm">
+                    <p>&copy; 2026 ICU Patient & Family Dashboard • Supporting Hope Through Understanding</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    currentLanguage: 'en',
+                    patientData: null,
+                    lastUpdated: new Date().toLocaleString(),
+                    demoData: {
+                        patient_name: 'Patient (Demo)',
+                        overall_status: {
+                            risk_class: 'MEDIUM',
+                            main_message: 'Your loved one needs close attention from the doctors',
+                            hope_message: 'With careful monitoring and treatment, recovery is very possible',
+                            risk_class: 'MEDIUM'
+                        },
+                        vital_signs: {
+                            Heart_Rate: {
+                                current_value: 95,
+                                normal_range: '60 to 100 bpm',
+                                status: 'high',
+                                simple_explanation: 'Heart is beating faster than normal',
+                                what_it_means: 'Could mean stress, fever, pain, or body fighting infection'
+                            },
+                            Respiration_Rate: {
+                                current_value: 22,
+                                normal_range: '12 to 20 breaths/min',
+                                status: 'high',
+                                simple_explanation: 'Breathing is faster than normal',
+                                what_it_means: 'May be struggling to get enough oxygen or in pain'
+                            },
+                            Oxygen_Saturation: {
+                                current_value: 94,
+                                normal_range: '96 to 100 %',
+                                status: 'low',
+                                simple_explanation: 'Oxygen levels are lower than ideal',
+                                what_it_means: 'Lungs may be having trouble getting oxygen into blood'
+                            }
+                        },
+                        main_factors: [
+                            {
+                                simple_name: 'Heart rhythm is unstable',
+                                family_explanation: 'Heart is jumping around; this suggests body is stressed',
+                                doctor_action: 'Monitoring closely and may adjust medicines'
+                            },
+                            {
+                                simple_name: 'Oxygen levels are dropping',
+                                family_explanation: 'Lungs may be having trouble getting oxygen into blood',
+                                doctor_action: 'May increase oxygen support or adjust breathing support'
+                            }
+                        ]
+                    }
+                };
+            },
+            mounted() {
+                // In real implementation, fetch from API
+                this.loadPatientData();
+            },
+            methods: {
+                loadPatientData() {
+                    // For demo, use sample data
+                    this.patientData = this.demoData;
+                    // In real app: fetch('/api/family-dashboard/' + patientId + '?lang=' + this.currentLanguage)
+                },
+                changeLanguage() {
+                    // Reload data with new language
+                    this.loadPatientData();
+                },
+                getRiskGradient(riskClass) {
+                    const gradients = {
+                        'LOW': 'gradient-green',
+                        'MEDIUM': 'gradient-yellow',
+                        'HIGH': 'gradient-red',
+                        'CRITICAL': 'gradient-darkred'
+                    };
+                    return gradients[riskClass] || 'gradient-green';
+                },
+                getRiskEmoji(riskClass) {
+                    const emojis = {
+                        'LOW': '🟢',
+                        'MEDIUM': '🟡',
+                        'HIGH': '🔴',
+                        'CRITICAL': '⚫'
+                    };
+                    return emojis[riskClass] || '🟢';
+                },
+                getRiskPercentage() {
+                    // In real app, calculate from patient data
+                    return 35;
+                },
+                getVitalDisplays() {
+                    if (!this.patientData || !this.patientData.vital_signs) {
+                        return [];
+                    }
+
+                    return Object.entries(this.patientData.vital_signs).map(([name, vital]) => ({
+                        name: this.getVitalName(name),
+                        value: vital.current_value + (this.getVitalUnit(name) ? ' ' + this.getVitalUnit(name) : ''),
+                        status: vital.status,
+                        status_msg: vital.simple_explanation,
+                        meaning: vital.what_it_means,
+                        affects: this.getVitalAffects(name)
+                    }));
+                },
+                getVitalName(vital) {
+                    const names = {
+                        'Heart_Rate': 'Heart Rate',
+                        'Respiration_Rate': 'Breathing Rate',
+                        'Oxygen_Saturation': 'Oxygen Level',
+                        'Temperature': 'Fever',
+                        'Blood_Pressure_Systolic': 'Blood Pressure'
+                    };
+                    return names[vital] || vital;
+                },
+                getVitalUnit(vital) {
+                    const units = {
+                        'Heart_Rate': 'bpm',
+                        'Respiration_Rate': 'breaths/min',
+                        'Oxygen_Saturation': '%',
+                        'Temperature': '°C',
+                        'Blood_Pressure_Systolic': 'mmHg'
+                    };
+                    return units[vital] || '';
+                },
+                getVitalAffects(vital) {
+                    const affects = {
+                        'Heart_Rate': ['Stress', 'Fever', 'Pain', 'Activity'],
+                        'Respiration_Rate': ['Oxygen', 'Pain', 'Anxiety'],
+                        'Oxygen_Saturation': ['Lung condition', 'Heart', 'Breathing'],
+                        'Temperature': ['Infection', 'Medications'],
+                        'Blood_Pressure_Systolic': ['Stress', 'Pain', 'Medications']
+                    };
+                    return affects[vital] || [];
+                },
+                getVitalStatusBg(status) {
+                    const bg = {
+                        'normal': 'bg-green-100 text-green-700',
+                        'high': 'bg-red-100 text-red-700',
+                        'low': 'bg-orange-100 text-orange-700'
+                    };
+                    return bg[status] || 'bg-gray-100 text-gray-700';
+                },
+                getVitalStatusIcon(status) {
+                    const icons = {
+                        'normal': '✓',
+                        'high': '↑',
+                        'low': '↓'
+                    };
+                    return icons[status] || '•';
+                },
+                getInterventions() {
+                    const interventions = {
+                        'MEDIUM': [
+                            'Frequent vital sign monitoring (every 1-2 hours)',
+                            'Targeted medications to address specific issues',
+                            'Lab work to track progress',
+                            'Possible adjustments to treatment'
+                        ]
+                    };
+                    return interventions[this.patientData?.overall_status?.risk_class] || interventions['MEDIUM'];
+                },
+                getFamilySuggestions() {
+                    const suggestions = {
+                        'MEDIUM': [
+                            'Stay informed - ask for daily updates',
+                            'Be present and provide emotional support',
+                            'Help doctors by reporting changes you notice',
+                            'Maintain hope and positive communication'
+                        ]
+                    };
+                    return suggestions[this.patientData?.overall_status?.risk_class] || suggestions['MEDIUM'];
+                },
+                getQuestions() {
+                    return [
+                        "What are the main things you're watching right now?",
+                        "When will we know if treatment is working?",
+                        "What else can the family do to help?",
+                        "How often can we get updates?"
+                    ];
+                },
+                getNextUpdateTime() {
+                    return 4; // In real app, calculate based on risk level
+                },
+                getEmotionSupport() {
+                    const support = {
+                        'MEDIUM': 'This is a challenging time, but your loved one is being well cared for. Stay involved, ask questions, and maintain hope.'
+                    };
+                    return support[this.patientData?.overall_status?.risk_class] || 'Your loved one is receiving excellent care.';
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
