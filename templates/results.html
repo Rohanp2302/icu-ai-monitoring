@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ICU Predictions - Results</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .summary-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .summary-card .number {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .summary-card .label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab-button {
+            padding: 10px 20px;
+            border: none;
+            background: #e9ecef;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .tab-button.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        tr:hover {
+            background: #f0f2f5;
+        }
+
+        .risk-high {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        .risk-medium {
+            color: #ffc107;
+            font-weight: bold;
+        }
+
+        .risk-low {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .confidence-bar {
+            display: inline-block;
+            height: 20px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            overflow: hidden;
+            min-width: 50px;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+
+        .patient-detail {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .patient-id {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .risk-factors {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .factor {
+            background: white;
+            padding: 12px;
+            border-radius: 5px;
+            text-align: center;
+            border-top: 3px solid #667eea;
+        }
+
+        .factor-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.9em;
+        }
+
+        .factor-importance {
+            color: #667eea;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .trajectory {
+            margin-top: 20px;
+        }
+
+        .button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 10px 5px 10px 0;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .status-icon {
+            font-size: 1.5em;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔮 ICU Mortality Prediction Results</h1>
+        <div class="summary" id="summary"></div>
+    </div>
+
+    <div class="container">
+        <div class="tabs">
+            <button class="tab-button active" onclick="switchTab('predictions')">📊 Predictions Table</button>
+            <button class="tab-button" onclick="switchTab('details')">📋 Patient Details</button>
+            <button class="tab-button" onclick="switchTab('analysis')">📈 Analysis</button>
+        </div>
+
+        <!-- Predictions Table Tab -->
+        <div id="predictions" class="tab-content active">
+            <h2>All Patients</h2>
+            <div class="table-container">
+                <table id="predictions-table">
+                    <thead>
+                        <tr>
+                            <th>Patient ID</th>
+                            <th>Mortality Risk</th>
+                            <th>Risk Class</th>
+                            <th>Confidence</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <button class="button" onclick="downloadResults()">📥 Download Results as CSV</button>
+            <button class="button" onclick="window.location.href='/'">➕ Predict More Patients</button>
+        </div>
+
+        <!-- Patient Details Tab -->
+        <div id="details" class="tab-content">
+            <h2>Detailed Patient Information</h2>
+            <div id="patient-details"></div>
+        </div>
+
+        <!-- Analysis Tab -->
+        <div id="analysis" class="tab-content">
+            <h2>Prediction Analysis</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                <div>
+                    <h3>Risk Distribution</h3>
+                    <canvas id="riskChart"></canvas>
+                </div>
+                <div>
+                    <h3>Confidence Distribution</h3>
+                    <canvas id="confidenceChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let predictions = [];
+
+        // Load predictions from sessionStorage
+        function loadPredictions() {
+            const stored = sessionStorage.getItem('predictions');
+            if (stored) {
+                predictions = JSON.parse(stored);
+                renderPredictions();
+                renderSummary();
+                renderDetails();
+                renderCharts();
+            }
+        }
+
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function renderSummary() {
+            const summary = {
+                total: predictions.length,
+                critical: predictions.filter(p => p.risk_class === 'CRITICAL').length,
+                high: predictions.filter(p => p.risk_class === 'HIGH').length,
+                avgConfidence: (predictions.reduce((sum, p) => sum + (p.confidence || 0), 0) / predictions.length * 100).toFixed(1)
+            };
+
+            const html = `
+                <div class="summary-card">
+                    <div class="number">${summary.total}</div>
+                    <div class="label">Total Patients</div>
+                </div>
+                <div class="summary-card">
+                    <div class="number" style="color: #dc3545;">${summary.critical}</div>
+                    <div class="label">Critical Risk</div>
+                </div>
+                <div class="summary-card">
+                    <div class="number" style="color: #ffc107;">${summary.high}</div>
+                    <div class="label">High Risk</div>
+                </div>
+                <div class="summary-card">
+                    <div class="number">${summary.avgConfidence}%</div>
+                    <div class="label">Avg Confidence</div>
+                </div>
+            `;
+
+            document.getElementById('summary').innerHTML = html;
+        }
+
+        function renderPredictions() {
+            const tbody = document.querySelector('#predictions-table tbody');
+            tbody.innerHTML = predictions.map(p => `
+                <tr>
+                    <td><strong>${p.patient_id}</strong></td>
+                    <td>${p.mortality_percent}</td>
+                    <td><span class="risk-${p.risk_class.toLowerCase()}">${p.risk_class}</span></td>
+                    <td>
+                        <div style="display: flex; align-items: center;">
+                            <div class="confidence-bar" style="width: ${p.confidence * 100}%;"></div>
+                            ${p.confidence_percent}
+                        </div>
+                    </td>
+                    <td><span class="status-icon">${p.status}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        function renderDetails() {
+            const container = document.getElementById('patient-details');
+            container.innerHTML = predictions.map(p => `
+                <div class="patient-detail">
+                    <div class="patient-id">${p.patient_id}</div>
+                    <p><strong>Mortality Risk:</strong> ${p.mortality_percent} (Confidence: ${p.confidence_percent})</p>
+                    <p><strong>Risk Class:</strong> <span class="risk-${p.risk_class.toLowerCase()}">${p.risk_class}</span></p>
+
+                    <div class="risk-factors">
+                        ${(p.top_factors || []).slice(0, 5).map(f => `
+                            <div class="factor">
+                                <div class="factor-name">${f.name}</div>
+                                <div class="factor-importance">${f.importance.toFixed(2)}</div>
+                                <small>${f.direction}</small>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderCharts() {
+            // Risk distribution
+            const riskCounts = {
+                'CRITICAL': predictions.filter(p => p.risk_class === 'CRITICAL').length,
+                'HIGH': predictions.filter(p => p.risk_class === 'HIGH').length,
+                'MEDIUM': predictions.filter(p => p.risk_class === 'MEDIUM').length,
+                'LOW': predictions.filter(p => p.risk_class === 'LOW').length,
+            };
+
+            const ctx1 = document.getElementById('riskChart').getContext('2d');
+            new Chart(ctx1, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(riskCounts),
+                    datasets: [{
+                        data: Object.values(riskCounts),
+                        backgroundColor: ['#dc3545', '#ffc107', '#17a2b8', '#28a745']
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: true }
+            });
+
+            // Confidence distribution
+            const confidenceBins = [0, 0, 0, 0, 0];
+            predictions.forEach(p => {
+                const bin = Math.floor((p.confidence || 0) * 5);
+                if (bin < 5) confidenceBins[bin]++;
+            });
+
+            const ctx2 = document.getElementById('confidenceChart').getContext('2d');
+            new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: ['0-20%', '20-40%', '40-60%', '60-80%', '80-100%'],
+                    datasets: [{
+                        label: 'Number of Patients',
+                        data: confidenceBins,
+                        backgroundColor: '#667eea'
+                    }]
+                },
+                options: { responsive: true, maintained AspectRatio: true }
+            });
+        }
+
+        function downloadResults() {
+            const csv = [
+                ['Patient ID', 'Mortality %', 'Risk Class', 'Confidence %'].join(','),
+                ...predictions.map(p =>
+                    [p.patient_id, p.mortality_percent, p.risk_class, p.confidence_percent].join(',')
+                )
+            ].join('\n');
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'predictions.csv';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        }
+
+        // Load on page load
+        window.addEventListener('load', loadPredictions);
+    </script>
+</body>
+</html>
