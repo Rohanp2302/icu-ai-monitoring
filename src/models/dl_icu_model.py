@@ -20,16 +20,27 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
+def set_global_seed(seed: int = 42):
+    """Set global seeds for reproducible experiments."""
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+
+
 class ICUDataset(Dataset):
     """PyTorch Dataset for ICU patient data"""
 
     def __init__(self, X: np.ndarray, y: np.ndarray, sequence_length: int = 24):
         """
         Args:
-            X: (n_samples, n_features) hourly data
+            X: (n_samples, sequence_length, n_features) patient sequences
             y: (n_samples,) binary mortality labels
             sequence_length: number of hours to use for prediction
         """
+        if X.ndim != 3:
+            raise ValueError(f"Expected X with shape (N, T, F), got {X.shape}")
+
         self.X = torch.FloatTensor(X)
         self.y = torch.FloatTensor(y)
         self.seq_len = sequence_length
@@ -131,8 +142,7 @@ class DeepICUModel(nn.Module):
             nn.Linear(128, 64),
             nn.ReLU(),
             nn.Dropout(0.2),
-            nn.Linear(64, 1),
-            nn.Sigmoid()
+            nn.Linear(64, 1)
         )
 
     def forward(self, x):
@@ -177,7 +187,7 @@ class ICUTrainer:
     def __init__(self, model: DeepICUModel, device: str = 'cpu'):
         self.model = model.to(device)
         self.device = device
-        self.criterion = nn.BCELoss()
+        self.criterion = None
 
     def train_epoch(self, train_loader: DataLoader, optimizer, device):
         """Train for one epoch"""
@@ -191,8 +201,8 @@ class ICUTrainer:
             y_batch = y_batch.to(device).unsqueeze(1)
 
             optimizer.zero_grad()
-            outputs = self.model(X_batch)
-            loss = self.criterion(outputs, y_batch)
+            logits = self.model(X_batch)
+            loss = self.criterion(logits, y_batch)
 
             loss.backward()
             torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=1.0)
@@ -201,7 +211,7 @@ class ICUTrainer:
             total_loss += loss.item()
 
             # Calculate accuracy
-            preds = (outputs > 0.5).float()
+            preds = (torch.sigmoid(logits) > 0.5).float()
             correct += (preds == y_batch).sum().item()
             total += y_batch.size(0)
 
@@ -222,11 +232,11 @@ class ICUTrainer:
                 X_batch = X_batch.to(device)
                 y_batch = y_batch.to(device).unsqueeze(1)
 
-                outputs = self.model(X_batch)
-                loss = self.criterion(outputs, y_batch)
+                logits = self.model(X_batch)
+                loss = self.criterion(logits, y_batch)
 
                 total_loss += loss.item()
-                all_preds.extend(outputs.cpu().numpy().flatten())
+                all_preds.extend(torch.sigmoid(logits).cpu().numpy().flatten())
                 all_targets.extend(y_batch.cpu().numpy().flatten())
 
         avg_loss = total_loss / len(val_loader)
@@ -260,6 +270,13 @@ class ICUTrainer:
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
             optimizer, mode='min', factor=0.5, patience=5, verbose=True
         )
+
+        # Handle class imbalance with positive-class weighting.
+        train_targets = train_loader.dataset.y.detach().cpu().numpy()
+        positives = max(np.sum(train_targets == 1), 1)
+        negatives = max(np.sum(train_targets == 0), 1)
+        pos_weight = torch.tensor([negatives / positives], dtype=torch.float32, device=self.device)
+        self.criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
 
         history = {
             'train_loss': [],
@@ -317,31 +334,67 @@ def load_and_prepare_data(csv_path: str, seq_length: int = 24, val_split: float 
     outcomes_df = pd.read_csv(csv_path.replace('hourly', 'outcomes'))
 
     # Get features (all except patientunitstayid and hour)
-    feature_cols = [col for col in hourly_df.columns if col not in ['patientunitstayid', 'hour']]
+    patient_col = 'patientunitstayid'
+    hour_col = 'hour'
+    required_cols = {patient_col, hour_col}
+    if not required_cols.issubset(set(hourly_df.columns)):
+        raise ValueError(f"Hourly data must contain columns: {required_cols}")
+
+    feature_cols = [col for col in hourly_df.columns if col not in [patient_col, hour_col]]
 
     logger.info(f"Features: {len(feature_cols)}")
     logger.info(f"Features: {feature_cols}")
 
-    # Fill NaN values with forward fill
-    X = hourly_df[feature_cols].fillna(method='ffill').fillna(method='bfill').values
+    if patient_col not in outcomes_df.columns or 'mortality' not in outcomes_df.columns:
+        raise ValueError("Outcomes data must contain 'patientunitstayid' and 'mortality' columns")
 
-    # Normalize features
-    scaler = StandardScaler()
-    X = scaler.fit_transform(X)
+    outcomes_map = outcomes_df[[patient_col, 'mortality']].drop_duplicates(patient_col)
+    outcomes_map = outcomes_map.set_index(patient_col)['mortality']
 
-    # Get mortality labels
-    y = outcomes_df['mortality'].values
+    patient_ids = hourly_df[patient_col].dropna().unique()
+    patient_sequences = []
+    labels = []
 
-    logger.info(f"Data shape: X={X.shape}, y={y.shape}")
+    for pid in patient_ids:
+        if pid not in outcomes_map.index:
+            continue
+
+        patient_df = hourly_df[hourly_df[patient_col] == pid].sort_values(hour_col)
+        values_df = patient_df[feature_cols].ffill().bfill().fillna(0.0)
+        values = values_df.to_numpy(dtype=np.float32)
+
+        if values.shape[0] == 0:
+            continue
+
+        if values.shape[0] >= seq_length:
+            seq = values[-seq_length:]
+        else:
+            pad_rows = seq_length - values.shape[0]
+            pad_value = values[-1:] if values.shape[0] > 0 else np.zeros((1, values.shape[1]), dtype=np.float32)
+            pad = np.repeat(pad_value, pad_rows, axis=0)
+            seq = np.vstack([pad, values])
+
+        patient_sequences.append(seq)
+        labels.append(float(outcomes_map.loc[pid]))
+
+    if not patient_sequences:
+        raise ValueError("No valid patient sequences were constructed from the provided files")
+
+    X = np.stack(patient_sequences).astype(np.float32)
+    y = np.array(labels, dtype=np.float32)
+
+    logger.info(f"Data shape: X={X.shape} (N, T, F), y={y.shape}")
     logger.info(f"Mortality rate: {y.mean():.1%}")
 
-    return X, y, scaler
+    return X, y, None
 
 
 if __name__ == '__main__':
     # Setup
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     logger.info(f"Using device: {device}")
+
+    set_global_seed(42)
 
     # Load data
     X, y, scaler = load_and_prepare_data('data/processed/eicu_hourly_all_features.csv')
@@ -362,7 +415,7 @@ if __name__ == '__main__':
     val_loader = DataLoader(val_dataset, batch_size=64, shuffle=False)
 
     # Test with Adam optimizer
-    model = DeepICUModel(input_size=24, hidden_size=128, num_layers=2)
+    model = DeepICUModel(input_size=X.shape[2], hidden_size=128, num_layers=2)
     trainer = ICUTrainer(model, device=device)
 
     history, best_auc = trainer.train(

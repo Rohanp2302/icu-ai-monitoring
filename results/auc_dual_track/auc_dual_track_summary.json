@@ -1,0 +1,14 @@
+{
+  "strict_best": {
+    "model": "extra_trees",
+    "auc_mean": 0.8635137908151307,
+    "auc_std": 0.012158903919102359
+  },
+  "upper_bound_best": {
+    "model": "extra_trees",
+    "auc_mean": 0.882109111304872,
+    "auc_std": 0.021494908588839134
+  },
+  "strict_reaches_093": false,
+  "upper_bound_reaches_093": false
+}

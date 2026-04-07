@@ -1,0 +1,83 @@
+{
+  "method": "Stratified K-Fold (k=5)",
+  "preprocessing_per_fold": true,
+  "folds": [
+    {
+      "fold": 1,
+      "train_auc": 1.0,
+      "test_auc": 1.0,
+      "sensitivity": 1.0,
+      "specificity": 0.9871559633027523,
+      "f1": 0.8108108108108109,
+      "tp": 15,
+      "fp": 7,
+      "fn": 0,
+      "tn": 538,
+      "test_pos": 15,
+      "test_total": 560
+    },
+    {
+      "fold": 2,
+      "train_auc": 1.0,
+      "test_auc": 0.991559633027523,
+      "sensitivity": 0.9333333333333333,
+      "specificity": 0.9944954128440368,
+      "f1": 0.875,
+      "tp": 14,
+      "fp": 3,
+      "fn": 1,
+      "tn": 542,
+      "test_pos": 15,
+      "test_total": 560
+    },
+    {
+      "fold": 3,
+      "train_auc": 1.0,
+      "test_auc": 0.9954044117647058,
+      "sensitivity": 0.9375,
+      "specificity": 1.0,
+      "f1": 0.967741935483871,
+      "tp": 15,
+      "fp": 0,
+      "fn": 1,
+      "tn": 544,
+      "test_pos": 16,
+      "test_total": 560
+    },
+    {
+      "fold": 4,
+      "train_auc": 1.0,
+      "test_auc": 1.0,
+      "sensitivity": 1.0,
+      "specificity": 1.0,
+      "f1": 1.0,
+      "tp": 16,
+      "fp": 0,
+      "fn": 0,
+      "tn": 544,
+      "test_pos": 16,
+      "test_total": 560
+    },
+    {
+      "fold": 5,
+      "train_auc": 0.9999703782694985,
+      "test_auc": 0.9928921568627451,
+      "sensitivity": 0.9333333333333333,
+      "specificity": 0.9944852941176471,
+      "f1": 0.875,
+      "tp": 14,
+      "fp": 3,
+      "fn": 1,
+      "tn": 541,
+      "test_pos": 15,
+      "test_total": 559
+    }
+  ],
+  "aggregate_metrics": {
+    "mean_test_auc": 0.9959712403309948,
+    "std_test_auc": 0.003513577594682117,
+    "mean_sensitivity": 0.9608333333333334,
+    "mean_specificity": 0.9952273340528872,
+    "auc_range": 0.008440366972476965
+  }
+}

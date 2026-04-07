@@ -1,0 +1,97 @@
+{
+  "timestamp": "2026-04-07T13:59:10",
+  "baseline": {
+    "auc": 0.8384,
+    "recall": 0.7214076246334311,
+    "f1": 0.48188050930460335,
+    "threshold": 0.44,
+    "deaths_caught": 246,
+    "total_deaths": 341
+  },
+  "folds": {
+    "fold_0": {
+      "auc": 0.5393924546790788,
+      "optimal_threshold": 0.4110986590385437,
+      "accuracy": 0.7962638645650905,
+      "precision": 0.12681159420289856,
+      "recall": 0.24475524475524477,
+      "f1": 0.16706443914081145,
+      "specificity": 0.8464968152866242,
+      "sensitivity": 0.24475524475524477,
+      "tp": 35,
+      "fp": 241,
+      "fn": 108,
+      "tn": 1329,
+      "total_deaths": 143,
+      "deaths_caught": 35
+    },
+    "fold_1": {
+      "auc": 0.5399135895951183,
+      "optimal_threshold": 0.3537725508213043,
+      "accuracy": 0.7962638645650905,
+      "precision": 0.12681159420289856,
+      "recall": 0.24475524475524477,
+      "f1": 0.16706443914081145,
+      "specificity": 0.8464968152866242,
+      "sensitivity": 0.24475524475524477,
+      "tp": 35,
+      "fp": 241,
+      "fn": 108,
+      "tn": 1329,
+      "total_deaths": 143,
+      "deaths_caught": 35
+    },
+    "fold_2": {
+      "auc": 0.5393924546790788,
+      "optimal_threshold": 0.4148348867893219,
+      "accuracy": 0.7962638645650905,
+      "precision": 0.12681159420289856,
+      "recall": 0.24475524475524477,
+      "f1": 0.16706443914081145,
+      "specificity": 0.8464968152866242,
+      "sensitivity": 0.24475524475524477,
+      "tp": 35,
+      "fp": 241,
+      "fn": 108,
+      "tn": 1329,
+      "total_deaths": 143,
+      "deaths_caught": 35
+    },
+    "fold_3": {
+      "auc": 0.5391742015945837,
+      "optimal_threshold": 0.3173981010913849,
+      "accuracy": 0.7962638645650905,
+      "precision": 0.12681159420289856,
+      "recall": 0.24475524475524477,
+      "f1": 0.16706443914081145,
+      "specificity": 0.8464968152866242,
+      "sensitivity": 0.24475524475524477,
+      "tp": 35,
+      "fp": 241,
+      "fn": 108,
+      "tn": 1329,
+      "total_deaths": 143,
+      "deaths_caught": 35
+    },
+    "fold_4": {
+      "auc": 0.5385105340519354,
+      "optimal_threshold": 0.3982299864292145,
+      "accuracy": 0.7962638645650905,
+      "precision": 0.12681159420289856,
+      "recall": 0.24475524475524477,
+      "f1": 0.16706443914081145,
+      "specificity": 0.8464968152866242,
+      "sensitivity": 0.24475524475524477,
+      "tp": 35,
+      "fp": 241,
+      "fn": 108,
+      "tn": 1329,
+      "total_deaths": 143,
+      "deaths_caught": 35
+    }
+  },
+  "recommendation": {
+    "action": "KEEP_RF",
+    "reason": "LSTM evaluation failed"
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "overall": {
+    "auc_roc": 0.9962213825294509,
+    "pr_auc": 0.9437830687830688,
+    "tp": 10,
+    "fp": 0,
+    "tn": 409,
+    "fn": 1,
+    "sensitivity": 0.9090909090909091,
+    "specificity": 1.0,
+    "precision_value": 1.0,
+    "npv": 0.9975609756097561,
+    "f1_score": 0.9523809523809523,
+    "brier_score": 0.0036407969892024994,
+    "log_loss": 0.018312488142466974,
+    "matthews_cc": 0.9522991201249149,
+    "cohens_kappa": 0.9511627906976744
+  },
+  "by_threshold": [
+    {
+      "threshold": 0.5000000000000001,
+      "sensitivity": 0.9090909090909091,
+      "specificity": 1.0,
+      "precision": 1.0,
+      "f1": 0.9523809523809523,
+      "predicted_positives": 10
+    },
+    {
+      "threshold": 0.5500000000000002,
+      "sensitivity": 0.9090909090909091,
+      "specificity": 1.0,
+      "precision": 1.0,
+      "f1": 0.9523809523809523,
+      "predicted_positives": 10
+    },
+    {
+      "threshold": 0.6000000000000002,
+      "sensitivity": 0.9090909090909091,
+      "specificity": 1.0,
+      "precision": 1.0,
+      "f1": 0.9523809523809523,
+      "predicted_positives": 10
+    },
+    {
+      "threshold": 0.6500000000000001,
+      "sensitivity": 0.9090909090909091,
+      "specificity": 1.0,
+      "precision": 1.0,
+      "f1": 0.9523809523809523,
+      "predicted_positives": 10
+    },
+    {
+      "threshold": 0.7000000000000002,
+      "sensitivity": 0.9090909090909091,
+      "specificity": 1.0,
+      "precision": 1.0,
+      "f1": 0.9523809523809523,
+      "predicted_positives": 10
+    }
+  ],
+  "robustness": {
+    "prob_mean": 0.028655750676989555,
+    "prob_std": 0.15579326450824738,
+    "score_distribution": {
+      "positives": {
+        "mean": 0.9095361828804016,
+        "std": 0.28604140877723694
+      },
+      "negatives": {
+        "mean": 0.004964590538293123,
+        "std": 0.035964421927928925
+      }
+    }
+  }
+}

@@ -10,10 +10,14 @@ from .statistical_utils import (
     compute_confidence_intervals
 )
 
-from .embedding_indexer import (
-    EmbeddingIndexer,
-    build_index_from_features
-)
+# Skip embedding_indexer if it doesn't exist
+try:
+    from .embedding_indexer import (
+        EmbeddingIndexer,
+        build_index_from_features
+    )
+except ImportError:
+    pass
 
 __all__ = [
     'compute_significance',

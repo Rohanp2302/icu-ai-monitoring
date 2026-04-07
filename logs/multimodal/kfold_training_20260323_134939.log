@@ -1,0 +1,127 @@
+[2026-03-23 13:49:39,080] KFoldTrainer - INFO - 
+================================================================================
+[2026-03-23 13:49:39,080] KFoldTrainer - INFO - FOLD 1/5
+[2026-03-23 13:49:39,080] KFoldTrainer - INFO - ================================================================================
+[2026-03-23 13:49:44,641] KFoldTrainer - INFO - Epoch   1 | Train Loss: 0.4510 | Val Loss: 0.3686 | LR: 1.00e-03
+[2026-03-23 13:49:44,654] KFoldTrainer - INFO - [SAVE] Best model at epoch 1
+[2026-03-23 13:49:48,333] KFoldTrainer - INFO - Epoch   2 | Train Loss: 0.3308 | Val Loss: 0.2240 | LR: 1.00e-03
+[2026-03-23 13:49:48,361] KFoldTrainer - INFO - [SAVE] Best model at epoch 2
+[2026-03-23 13:49:51,980] KFoldTrainer - INFO - Epoch   3 | Train Loss: 0.2662 | Val Loss: 0.1855 | LR: 1.00e-03
+[2026-03-23 13:49:52,083] KFoldTrainer - INFO - [SAVE] Best model at epoch 3
+[2026-03-23 13:49:55,843] KFoldTrainer - INFO - Epoch   4 | Train Loss: 0.2387 | Val Loss: 0.1613 | LR: 1.00e-03
+[2026-03-23 13:49:55,861] KFoldTrainer - INFO - [SAVE] Best model at epoch 4
+[2026-03-23 13:49:59,687] KFoldTrainer - INFO - Epoch   5 | Train Loss: 0.1973 | Val Loss: 0.1351 | LR: 1.00e-03
+[2026-03-23 13:49:59,703] KFoldTrainer - INFO - [SAVE] Best model at epoch 5
+[2026-03-23 13:50:03,450] KFoldTrainer - INFO - Epoch   6 | Train Loss: 0.2124 | Val Loss: 0.1282 | LR: 1.00e-03
+[2026-03-23 13:50:03,474] KFoldTrainer - INFO - [SAVE] Best model at epoch 6
+[2026-03-23 13:50:07,095] KFoldTrainer - INFO - Epoch   7 | Train Loss: 0.1661 | Val Loss: 0.1182 | LR: 1.00e-03
+[2026-03-23 13:50:07,114] KFoldTrainer - INFO - [SAVE] Best model at epoch 7
+[2026-03-23 13:50:11,044] KFoldTrainer - INFO - Epoch   8 | Train Loss: 0.1717 | Val Loss: 0.1178 | LR: 1.00e-03
+[2026-03-23 13:50:11,411] KFoldTrainer - INFO - 
+[TEST] Fold 1 Results:
+[2026-03-23 13:50:11,411] KFoldTrainer - INFO -   Mortality AUC: 0.6689
+[2026-03-23 13:50:11,412] KFoldTrainer - INFO -   Risk F1: 0.7625
+[2026-03-23 13:50:11,412] KFoldTrainer - INFO -   LOS MAE: 0.2282
+[2026-03-23 13:50:11,420] KFoldTrainer - INFO - 
+================================================================================
+[2026-03-23 13:50:11,420] KFoldTrainer - INFO - FOLD 2/5
+[2026-03-23 13:50:11,420] KFoldTrainer - INFO - ================================================================================
+[2026-03-23 13:50:15,365] KFoldTrainer - INFO - Epoch   1 | Train Loss: 0.4992 | Val Loss: 0.4040 | LR: 1.00e-03
+[2026-03-23 13:50:15,382] KFoldTrainer - INFO - [SAVE] Best model at epoch 1
+[2026-03-23 13:50:19,486] KFoldTrainer - INFO - Epoch   2 | Train Loss: 0.3599 | Val Loss: 0.2850 | LR: 1.00e-03
+[2026-03-23 13:50:19,507] KFoldTrainer - INFO - [SAVE] Best model at epoch 2
+[2026-03-23 13:50:23,629] KFoldTrainer - INFO - Epoch   3 | Train Loss: 0.2727 | Val Loss: 0.1810 | LR: 1.00e-03
+[2026-03-23 13:50:23,647] KFoldTrainer - INFO - [SAVE] Best model at epoch 3
+[2026-03-23 13:50:27,487] KFoldTrainer - INFO - Epoch   4 | Train Loss: 0.2532 | Val Loss: 0.1498 | LR: 1.00e-03
+[2026-03-23 13:50:27,504] KFoldTrainer - INFO - [SAVE] Best model at epoch 4
+[2026-03-23 13:50:31,442] KFoldTrainer - INFO - Epoch   5 | Train Loss: 0.2268 | Val Loss: 0.1429 | LR: 1.00e-03
+[2026-03-23 13:50:31,458] KFoldTrainer - INFO - [SAVE] Best model at epoch 5
+[2026-03-23 13:50:35,478] KFoldTrainer - INFO - Epoch   6 | Train Loss: 0.2058 | Val Loss: 0.1491 | LR: 1.00e-03
+[2026-03-23 13:50:39,519] KFoldTrainer - INFO - Epoch   7 | Train Loss: 0.1967 | Val Loss: 0.1463 | LR: 1.00e-03
+[2026-03-23 13:50:43,047] KFoldTrainer - INFO - Epoch   8 | Train Loss: 0.1708 | Val Loss: 0.1345 | LR: 1.00e-03
+[2026-03-23 13:50:43,072] KFoldTrainer - INFO - [SAVE] Best model at epoch 8
+[2026-03-23 13:50:43,458] KFoldTrainer - INFO - 
+[TEST] Fold 2 Results:
+[2026-03-23 13:50:43,458] KFoldTrainer - INFO -   Mortality AUC: 0.8371
+[2026-03-23 13:50:43,458] KFoldTrainer - INFO -   Risk F1: 0.8754
+[2026-03-23 13:50:43,458] KFoldTrainer - INFO -   LOS MAE: 0.5937
+[2026-03-23 13:50:43,465] KFoldTrainer - INFO - 
+================================================================================
+[2026-03-23 13:50:43,466] KFoldTrainer - INFO - FOLD 3/5
+[2026-03-23 13:50:43,466] KFoldTrainer - INFO - ================================================================================
+[2026-03-23 13:50:47,536] KFoldTrainer - INFO - Epoch   1 | Train Loss: 0.4589 | Val Loss: 0.3773 | LR: 1.00e-03
+[2026-03-23 13:50:47,560] KFoldTrainer - INFO - [SAVE] Best model at epoch 1
+[2026-03-23 13:50:51,932] KFoldTrainer - INFO - Epoch   2 | Train Loss: 0.3432 | Val Loss: 0.2558 | LR: 1.00e-03
+[2026-03-23 13:50:51,958] KFoldTrainer - INFO - [SAVE] Best model at epoch 2
+[2026-03-23 13:50:55,839] KFoldTrainer - INFO - Epoch   3 | Train Loss: 0.2771 | Val Loss: 0.2015 | LR: 1.00e-03
+[2026-03-23 13:50:55,858] KFoldTrainer - INFO - [SAVE] Best model at epoch 3
+[2026-03-23 13:50:59,688] KFoldTrainer - INFO - Epoch   4 | Train Loss: 0.2410 | Val Loss: 0.1513 | LR: 1.00e-03
+[2026-03-23 13:50:59,708] KFoldTrainer - INFO - [SAVE] Best model at epoch 4
+[2026-03-23 13:51:03,810] KFoldTrainer - INFO - Epoch   5 | Train Loss: 0.2279 | Val Loss: 0.1924 | LR: 1.00e-03
+[2026-03-23 13:51:08,371] KFoldTrainer - INFO - Epoch   6 | Train Loss: 0.1942 | Val Loss: 0.1123 | LR: 1.00e-03
+[2026-03-23 13:51:08,393] KFoldTrainer - INFO - [SAVE] Best model at epoch 6
+[2026-03-23 13:51:12,134] KFoldTrainer - INFO - Epoch   7 | Train Loss: 0.2041 | Val Loss: 0.1278 | LR: 1.00e-03
+[2026-03-23 13:51:15,772] KFoldTrainer - INFO - Epoch   8 | Train Loss: 0.2069 | Val Loss: 0.1064 | LR: 1.00e-03
+[2026-03-23 13:51:15,787] KFoldTrainer - INFO - [SAVE] Best model at epoch 8
+[2026-03-23 13:51:16,155] KFoldTrainer - INFO - 
+[TEST] Fold 3 Results:
+[2026-03-23 13:51:16,155] KFoldTrainer - INFO -   Mortality AUC: 0.7019
+[2026-03-23 13:51:16,157] KFoldTrainer - INFO -   Risk F1: 0.8524
+[2026-03-23 13:51:16,157] KFoldTrainer - INFO -   LOS MAE: 0.2997
+[2026-03-23 13:51:16,159] KFoldTrainer - INFO - 
+================================================================================
+[2026-03-23 13:51:16,159] KFoldTrainer - INFO - FOLD 4/5
+[2026-03-23 13:51:16,159] KFoldTrainer - INFO - ================================================================================
+[2026-03-23 13:51:19,729] KFoldTrainer - INFO - Epoch   1 | Train Loss: 0.4401 | Val Loss: 0.3458 | LR: 1.00e-03
+[2026-03-23 13:51:19,760] KFoldTrainer - INFO - [SAVE] Best model at epoch 1
+[2026-03-23 13:51:23,409] KFoldTrainer - INFO - Epoch   2 | Train Loss: 0.3351 | Val Loss: 0.2559 | LR: 1.00e-03
+[2026-03-23 13:51:23,437] KFoldTrainer - INFO - [SAVE] Best model at epoch 2
+[2026-03-23 13:51:27,142] KFoldTrainer - INFO - Epoch   3 | Train Loss: 0.2522 | Val Loss: 0.1731 | LR: 1.00e-03
+[2026-03-23 13:51:27,160] KFoldTrainer - INFO - [SAVE] Best model at epoch 3
+[2026-03-23 13:51:30,782] KFoldTrainer - INFO - Epoch   4 | Train Loss: 0.2504 | Val Loss: 0.1480 | LR: 1.00e-03
+[2026-03-23 13:51:30,805] KFoldTrainer - INFO - [SAVE] Best model at epoch 4
+[2026-03-23 13:51:34,494] KFoldTrainer - INFO - Epoch   5 | Train Loss: 0.2233 | Val Loss: 0.1365 | LR: 1.00e-03
+[2026-03-23 13:51:34,522] KFoldTrainer - INFO - [SAVE] Best model at epoch 5
+[2026-03-23 13:51:38,069] KFoldTrainer - INFO - Epoch   6 | Train Loss: 0.1818 | Val Loss: 0.1184 | LR: 1.00e-03
+[2026-03-23 13:51:38,085] KFoldTrainer - INFO - [SAVE] Best model at epoch 6
+[2026-03-23 13:51:41,560] KFoldTrainer - INFO - Epoch   7 | Train Loss: 0.2172 | Val Loss: 0.1448 | LR: 1.00e-03
+[2026-03-23 13:51:45,286] KFoldTrainer - INFO - Epoch   8 | Train Loss: 0.1937 | Val Loss: 0.1120 | LR: 1.00e-03
+[2026-03-23 13:51:45,308] KFoldTrainer - INFO - [SAVE] Best model at epoch 8
+[2026-03-23 13:51:45,633] KFoldTrainer - INFO - 
+[TEST] Fold 4 Results:
+[2026-03-23 13:51:45,633] KFoldTrainer - INFO -   Mortality AUC: 0.7323
+[2026-03-23 13:51:45,633] KFoldTrainer - INFO -   Risk F1: 0.7677
+[2026-03-23 13:51:45,633] KFoldTrainer - INFO -   LOS MAE: 0.2410
+[2026-03-23 13:51:45,644] KFoldTrainer - INFO - 
+================================================================================
+[2026-03-23 13:51:45,644] KFoldTrainer - INFO - FOLD 5/5
+[2026-03-23 13:51:45,644] KFoldTrainer - INFO - ================================================================================
+[2026-03-23 13:51:49,395] KFoldTrainer - INFO - Epoch   1 | Train Loss: 0.4213 | Val Loss: 0.3622 | LR: 1.00e-03
+[2026-03-23 13:51:49,412] KFoldTrainer - INFO - [SAVE] Best model at epoch 1
+[2026-03-23 13:51:52,994] KFoldTrainer - INFO - Epoch   2 | Train Loss: 0.3075 | Val Loss: 0.2587 | LR: 1.00e-03
+[2026-03-23 13:51:53,020] KFoldTrainer - INFO - [SAVE] Best model at epoch 2
+[2026-03-23 13:51:56,643] KFoldTrainer - INFO - Epoch   3 | Train Loss: 0.2441 | Val Loss: 0.1717 | LR: 1.00e-03
+[2026-03-23 13:51:56,663] KFoldTrainer - INFO - [SAVE] Best model at epoch 3
+[2026-03-23 13:52:00,316] KFoldTrainer - INFO - Epoch   4 | Train Loss: 0.2348 | Val Loss: 0.1704 | LR: 1.00e-03
+[2026-03-23 13:52:03,781] KFoldTrainer - INFO - Epoch   5 | Train Loss: 0.1956 | Val Loss: 0.1562 | LR: 1.00e-03
+[2026-03-23 13:52:03,804] KFoldTrainer - INFO - [SAVE] Best model at epoch 5
+[2026-03-23 13:52:07,385] KFoldTrainer - INFO - Epoch   6 | Train Loss: 0.1740 | Val Loss: 0.1280 | LR: 1.00e-03
+[2026-03-23 13:52:07,406] KFoldTrainer - INFO - [SAVE] Best model at epoch 6
+[2026-03-23 13:52:10,943] KFoldTrainer - INFO - Epoch   7 | Train Loss: 0.1971 | Val Loss: 0.1495 | LR: 1.00e-03
+[2026-03-23 13:52:14,573] KFoldTrainer - INFO - Epoch   8 | Train Loss: 0.1874 | Val Loss: 0.1225 | LR: 1.00e-03
+[2026-03-23 13:52:14,591] KFoldTrainer - INFO - [SAVE] Best model at epoch 8
+[2026-03-23 13:52:14,936] KFoldTrainer - INFO - 
+[TEST] Fold 5 Results:
+[2026-03-23 13:52:14,936] KFoldTrainer - INFO -   Mortality AUC: 0.6320
+[2026-03-23 13:52:14,936] KFoldTrainer - INFO -   Risk F1: 0.6828
+[2026-03-23 13:52:14,936] KFoldTrainer - INFO -   LOS MAE: 0.3237
+[2026-03-23 13:52:14,942] KFoldTrainer - INFO - 
+================================================================================
+[2026-03-23 13:52:14,944] KFoldTrainer - INFO - K-FOLD SUMMARY
+[2026-03-23 13:52:14,944] KFoldTrainer - INFO - ================================================================================
+[2026-03-23 13:52:14,944] KFoldTrainer - INFO - Mortality AUC: 0.7144 +/- 0.0699
+[2026-03-23 13:52:14,944] KFoldTrainer - INFO - Risk F1:       0.7882 +/- 0.0691
+[2026-03-23 13:52:14,944] KFoldTrainer - INFO - LOS MAE:       0.3373 +/- 0.1331
+[2026-03-23 13:52:14,944] KFoldTrainer - INFO - 
+[SAVE] Results saved to logs\multimodal\kfold_results_20260323_135214.json
+[2026-03-23 13:52:14,951] KFoldTrainer - INFO - [SAVE] Fold summary saved to logs\multimodal\kfold_summary_20260323_135214.csv

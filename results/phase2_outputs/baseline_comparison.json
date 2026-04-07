@@ -1,0 +1,71 @@
+{
+  "comparison": {
+    "model": [
+      "Logistic Regression",
+      "Random Forest",
+      "Clinical Heuristic",
+      "ENSEMBLE (Ours)"
+    ],
+    "auc_roc": [
+      0.9868859746610359,
+      1.0,
+      0.49544343187374973,
+      0.9986663703045121
+    ],
+    "f1_score": [
+      0.6451612903225806,
+      0.9523809523809523,
+      0.04316546762589928,
+      0.8695652173913043
+    ],
+    "improvement_over_lr": [
+      0,
+      0.013114025338964108,
+      -0.49144254278728616,
+      0.011780395643476216
+    ]
+  },
+  "feature_importance_rf": [
+    {
+      "feature": "feature_7",
+      "importance": 0.24322591021447004
+    },
+    {
+      "feature": "feature_11",
+      "importance": 0.23162479997202262
+    },
+    {
+      "feature": "feature_5",
+      "importance": 0.1216098431076065
+    },
+    {
+      "feature": "feature_9",
+      "importance": 0.11998727667071998
+    },
+    {
+      "feature": "feature_10",
+      "importance": 0.0640165323159869
+    },
+    {
+      "feature": "feature_6",
+      "importance": 0.058521225863265795
+    },
+    {
+      "feature": "feature_4",
+      "importance": 0.03996277398138403
+    },
+    {
+      "feature": "feature_8",
+      "importance": 0.033694791538819664
+    },
+    {
+      "feature": "feature_2",
+      "importance": 0.02153424296672257
+    },
+    {
+      "feature": "feature_13",
+      "importance": 0.013058039905973437
+    }
+  ],
+  "timestamp": "2026-04-08T00:15:49.292746"
+}

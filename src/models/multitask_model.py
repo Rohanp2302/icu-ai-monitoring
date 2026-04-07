@@ -150,6 +150,38 @@ class TemporalPooling(nn.Module):
         return pooled
 
 
+class ModalityGatedFusion(nn.Module):
+    """Learned gating between temporal and static modality embeddings."""
+
+    def __init__(self, temporal_dim: int, static_dim: int, hidden_dim: int = 64):
+        super(ModalityGatedFusion, self).__init__()
+        self.temporal_dim = temporal_dim
+        self.static_dim = static_dim
+        self.gate = nn.Sequential(
+            nn.Linear(temporal_dim + static_dim, hidden_dim),
+            nn.ReLU(),
+            nn.Linear(hidden_dim, 2),
+        )
+        self.norm = nn.LayerNorm(temporal_dim + static_dim)
+
+    def forward(self, temporal: torch.Tensor, static: torch.Tensor) -> torch.Tensor:
+        concat = torch.cat([temporal, static], dim=1)
+        gate_logits = self.gate(concat)
+        weights = torch.softmax(gate_logits, dim=1)
+
+        weighted = torch.cat(
+            [
+                temporal * weights[:, 0:1],
+                static * weights[:, 1:2],
+            ],
+            dim=1,
+        )
+
+        # Residual stabilization keeps base representation while learning modality preference.
+        fused = self.norm(weighted + 0.5 * concat)
+        return fused
+
+
 class MortalityDecoder(nn.Module):
     """Binary mortality prediction decoder with MC Dropout"""
 
@@ -173,11 +205,9 @@ class MortalityDecoder(nn.Module):
         Args:
             x: (batch_size, input_dim)
         Returns:
-            (batch_size, 1) probability scores
+            (batch_size, 1) logits
         """
-        logits = self.network(x)
-        probs = torch.sigmoid(logits)
-        return probs
+        return self.network(x)
 
 
 class RiskStratificationDecoder(nn.Module):
@@ -203,11 +233,9 @@ class RiskStratificationDecoder(nn.Module):
         Args:
             x: (batch_size, input_dim)
         Returns:
-            (batch_size, 4) class probabilities (after softmax)
+            (batch_size, 4) class logits
         """
-        logits = self.network(x)
-        probs = F.softmax(logits, dim=1)
-        return probs
+        return self.network(x)
 
 
 class ClinicalOutcomesDecoder(nn.Module):
@@ -233,11 +261,9 @@ class ClinicalOutcomesDecoder(nn.Module):
         Args:
             x: (batch_size, input_dim)
         Returns:
-            (batch_size, n_outcomes) independent probabilities (after sigmoid)
+            (batch_size, n_outcomes) independent logits
         """
-        logits = self.network(x)
-        probs = torch.sigmoid(logits)  # Independent sigmoids for multi-label
-        return probs
+        return self.network(x)
 
 
 class TreatmentResponseDecoder(nn.Module):
@@ -328,6 +354,7 @@ class MultiTaskICUModel(nn.Module):
         static_output_dim: int = 128,
         dropout: float = 0.3,
         n_outcomes: int = 6,
+        modality_dropout_prob: float = 0.1,
     ):
         super(MultiTaskICUModel, self).__init__()
 
@@ -349,6 +376,8 @@ class MultiTaskICUModel(nn.Module):
 
         # Combined embedding dimension
         combined_dim = d_model + static_output_dim
+        self.modality_dropout_prob = modality_dropout_prob
+        self.fusion = ModalityGatedFusion(d_model, static_output_dim)
 
         # Task-specific decoders
         self.mortality_decoder = MortalityDecoder(input_dim=combined_dim, dropout=dropout)
@@ -382,10 +411,26 @@ class MultiTaskICUModel(nn.Module):
         temporal_pooled = self.temporal_pooling(temporal_encoded)  # (B, d_model)
 
         # Encode static features
+        if x_static is None:
+            static_dim = self.static_encoder.network[0].in_features
+            x_static = torch.zeros(
+                x_temporal.size(0),
+                static_dim,
+                dtype=x_temporal.dtype,
+                device=x_temporal.device,
+            )
         static_encoded = self.static_encoder(x_static)  # (B, static_output_dim)
 
-        # Combine embeddings
-        combined = torch.cat([temporal_pooled, static_encoded], dim=1)  # (B, d_model + static_output_dim)
+        # Stochastic modality dropout during training to improve robustness.
+        if self.training and self.modality_dropout_prob > 0:
+            if torch.rand(1, device=temporal_pooled.device).item() < self.modality_dropout_prob:
+                if torch.rand(1, device=temporal_pooled.device).item() < 0.5:
+                    temporal_pooled = torch.zeros_like(temporal_pooled)
+                else:
+                    static_encoded = torch.zeros_like(static_encoded)
+
+        # Learn modality weighting before task decoding.
+        combined = self.fusion(temporal_pooled, static_encoded)
 
         # Task predictions
         outputs = {
@@ -427,16 +472,28 @@ class MultiTaskICUModel(nn.Module):
 class MultiTaskLoss(nn.Module):
     """Combined loss for all 5 prediction tasks"""
 
-    def __init__(self, device="cpu"):
+    def __init__(self, device="cpu", use_focal_for_mortality: bool = True, focal_gamma: float = 2.0, focal_alpha: float = 0.75):
         super(MultiTaskLoss, self).__init__()
         self.device = device
+        self.use_focal_for_mortality = use_focal_for_mortality
+        self.focal_gamma = focal_gamma
+        self.focal_alpha = focal_alpha
 
         # Task-specific criteria
-        self.mortality_loss = nn.BCELoss()  # Binary cross-entropy
+        self.mortality_loss = nn.BCEWithLogitsLoss()  # Binary cross-entropy (logits)
         self.risk_loss = nn.CrossEntropyLoss()  # Categorical cross-entropy
-        self.outcomes_loss = nn.BCELoss()  # Multi-label binary cross-entropy
+        self.outcomes_loss = nn.BCEWithLogitsLoss()  # Multi-label BCE (logits)
         self.response_loss = nn.MSELoss()  # Mean squared error
         self.los_loss = nn.SmoothL1Loss()  # Smooth L1 for count regression
+
+    def _focal_bce_with_logits(self, logits: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
+        """Binary focal loss on logits for class-imbalanced mortality prediction."""
+        bce = F.binary_cross_entropy_with_logits(logits, targets, reduction="none")
+        probs = torch.sigmoid(logits)
+        pt = probs * targets + (1.0 - probs) * (1.0 - targets)
+        alpha_t = self.focal_alpha * targets + (1.0 - self.focal_alpha) * (1.0 - targets)
+        focal = alpha_t * ((1.0 - pt) ** self.focal_gamma) * bce
+        return focal.mean()
 
     def forward(
         self,
@@ -460,14 +517,20 @@ class MultiTaskLoss(nn.Module):
 
         # Mortality loss (binary)
         if "mortality" in targets:
-            loss_dict["mortality"] = self.mortality_loss(
-                outputs["mortality"], targets["mortality"].unsqueeze(1).float()
-            )
+            mortality_targets = targets["mortality"].unsqueeze(1).float()
+            if self.use_focal_for_mortality:
+                loss_dict["mortality"] = self._focal_bce_with_logits(
+                    outputs["mortality"], mortality_targets
+                )
+            else:
+                loss_dict["mortality"] = self.mortality_loss(
+                    outputs["mortality"], mortality_targets
+                )
 
         # Risk stratification loss (4-class)
         if "risk" in targets:
             loss_dict["risk"] = self.risk_loss(
-                outputs["risk"], targets["risk"].long()
+                outputs["risk"], targets["risk"].long().view(-1)
             )
 
         # Clinical outcomes loss (multi-label)
@@ -575,6 +638,20 @@ if __name__ == "__main__":
     print(f"\nOutput shapes:")
     for task, output in outputs.items():
         print(f"  {task:20} {output.shape}")
+
+    # Convert logits to probabilities for preview.
+    output_probs = {
+        "mortality": torch.sigmoid(outputs["mortality"]),
+        "risk": torch.softmax(outputs["risk"], dim=1),
+        "outcomes": torch.sigmoid(outputs["outcomes"]),
+        "response": outputs["response"],
+        "total_los": outputs["total_los"],
+        "remaining_los": outputs["remaining_los"],
+        "discharge_prob": outputs["discharge_prob"],
+    }
+    print(f"\nProbability preview:")
+    print(f"  mortality mean prob: {output_probs['mortality'].mean().item():.4f}")
+    print(f"  risk row sums (first 3): {output_probs['risk'][:3].sum(dim=1).detach().cpu().numpy()}")
 
     # Test loss computation
     print(f"\nTesting loss computation...")

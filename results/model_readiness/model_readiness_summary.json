@@ -1,0 +1,58 @@
+{
+  "n_patients": 2373,
+  "event_rate": 0.08596713021491782,
+  "n_features": 18,
+  "feature_preview": [
+    "sao2_mean",
+    "sao2_std",
+    "sao2_min",
+    "sao2_max",
+    "sao2_median",
+    "heartrate_mean",
+    "heartrate_std",
+    "heartrate_min",
+    "heartrate_max",
+    "heartrate_median",
+    "respiration_mean",
+    "respiration_std",
+    "respiration_min",
+    "respiration_max",
+    "respiration_median",
+    "hourly_rows",
+    "age",
+    "icu_los_days"
+  ],
+  "best_brier_model": "logreg_isotonic_calibrated",
+  "metrics": [
+    {
+      "model": "logreg_isotonic_calibrated",
+      "roc_auc": 0.8025735942182267,
+      "pr_auc": 0.3643003406832438,
+      "brier": 0.06707698959639449,
+      "ece_10": 0.024025045977008178,
+      "best_threshold": 0.13278409328280927,
+      "sensitivity_at_best_threshold": 0.639344262295082,
+      "specificity_at_best_threshold": 0.8187403993855606
+    },
+    {
+      "model": "logreg_sigmoid_calibrated",
+      "roc_auc": 0.8052176978670897,
+      "pr_auc": 0.35409947534694003,
+      "brier": 0.06721445081290003,
+      "ece_10": 0.01968217416975885,
+      "best_threshold": 0.09851187886663709,
+      "sensitivity_at_best_threshold": 0.6885245901639344,
+      "specificity_at_best_threshold": 0.7818740399385561
+    },
+    {
+      "model": "logreg_raw",
+      "roc_auc": 0.8031527788270253,
+      "pr_auc": 0.35635913456785306,
+      "brier": 0.16986482646696227,
+      "ece_10": 0.27384884768050693,
+      "best_threshold": 0.516071838839312,
+      "sensitivity_at_best_threshold": 0.6885245901639344,
+      "specificity_at_best_threshold": 0.7772657450076805
+    }
+  ]
+}

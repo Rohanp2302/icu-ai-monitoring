@@ -1,0 +1,28 @@
+{
+  "timestamp": "2026-04-07T23:28:13.204619",
+  "phase": "Phase 1 - Feature Engineering",
+  "vital_features": {
+    "rows": 2799,
+    "columns": 30,
+    "missing_pct": 59.17351435036322
+  },
+  "lab_features": {
+    "rows": 326,
+    "columns": 10,
+    "missing_pct": 31.503067484662576
+  },
+  "med_features": {
+    "rows": 93,
+    "columns": 5
+  },
+  "organ_scores": {
+    "rows": 100,
+    "columns": 10
+  },
+  "windows_24h": {
+    "rows": 2799,
+    "columns": 48,
+    "mortality_rate": 2.750982493747767
+  },
+  "total_features": 46
+}

@@ -1,0 +1,87 @@
+{
+  "fold_0": {
+    "metrics": {
+      "mortality_auc": 0.6978316326530613,
+      "mortality_best_threshold": 0.3,
+      "mortality_sensitivity": 0.9642857141135204,
+      "mortality_specificity": 0.30952380951643993,
+      "mortality_f1": 0.27,
+      "risk_f1": 0.7375831205228599,
+      "los_mae": 0.48209309577941895
+    },
+    "losses": {
+      "mortality": 0.04574282583780587,
+      "risk": 0.6015971228480339,
+      "los": 0.17255221121013165,
+      "total": 0.14121982362121344
+    }
+  },
+  "fold_1": {
+    "metrics": {
+      "mortality_auc": 0.6893424036281178,
+      "mortality_best_threshold": 0.3,
+      "mortality_sensitivity": 0.9142857140244898,
+      "mortality_specificity": 0.33786848071796216,
+      "mortality_f1": 0.17827298050139276,
+      "risk_f1": 0.7870686868656948,
+      "los_mae": 0.34394702315330505
+    },
+    "losses": {
+      "mortality": 0.036253460217267275,
+      "risk": 0.5283570177853107,
+      "los": 0.0796557953581214,
+      "total": 0.10922325402498245
+    }
+  },
+  "fold_2": {
+    "metrics": {
+      "mortality_auc": 0.6993427704752275,
+      "mortality_best_threshold": 0.39999999999999997,
+      "mortality_sensitivity": 0.4347826086011342,
+      "mortality_specificity": 0.746511627889616,
+      "mortality_f1": 0.22857142857142856,
+      "risk_f1": 0.8308516312592842,
+      "los_mae": 0.3799162209033966
+    },
+    "losses": {
+      "mortality": 0.03912875312380493,
+      "risk": 0.5277012847363949,
+      "los": 0.1019323393702507,
+      "total": 0.11350978165864944
+    }
+  },
+  "fold_3": {
+    "metrics": {
+      "mortality_auc": 0.807681525091113,
+      "mortality_best_threshold": 0.35,
+      "mortality_sensitivity": 0.7560975607911957,
+      "mortality_specificity": 0.7517241379137535,
+      "mortality_f1": 0.34444444444444444,
+      "risk_f1": 0.8019227327607215,
+      "los_mae": 0.46356964111328125
+    },
+    "losses": {
+      "mortality": 0.032796095591038465,
+      "risk": 0.47824501618742943,
+      "los": 0.14378562686033547,
+      "total": 0.11156041733920574
+    }
+  },
+  "fold_4": {
+    "metrics": {
+      "mortality_auc": 0.6467120181405895,
+      "mortality_best_threshold": 0.35,
+      "mortality_sensitivity": 0.5714285712653061,
+      "mortality_specificity": 0.5736961451117075,
+      "mortality_f1": 0.1646090534979424,
+      "risk_f1": 0.8672447421382461,
+      "los_mae": 0.5248817205429077
+    },
+    "losses": {
+      "mortality": 0.03536501317285001,
+      "risk": 0.485175259411335,
+      "los": 0.20376961398869753,
+      "total": 0.12385865487158298
+    }
+  }
+}

@@ -14,10 +14,23 @@ import json
 from typing import Dict, List, Tuple
 from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import roc_auc_score, f1_score, accuracy_score, precision_score, recall_score
+from sklearn.preprocessing import StandardScaler
 import time
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+
+def _best_f1_threshold(y_true: np.ndarray, y_prob: np.ndarray) -> Tuple[float, float]:
+    """Select threshold that maximizes F1 on validation probabilities."""
+    best_thr = 0.5
+    best_f1 = 0.0
+    for thr in np.arange(0.1, 0.91, 0.05):
+        f1 = f1_score(y_true, (y_prob > thr).astype(int), zero_division=0)
+        if f1 > best_f1:
+            best_f1 = f1
+            best_thr = float(thr)
+    return best_thr, best_f1
 
 
 class OptimizerComparator:
@@ -59,7 +72,11 @@ class OptimizerComparator:
             optimizer, mode='max', factor=0.5, patience=3, verbose=False
         )
 
-        criterion = nn.BCELoss()
+        train_targets = train_loader.dataset.y.detach().cpu().numpy()
+        positives = max(np.sum(train_targets == 1), 1)
+        negatives = max(np.sum(train_targets == 0), 1)
+        pos_weight = torch.tensor([negatives / positives], dtype=torch.float32, device=self.device)
+        criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
         model = model.to(self.device)
 
         best_auc = 0.0
@@ -77,8 +94,8 @@ class OptimizerComparator:
                 y_batch = y_batch.to(self.device).unsqueeze(1)
 
                 optimizer.zero_grad()
-                outputs = model(X_batch)
-                loss = criterion(outputs, y_batch)
+                logits = model(X_batch)
+                loss = criterion(logits, y_batch)
 
                 loss.backward()
                 torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
@@ -99,8 +116,8 @@ class OptimizerComparator:
                     X_batch = X_batch.to(self.device)
                     y_batch = y_batch.to(self.device)
 
-                    outputs = model(X_batch).cpu().numpy().flatten()
-                    val_preds.extend(outputs)
+                    probs = torch.sigmoid(model(X_batch)).cpu().numpy().flatten()
+                    val_preds.extend(probs)
                     val_targets.extend(y_batch.cpu().numpy())
 
             val_preds = np.array(val_preds)
@@ -108,7 +125,7 @@ class OptimizerComparator:
 
             try:
                 val_auc = roc_auc_score(val_targets, val_preds)
-                val_f1 = f1_score(val_targets, (val_preds > 0.5).astype(int))
+                _, val_f1 = _best_f1_threshold(val_targets, val_preds)
             except:
                 val_auc = 0.0
                 val_f1 = 0.0
@@ -147,14 +164,17 @@ class OptimizerComparator:
         logger.info("="*70)
         logger.info("OPTIMIZER COMPARISON - ICU MORTALITY PREDICTION")
         logger.info("="*70)
-        logger.info(f"Dataset: {len(X)} samples, {X.shape[1]} features")
+        logger.info(f"Dataset: {len(X)} samples, sequence={X.shape[1]}, features={X.shape[2]}")
         logger.info(f"Positive class: {y.mean():.1%}")
         logger.info(f"Cross-validation: {n_folds}-fold")
         logger.info(f"Optimizers: {[cfg['name'] for cfg in optimizer_configs]}")
         logger.info("="*70)
 
-        # Import here to avoid circular dependency
-        from dl_icu_model import ICUDataset
+        # Import here to avoid circular dependency issues when executed as a module/script
+        try:
+            from src.models.dl_icu_model import ICUDataset
+        except ImportError:
+            from .dl_icu_model import ICUDataset
 
         skf = StratifiedKFold(n_splits=n_folds, shuffle=True, random_state=42)
 
@@ -169,8 +189,19 @@ class OptimizerComparator:
             X_train, X_val = X[train_idx], X[val_idx]
             y_train, y_val = y[train_idx], y[val_idx]
 
-            train_dataset = ICUDataset(X_train, y_train)
-            val_dataset = ICUDataset(X_val, y_val)
+            # Fit scaler on train fold only to avoid leakage.
+            fold_scaler = StandardScaler()
+            n_train, seq_len, n_feat = X_train.shape
+            n_val = X_val.shape[0]
+
+            X_train_2d = X_train.reshape(-1, n_feat)
+            X_val_2d = X_val.reshape(-1, n_feat)
+
+            X_train_scaled = fold_scaler.fit_transform(X_train_2d).reshape(n_train, seq_len, n_feat)
+            X_val_scaled = fold_scaler.transform(X_val_2d).reshape(n_val, seq_len, n_feat)
+
+            train_dataset = ICUDataset(X_train_scaled, y_train)
+            val_dataset = ICUDataset(X_val_scaled, y_val)
 
             train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
             val_loader = DataLoader(val_dataset, batch_size=64, shuffle=False)
@@ -180,7 +211,7 @@ class OptimizerComparator:
                 logger.info(f"  Testing {opt_name}...")
 
                 # Create fresh model for each optimizer
-                model = self.model_class(input_size=X.shape[1], hidden_size=128, num_layers=2)
+                model = self.model_class(input_size=X.shape[2], hidden_size=128, num_layers=2)
 
                 start_time = time.time()
                 fold_result = self.train_fold(

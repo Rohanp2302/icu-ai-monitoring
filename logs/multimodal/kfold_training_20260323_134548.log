@@ -1,0 +1,29 @@
+[2026-03-23 13:45:48,829] KFoldTrainer - INFO - 
+================================================================================
+[2026-03-23 13:45:48,834] KFoldTrainer - INFO - FOLD 1/2
+[2026-03-23 13:45:48,834] KFoldTrainer - INFO - ================================================================================
+[2026-03-23 13:45:55,118] KFoldTrainer - INFO - Epoch   1 | Train Loss: 0.4777 | Val Loss: 0.4046 | LR: 1.00e-03
+[2026-03-23 13:45:55,136] KFoldTrainer - INFO - [SAVE] Best model at epoch 1
+[2026-03-23 13:45:55,490] KFoldTrainer - INFO - 
+[TEST] Fold 1 Results:
+[2026-03-23 13:45:55,490] KFoldTrainer - INFO -   Mortality AUC: 0.6442
+[2026-03-23 13:45:55,490] KFoldTrainer - INFO -   Risk F1: 0.3662
+[2026-03-23 13:45:55,496] KFoldTrainer - INFO - 
+================================================================================
+[2026-03-23 13:45:55,496] KFoldTrainer - INFO - FOLD 2/2
+[2026-03-23 13:45:55,496] KFoldTrainer - INFO - ================================================================================
+[2026-03-23 13:45:59,683] KFoldTrainer - INFO - Epoch   1 | Train Loss: 0.4571 | Val Loss: 0.3694 | LR: 1.00e-03
+[2026-03-23 13:45:59,698] KFoldTrainer - INFO - [SAVE] Best model at epoch 1
+[2026-03-23 13:46:00,070] KFoldTrainer - INFO - 
+[TEST] Fold 2 Results:
+[2026-03-23 13:46:00,072] KFoldTrainer - INFO -   Mortality AUC: 0.6308
+[2026-03-23 13:46:00,072] KFoldTrainer - INFO -   Risk F1: 0.4488
+[2026-03-23 13:46:00,075] KFoldTrainer - INFO - 
+================================================================================
+[2026-03-23 13:46:00,075] KFoldTrainer - INFO - K-FOLD SUMMARY
+[2026-03-23 13:46:00,075] KFoldTrainer - INFO - ================================================================================
+[2026-03-23 13:46:00,075] KFoldTrainer - INFO - Mortality AUC: 0.6375 +/- 0.0067
+[2026-03-23 13:46:00,075] KFoldTrainer - INFO - Risk F1:       0.4075 +/- 0.0413
+[2026-03-23 13:46:00,077] KFoldTrainer - INFO - 
+[SAVE] Results saved to logs\multimodal\kfold_results_20260323_134600.json
+[2026-03-23 13:46:00,083] KFoldTrainer - INFO - [SAVE] Fold summary saved to logs\multimodal\kfold_summary_20260323_134600.csv

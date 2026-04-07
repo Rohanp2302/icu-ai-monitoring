@@ -1,0 +1,27 @@
+{
+  "optimal_threshold": 0.44,
+  "objective": "f1",
+  "test_set_size": 2400,
+  "test_set_mortality_rate": 0.14208333333333334,
+  "results": {
+    "f1": {
+      "threshold": 0.44,
+      "sensitivity": 0.7214076246334311,
+      "specificity": 0.7892180670228266,
+      "precision": 0.36176470588235293,
+      "f1": 0.48188050930460335,
+      "deaths_caught": 246,
+      "total_deaths": 341
+    },
+    "balanced": {
+      "threshold": 0.47000000000000003,
+      "sensitivity": 0.6715542521994134,
+      "specificity": 0.8037882467217096,
+      "precision": 0.3617693522906793,
+      "f1": 0.4702258726899384,
+      "deaths_caught": 229,
+      "total_deaths": 341
+    }
+  },
+  "analysis_date": "2026-04-07 15:39:42.099730"
+}

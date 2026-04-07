@@ -1,0 +1,45 @@
+{
+  "timestamp": "2026-04-07T23:43:11.349635",
+  "phase": "Data Quality Improvements",
+  "original_dataset": {
+    "shape": [
+      2799,
+      48
+    ],
+    "missing_features": 0,
+    "avg_missing_pct": 45.712173913043465
+  },
+  "after_sparse_removal": {
+    "shape": [
+      2799,
+      31
+    ],
+    "features_removed": 16,
+    "features_kept": 30
+  },
+  "after_imputation": {
+    "missing_values": 0,
+    "imputation_methods": [
+      "forward_fill",
+      "mean_imputation",
+      "median_imputation"
+    ]
+  },
+  "after_normalization": {
+    "shape": [
+      2799,
+      32
+    ],
+    "feature_mean": 2.5385592560204108e-18,
+    "feature_std": 0.666785788737959,
+    "scaled": true
+  },
+  "final_dataset": {
+    "total_windows": 2799,
+    "total_features": 30,
+    "mortality_cases": 77,
+    "mortality_rate": 0.02750982493747767,
+    "non_mortality_cases": 2722,
+    "feature_quality": "Ready for deep learning"
+  }
+}

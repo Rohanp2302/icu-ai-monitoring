@@ -1,0 +1,24 @@
+{
+  "input_dim": 6,
+  "static_dim": 8,
+  "seq_len": 24,
+  "n_models": 5,
+  "temporal_features": [
+    "heartrate",
+    "respiration",
+    "sao2",
+    "temperature",
+    "systemicsystolic",
+    "systemicdiastolic"
+  ],
+  "static_features": [
+    "age_num",
+    "icu_los_days",
+    "gender_num",
+    "eth_African American",
+    "eth_Caucasian",
+    "eth_Hispanic",
+    "eth_Other",
+    "eth_Other/Unknown"
+  ]
+}

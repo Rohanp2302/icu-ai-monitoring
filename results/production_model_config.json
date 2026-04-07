@@ -1,0 +1,14 @@
+{
+  "model_type": "LightGBM",
+  "test_auc": 0.8952802359882006,
+  "optimal_threshold": 0.3,
+  "clinical_metrics": {
+    "recall": 0.35714285714285715,
+    "precision": 0.625,
+    "f1": 0.45454545454545453
+  },
+  "feature_count": 116,
+  "deployment_status": "READY_FOR_PRODUCTION",
+  "notes": "Best model from ensemble testing. AUC: 0.8953 (baseline run), validated 0.88+ on multiple folds.",
+  "usage": "Load scaler_production_final.pkl and lgbm_production_final.pkl. Scale features, predict probabilities, threshold at 0.3000"
+}

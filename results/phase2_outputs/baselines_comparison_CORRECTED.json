@@ -1,0 +1,31 @@
+{
+  "Logistic Regression": {
+    "train_auc": 0.999912510936133,
+    "val_auc": 0.9439875527895087,
+    "test_auc": 0.951388888888889,
+    "test_f1": 0.8333333333333334,
+    "type": "linear baseline"
+  },
+  "Random Forest": {
+    "train_auc": 1.0,
+    "val_auc": 0.9984440986885975,
+    "test_auc": 0.9983660130718954,
+    "test_f1": 0.9090909090909091,
+    "type": "tree-based baseline"
+  },
+  "Clinical Heuristic": {
+    "train_auc": 0.921434820647419,
+    "val_auc": 0.8755278950877973,
+    "test_auc": 0.8680555555555555,
+    "test_f1": 0.06153846153846154,
+    "type": "domain rule-based"
+  },
+  "Ensemble (3-path)": {
+    "train_auc": 1.0,
+    "val_auc": 0.9233162925094465,
+    "test_auc": 0.9391339869281046,
+    "test_f1": 0.9090909090909091,
+    "type": "neural network ensemble",
+    "parameters": 21393
+  }
+}

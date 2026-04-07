@@ -48,7 +48,8 @@ def main():
 
     logger.info(f"\nDataset Summary:")
     logger.info(f"  Samples: {len(X):,}")
-    logger.info(f"  Features: {X.shape[1]}")
+    logger.info(f"  Sequence length: {X.shape[1]}")
+    logger.info(f"  Features: {X.shape[2]}")
     logger.info(f"  Mortality rate: {y.mean():.1%}")
     logger.info(f"  Class distribution: Negative={np.sum(y==0):,}, Positive={np.sum(y==1):,}")
 

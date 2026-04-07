@@ -1,0 +1,25 @@
+{
+  "model_type": "LightGBM (Bayesian Optimization)",
+  "cv_auc": 0.8795687486306925,
+  "test_auc": 0.8836915297092288,
+  "eval_metrics": {
+    "threshold": 0.06495149920399354,
+    "recall": 0.8095238095238095,
+    "precision": 0.30357142857142855,
+    "f1": 0.44155844155844154
+  },
+  "best_params": {
+    "n_estimators": 220,
+    "max_depth": 10,
+    "num_leaves": 18,
+    "learning_rate": 0.04723674385963759,
+    "subsample": 0.7135681866731614,
+    "colsample_bytree": 0.7975990992289793,
+    "reg_alpha": 0.777354579378964,
+    "reg_lambda": 0.8140470953216877,
+    "min_child_samples": 43
+  },
+  "deployment_ready": false,
+  "gap_to_90": 0.016308470290771204,
+  "status": "\u26a0\ufe0f  CLOSE: 0.8837"
+}

@@ -1,0 +1,11 @@
+{
+  "n_models": 5,
+  "model_names": [
+    "fold_0_best_model",
+    "fold_1_best_model",
+    "fold_2_best_model",
+    "fold_3_best_model",
+    "fold_4_best_model"
+  ],
+  "timestamp": "2026-03-23 14:03:42.705470"
+}

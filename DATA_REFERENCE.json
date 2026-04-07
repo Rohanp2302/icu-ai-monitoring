@@ -1,0 +1,476 @@
+{
+  "project": {
+    "name": "ICU Mortality Prediction",
+    "workspace": "e:/icu_project",
+    "date": "2026-04-07"
+  },
+  "datasets": {
+    "challenge2012": {
+      "description": "Physionet Challenge 2012 Dataset",
+      "total_patients": 12000,
+      "sets": {
+        "set_a": {
+          "patients": 4000,
+          "files": 4000,
+          "outcomes_file": "Outcomes-a.txt"
+        },
+        "set_b": {
+          "patients": 4000,
+          "files": 4000,
+          "outcomes_file": "Outcomes-b.txt"
+        },
+        "set_c": {
+          "patients": 4000,
+          "files": 4000,
+          "outcomes_file": "Outcomes-c.txt"
+        }
+      },
+      "file_format": "Individual CSV files per patient (Time, Parameter, Value)",
+      "time_granularity": "HH:MM from ICU admission",
+      "time_interval_minutes_typical": "7-37 (irregular)",
+      "outcome_field": "In-hospital_death",
+      "outcome_values": [0, 1],
+      "outcome_rate": {
+        "mortality_percent": 4.5,
+        "note": "Estimated ~4-5% across sets"
+      },
+      "key_scores": ["SAPS-I", "SOFA", "Length_of_stay"],
+      "limitations": [
+        "Sparse vital data",
+        "Many -1 (missing) values",
+        "No lab values",
+        "No medication records",
+        "Only organ failure scores, not components"
+      ]
+    },
+    "eicu": {
+      "full_name": "eICU Collaborative Research Database",
+      "total_patients": 2520,
+      "total_records_all_tables": 4605753,
+      "total_size_mb": 308.9,
+      "mortality_rate": {
+        "deaths": 126,
+        "alive": 2392,
+        "mortality_percent": 5.0
+      },
+      "outcome_field": "unitdischargestatus",
+      "outcome_values": ["Alive", "Expired", "NaN"],
+      "tables": {
+        "patient": {
+          "rows": 2520,
+          "columns": 29,
+          "size_mb": 0.6,
+          "description": "Demographics, admission, discharge",
+          "key_columns": [
+            "patientunitstayid",
+            "gender",
+            "age",
+            "ethnicity",
+            "unitdischargestatus",
+            "admissionweight",
+            "dischargeweight"
+          ]
+        },
+        "vitalPeriodic": {
+          "rows": 1634960,
+          "columns": 19,
+          "size_mb": 83.2,
+          "description": "Dense periodic vital signs",
+          "time_unit": "minutes from ICU admission",
+          "time_interval_minutes": 2.3,
+          "records_per_patient_min": 1,
+          "records_per_patient_max": 13150,
+          "records_per_patient_mean": 688.4,
+          "vital_parameters": [
+            "temperature",
+            "sao2",
+            "heartrate",
+            "respiration",
+            "cvp",
+            "etco2",
+            "systemicsystolic",
+            "systemicdiastolic",
+            "systemicmean",
+            "pasystolic",
+            "padiastolic",
+            "pamean",
+            "st1",
+            "st2",
+            "st3",
+            "icp"
+          ]
+        },
+        "lab": {
+          "rows": 434660,
+          "columns": 10,
+          "size_mb": 25.0,
+          "description": "Laboratory test results",
+          "unique_lab_types": 147,
+          "time_unit": "minutes from ICU admission",
+          "lab_categories": {
+            "blood_chemistry": [
+              "BUN",
+              "Creatinine",
+              "Glucose",
+              "Albumin",
+              "Bilirubin",
+              "ALT (SGPT)",
+              "AST (SGOT)",
+              "CPK",
+              "Sodium",
+              "pH",
+              "Base Deficit",
+              "Base Excess",
+              "pao2",
+              "pco2"
+            ],
+            "hematology": [
+              "WBC",
+              "Hematocrit",
+              "-bands",
+              "-basos",
+              "-eos",
+              "-lymphs",
+              "-monos",
+              "-polys",
+              "Carboxyhemoglobin"
+            ],
+            "cardiac": [
+              "BNP",
+              "Troponin",
+              "CRP",
+              "CPK-MB"
+            ],
+            "microbiology": [
+              "Clostridium difficile toxin A+B"
+            ],
+            "drug_levels": [
+              "Digoxin",
+              "Carbamazepine",
+              "Amikacin - peak",
+              "Amikacin - trough"
+            ]
+          }
+        },
+        "medication": {
+          "rows": 75604,
+          "columns": 15,
+          "size_mb": 6.1,
+          "description": "Medications administered during ICU stay",
+          "time_unit": "minutes from ICU admission",
+          "key_columns": [
+            "drugname",
+            "dosage",
+            "routeadmin",
+            "frequency",
+            "drugstartoffset",
+            "drugstopoffset",
+            "drugordercancelled"
+          ]
+        },
+        "admissiondrug": {
+          "rows": 7417,
+          "columns": 14,
+          "size_mb": 2.5,
+          "description": "Pre-admission medications (home medications)",
+          "key_difference_from_medication": "Recorded pre-ICU vs in-ICU administration"
+        },
+        "apacheApsVar": {
+          "rows": 2205,
+          "columns": 26,
+          "size_mb": 0.2,
+          "description": "SOFA components and Apache Physiology Score variables",
+          "sofa_components": [
+            "eyes",
+            "motor",
+            "verbal",
+            "vent",
+            "dialysis",
+            "intubated"
+          ],
+          "aps_variables": [
+            "temperature",
+            "heartrate",
+            "meanbp",
+            "respiratoryrate",
+            "sodium",
+            "ph",
+            "pao2",
+            "pco2",
+            "hematocrit",
+            "wbc",
+            "creatinine",
+            "bun",
+            "glucose",
+            "bilirubin",
+            "albumin",
+            "fio2",
+            "meds",
+            "urine"
+          ]
+        },
+        "nurseCharting": {
+          "rows": 1477163,
+          "columns": 8,
+          "size_mb": 106.7,
+          "description": "Nursing documentation and vital signs",
+          "time_unit": "minutes from ICU admission"
+        },
+        "diagnosis": {
+          "rows": 24978,
+          "columns": 7,
+          "size_mb": 2.5,
+          "description": "ICD-9 diagnoses with severity/priority",
+          "key_columns": [
+            "diagnosisstring",
+            "icd9code",
+            "diagnosispriority",
+            "activeupondischarge"
+          ]
+        },
+        "vitalAperiodic": {
+          "rows": 274088,
+          "columns": 13,
+          "size_mb": 10.2,
+          "description": "Non-periodic/manual vital entries"
+        },
+        "intakeOutput": {
+          "rows": 100466,
+          "columns": 12,
+          "size_mb": 15.0,
+          "description": "Fluid intake and output records"
+        },
+        "infusiondrug": {
+          "rows": 38256,
+          "columns": 9,
+          "size_mb": 2.1,
+          "description": "IV medication infusions"
+        },
+        "treatment": {
+          "rows": 38290,
+          "columns": 5,
+          "size_mb": 3.4,
+          "description": "Treatments administered"
+        },
+        "physicalExam": {
+          "rows": 84058,
+          "columns": 6,
+          "size_mb": 11.9,
+          "description": "Physical examination findings"
+        },
+        "nurseAssessment": {
+          "rows": 91589,
+          "columns": 8,
+          "size_mb": 13.4,
+          "description": "Nursing assessments and scores"
+        },
+        "respiratoryCharting": {
+          "rows": 176089,
+          "columns": 7,
+          "size_mb": 10.2,
+          "description": "Respiratory assessment records"
+        },
+        "respiratoryCare": {
+          "rows": 5436,
+          "columns": 34,
+          "size_mb": 0.5,
+          "description": "Mechanical ventilation parameters"
+        },
+        "note": {
+          "rows": 24758,
+          "columns": 8,
+          "size_mb": 3.4,
+          "description": "Clinical notes and documentation"
+        },
+        "pastHistory": {
+          "rows": 12109,
+          "columns": 8,
+          "size_mb": 2.0,
+          "description": "Patient past medical history"
+        },
+        "carePlanGeneral": {
+          "rows": 33148,
+          "columns": 6,
+          "size_mb": 1.9,
+          "description": "General care planning records"
+        },
+        "admissionDx": {
+          "rows": 7578,
+          "columns": 6,
+          "size_mb": 1.1,
+          "description": "Admission diagnoses"
+        },
+        "allergy": {
+          "rows": 2475,
+          "columns": 13,
+          "size_mb": 0.2,
+          "description": "Patient allergies"
+        },
+        "apachePatientResult": {
+          "rows": 3676,
+          "columns": 23,
+          "size_mb": 0.6,
+          "description": "Apache severity scores and predictions"
+        },
+        "apachePredVar": {
+          "rows": 2205,
+          "columns": 51,
+          "size_mb": 0.3,
+          "description": "Apache predictor variables"
+        },
+        "carePlanGoal": {
+          "rows": 3633,
+          "columns": 7,
+          "size_mb": 0.2,
+          "description": "Care plan goals"
+        },
+        "carePlanCareProvider": {
+          "rows": 5627,
+          "columns": 8,
+          "size_mb": 0.3,
+          "description": "Care provider assignments"
+        },
+        "carePlanInfectiousDisease": {
+          "rows": 112,
+          "columns": 8,
+          "size_mb": 0.0,
+          "description": "Infection-specific care planning"
+        },
+        "carePlanEOL": {
+          "rows": 15,
+          "columns": 5,
+          "size_mb": 0.0,
+          "description": "End-of-life care planning"
+        },
+        "microLab": {
+          "rows": 342,
+          "columns": 7,
+          "size_mb": 0.0,
+          "description": "Microbiology lab results"
+        },
+        "customLab": {
+          "rows": 30,
+          "columns": 7,
+          "size_mb": 0.0,
+          "description": "Custom laboratory tests"
+        },
+        "hospital": {
+          "rows": 186,
+          "columns": 4,
+          "size_mb": 0.0,
+          "description": "Hospital metadata"
+        }
+      }
+    }
+  },
+  "comparison": {
+    "eicu_advantages": [
+      "1.63M dense vital measurements (vs sparse Challenge2012)",
+      "434K lab test results with 147 unique types",
+      "75K medication administration records",
+      "Detailed SOFA component values",
+      "Comprehensive organ dysfunction data",
+      "Medication timing and duration tracking",
+      "ICD-9 diagnoses with codes",
+      "Clinical notes and nursing documentation",
+      "Pre-admission medication history",
+      "Patient allergy information",
+      "1.4M nursing chart entries"
+    ],
+    "challenge2012_advantages": [
+      "Larger patient cohort (12K vs 2.5K)",
+      "Simpler standardized structure",
+      "Three distinct sets for training/validation/testing",
+      "Normalized SAPS-I score for severity",
+      "Established benchmark for model comparison"
+    ],
+    "recommended_primary_dataset": "eICU",
+    "recommended_validation_dataset": "Challenge2012",
+    "rationale": "eICU provides richer clinical context with dense time-series data, lab values, and medication records. Challenge2012 offers external validation with larger independent patient population."
+  },
+  "time_granularity": {
+    "eicu_vitals": {
+      "unit": "minutes from ICU admission",
+      "typical_interval": "2-3 minutes",
+      "total_records": 1634960
+    },
+    "eicu_labs": {
+      "unit": "minutes from ICU admission",
+      "typical_interval": "variable (4-24 hours between tests)",
+      "total_records": 434660
+    },
+    "challenge2012_vitals": {
+      "unit": "HH:MM from ICU admission",
+      "typical_interval": "7-37 minutes (irregular)",
+      "records_per_patient": "~40-100 (sparse)"
+    }
+  },
+  "mortality_outcome": {
+    "eicu": {
+      "field_name": "unitdischargestatus",
+      "possible_values": ["Alive", "Expired", "NaN"],
+      "total_deaths": 126,
+      "total_alive": 2392,
+      "mortality_rate_percent": 5.0
+    },
+    "challenge2012": {
+      "field_name": "In-hospital_death",
+      "possible_values": [0, 1],
+      "estimated_mortality_percent": "4-5",
+      "note": "Varies slightly across sets"
+    }
+  },
+  "organ_dysfunction_markers": {
+    "available": true,
+    "source_table": "apacheApsVar.csv",
+    "sofa_components": {
+      "neurological": ["eyes", "motor", "verbal"],
+      "respiratory": ["vent"],
+      "renal": ["dialysis"]
+    },
+    "apache_aps_variables": {
+      "cardiovascular": ["heartrate", "meanbp", "systolic", "diastolic"],
+      "respiratory": ["respiration", "pao2", "pco2", "fio2"],
+      "renal": ["creatinine", "bun", "dialysis"],
+      "hepatic": ["bilirubin"],
+      "hematologic": ["wbc", "hematocrit", "platelets"],
+      "metabolic": ["glucose", "sodium", "albumin", "ph"],
+      "neurological": ["eyes", "motor", "verbal"]
+    }
+  },
+  "feature_engineering_recommendations": {
+    "priority_1_vitals": [
+      "Heart rate trend",
+      "Blood pressure stability",
+      "Temperature deviation",
+      "Respiratory rate",
+      "Oxygen saturation"
+    ],
+    "priority_2_labs": [
+      "Organ function markers (creatinine, bilirubin, albumin)",
+      "Coagulation (PTT, INR)",
+      "Infection markers (WBC, bands)",
+      "Acid-base (pH, pco2, pao2)",
+      "Electrolytes (sodium, potassium)",
+      "Glucose control"
+    ],
+    "priority_3_sofa": [
+      "Glasgow Coma Scale (eyes/motor/verbal)",
+      "Mechanical ventilation requirement",
+      "Renal replacement therapy need"
+    ],
+    "priority_4_medications": [
+      "Medication count/complexity",
+      "Vasopressor use and timing",
+      "Sedation requirements",
+      "Antibiotic therapy",
+      "Time-to-treatment"
+    ],
+    "priority_5_diagnoses": [
+      "ICD-9 code grouping by severity",
+      "Sepsis indicators",
+      "Trauma/ARDS presence",
+      "Comorbidity burden"
+    ]
+  }
+}

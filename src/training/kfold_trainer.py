@@ -18,6 +18,23 @@ import json
 from typing import Dict, List, Tuple, Optional
 import logging
 from datetime import datetime
+import pandas as pd
+
+
+class MultiTaskTensorDataset(torch.utils.data.Dataset):
+    """Dataset for temporal/static features and multi-task targets."""
+
+    def __init__(self, x_temporal: torch.Tensor, x_static: torch.Tensor, y_dict: Dict[str, torch.Tensor]):
+        self.x_temporal = x_temporal
+        self.x_static = x_static
+        self.y_dict = y_dict
+
+    def __len__(self):
+        return self.x_temporal.size(0)
+
+    def __getitem__(self, idx):
+        y_item = {k: v[idx] for k, v in self.y_dict.items()}
+        return self.x_temporal[idx], self.x_static[idx], y_item
 
 
 class KFoldTrainer:
@@ -86,9 +103,33 @@ class KFoldTrainer:
 
         return logger
 
+    @staticmethod
+    def _sigmoid_np(x: np.ndarray) -> np.ndarray:
+        return 1.0 / (1.0 + np.exp(-x))
+
+    @staticmethod
+    def _find_best_threshold(y_true: np.ndarray, y_prob: np.ndarray) -> float:
+        best_thr = 0.5
+        best_j = -1.0
+        thresholds = np.linspace(0.05, 0.95, 19)
+        for thr in thresholds:
+            y_pred = (y_prob >= thr).astype(int)
+            tp = np.sum((y_pred == 1) & (y_true == 1))
+            tn = np.sum((y_pred == 0) & (y_true == 0))
+            fp = np.sum((y_pred == 1) & (y_true == 0))
+            fn = np.sum((y_pred == 0) & (y_true == 1))
+            tpr = tp / (tp + fn + 1e-8)
+            tnr = tn / (tn + fp + 1e-8)
+            j = tpr + tnr - 1.0
+            if j > best_j:
+                best_j = j
+                best_thr = float(thr)
+        return best_thr
+
     def create_fold_datasets(
         self,
         X: np.ndarray,
+        X_static: np.ndarray,
         y_dict: Dict[str, np.ndarray],
         fold_idx: int,
     ) -> Tuple[DataLoader, DataLoader, DataLoader]:
@@ -96,7 +137,8 @@ class KFoldTrainer:
         Create train/val/test dataloaders for a specific fold.
 
         Args:
-            X: (N, T, F) feature tensor
+            X: (N, T, F) temporal feature tensor
+            X_static: (N, S) static feature tensor
             y_dict: Dict of label arrays
             fold_idx: Fold index (0 to n_splits-1)
 
@@ -125,12 +167,13 @@ class KFoldTrainer:
             ("test", test_indices),
         ]:
             X_split = torch.from_numpy(X[indices]).float()
+            X_static_split = torch.from_numpy(X_static[indices]).float()
 
             y_split = {}
             for task_name, y in y_dict.items():
                 y_split[task_name] = torch.from_numpy(y[indices]).float()
 
-            datasets[split_name] = TensorDataset(X_split, y_split)
+            datasets[split_name] = MultiTaskTensorDataset(X_split, X_static_split, y_split)
 
         # Create dataloaders
         train_loader = DataLoader(
@@ -167,8 +210,9 @@ class KFoldTrainer:
         model.train()
         epoch_losses = {}
 
-        for batch_idx, (X_batch, y_batch) in enumerate(train_loader):
+        for batch_idx, (X_batch, X_static_batch, y_batch) in enumerate(train_loader):
             X_batch = X_batch.to(self.device)
+            X_static_batch = X_static_batch.to(self.device)
 
             # Move targets to device
             y_batch_device = {}
@@ -176,7 +220,7 @@ class KFoldTrainer:
                 y_batch_device[task] = y.to(self.device)
 
             # Forward pass
-            outputs = model(X_batch, None)  # TODO: Add static features
+            outputs = model(X_batch, X_static_batch)
 
             # Get task weights
             task_weights = torch.softmax(model.log_task_weights, dim=0)
@@ -196,6 +240,8 @@ class KFoldTrainer:
                     epoch_losses[task_name] = []
                 epoch_losses[task_name].append(task_loss.item())
 
+            epoch_losses.setdefault("total", []).append(total_loss.item())
+
         # Average losses
         avg_losses = {task: np.mean(losses) for task, losses in epoch_losses.items()}
         return avg_losses
@@ -205,6 +251,7 @@ class KFoldTrainer:
         model: nn.Module,
         val_loader: DataLoader,
         criterion,
+        mortality_threshold: Optional[float] = None,
     ) -> Tuple[Dict[str, float], Dict[str, float]]:
         """
         Evaluate model on validation or test set.
@@ -225,8 +272,9 @@ class KFoldTrainer:
         all_targets = {}
 
         with torch.no_grad():
-            for X_batch, y_batch in val_loader:
+            for X_batch, X_static_batch, y_batch in val_loader:
                 X_batch = X_batch.to(self.device)
+                X_static_batch = X_static_batch.to(self.device)
 
                 # Move targets to device
                 y_batch_device = {}
@@ -234,7 +282,7 @@ class KFoldTrainer:
                     y_batch_device[task] = y.to(self.device)
 
                 # Forward pass
-                outputs = model(X_batch, None)  # TODO: Add static features
+                outputs = model(X_batch, X_static_batch)
 
                 # Get task weights
                 task_weights = torch.softmax(model.log_task_weights, dim=0)
@@ -248,13 +296,28 @@ class KFoldTrainer:
                         epoch_losses[task_name] = []
                     epoch_losses[task_name].append(task_loss.item())
 
+                epoch_losses.setdefault("total", []).append(total_loss.item())
+
                 # Store outputs and targets for metrics
                 for task_name, output in outputs.items():
-                    if task_name not in all_outputs:
-                        all_outputs[task_name] = []
-                    all_outputs[task_name].append(output.cpu().numpy())
+                    if task_name in y_batch_device:
+                        if task_name not in all_outputs:
+                            all_outputs[task_name] = []
+                        all_outputs[task_name].append(output.cpu().numpy())
+                    elif task_name == "total_los" and "los" in y_batch_device:
+                        all_outputs.setdefault("total_los", []).append(output.cpu().numpy())
+                        all_targets.setdefault("total_los", []).append(
+                            y_batch_device["los"][:, 0:1].cpu().numpy()
+                        )
+                    elif task_name == "remaining_los" and "los" in y_batch_device:
+                        all_outputs.setdefault("remaining_los", []).append(output.cpu().numpy())
+                        all_targets.setdefault("remaining_los", []).append(
+                            y_batch_device["los"][:, 1:2].cpu().numpy()
+                        )
 
                 for task_name, target in y_batch_device.items():
+                    if task_name == "los":
+                        continue
                     if task_name not in all_targets:
                         all_targets[task_name] = []
                     all_targets[task_name].append(target.cpu().numpy())
@@ -263,11 +326,11 @@ class KFoldTrainer:
         avg_losses = {task: np.mean(losses) for task, losses in epoch_losses.items()}
 
         # Compute metrics
-        epoch_metrics = self._compute_metrics(all_outputs, all_targets)
+        epoch_metrics = self._compute_metrics(all_outputs, all_targets, mortality_threshold)
 
         return avg_losses, epoch_metrics
 
-    def _compute_metrics(self, outputs: Dict, targets: Dict) -> Dict[str, float]:
+    def _compute_metrics(self, outputs: Dict, targets: Dict, mortality_threshold: Optional[float] = None) -> Dict[str, float]:
         """
         Compute task-specific metrics.
 
@@ -288,15 +351,31 @@ class KFoldTrainer:
         )
 
         # Concatenate across batches
-        for task_name in outputs.keys():
+        for task_name in list(outputs.keys()):
+            if task_name not in targets:
+                continue
             outputs[task_name] = np.concatenate(outputs[task_name], axis=0)
             targets[task_name] = np.concatenate(targets[task_name], axis=0)
 
         # Mortality: AUC
         if "mortality" in outputs:
             try:
-                auc = roc_auc_score(targets["mortality"], outputs["mortality"])
+                y_true = targets["mortality"].reshape(-1).astype(int)
+                mortality_probs = self._sigmoid_np(outputs["mortality"].reshape(-1))
+                auc = roc_auc_score(y_true, mortality_probs)
                 metrics["mortality_auc"] = auc
+
+                best_thr = mortality_threshold if mortality_threshold is not None else self._find_best_threshold(y_true, mortality_probs)
+                y_pred_best = (mortality_probs >= best_thr).astype(int)
+                tp = np.sum((y_pred_best == 1) & (y_true == 1))
+                tn = np.sum((y_pred_best == 0) & (y_true == 0))
+                fp = np.sum((y_pred_best == 1) & (y_true == 0))
+                fn = np.sum((y_pred_best == 0) & (y_true == 1))
+
+                metrics["mortality_best_threshold"] = float(best_thr)
+                metrics["mortality_sensitivity"] = float(tp / (tp + fn + 1e-8))
+                metrics["mortality_specificity"] = float(tn / (tn + fp + 1e-8))
+                metrics["mortality_f1"] = float(f1_score(y_true, y_pred_best, zero_division=0))
             except:
                 metrics["mortality_auc"] = 0.0
 
@@ -304,16 +383,15 @@ class KFoldTrainer:
         if "risk" in outputs:
             try:
                 preds = np.argmax(outputs["risk"], axis=1)
-                f1 = f1_score(targets["risk"], preds, average="macro", zero_division=0)
+                f1 = f1_score(targets["risk"].reshape(-1), preds, average="macro", zero_division=0)
                 metrics["risk_f1"] = f1
             except:
                 metrics["risk_f1"] = 0.0
 
         # LOS: MAE
-        if "los" in outputs:
+        if "total_los" in outputs and "total_los" in targets:
             try:
-                # First column is total LOS
-                mae = mean_absolute_error(targets["los"][:, 0], outputs["los"].squeeze())
+                mae = mean_absolute_error(targets["total_los"].squeeze(), outputs["total_los"].squeeze())
                 metrics["los_mae"] = mae
             except:
                 metrics["los_mae"] = 0.0
@@ -355,7 +433,7 @@ class KFoldTrainer:
 
         optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=0.001)
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-            optimizer, mode="min", factor=0.5, patience=5, verbose=False
+            optimizer, mode="min", factor=0.5, patience=5
         )
 
         best_val_loss = float("inf")
@@ -379,8 +457,8 @@ class KFoldTrainer:
             # Log
             self.logger.info(
                 f"Epoch {epoch+1:3d} | "
-                f"Train Loss: {train_losses.get('mortality', 0):.4f} | "
-                f"Val Loss: {val_losses.get('mortality', 0):.4f} | "
+                f"Train Loss: {train_losses.get('total', 0):.4f} | "
+                f"Val Loss: {val_losses.get('total', 0):.4f} | "
                 f"LR: {optimizer.param_groups[0]['lr']:.2e}"
             )
 
@@ -414,11 +492,21 @@ class KFoldTrainer:
         model.load_state_dict(
             torch.load(self.checkpoint_dir / f"fold_{fold_idx}_best_model.pt")
         )
-        test_losses, test_metrics = self.evaluate(model, test_loader, criterion)
+        # Calibrate mortality threshold on validation set and carry to test.
+        _, val_metrics_for_threshold = self.evaluate(model, val_loader, criterion)
+        mortality_threshold = val_metrics_for_threshold.get("mortality_best_threshold", 0.5)
+
+        test_losses, test_metrics = self.evaluate(
+            model,
+            test_loader,
+            criterion,
+            mortality_threshold=mortality_threshold,
+        )
 
         fold_history["test_results"] = {
             "losses": test_losses,
             "metrics": test_metrics,
+            "calibrated_threshold": float(mortality_threshold),
         }
 
         self.logger.info(f"\n[TEST] Fold {fold_idx+1} Results:")
@@ -434,6 +522,7 @@ class KFoldTrainer:
     def run_kfold(
         self,
         X: np.ndarray,
+        X_static: np.ndarray,
         y_dict: Dict[str, np.ndarray],
         epochs: int = 50,
         lr: float = 0.001,
@@ -442,7 +531,8 @@ class KFoldTrainer:
         Run complete k-fold cross-validation.
 
         Args:
-            X: (N, T, F) feature tensor
+            X: (N, T, F) temporal feature tensor
+            X_static: (N, S) static feature tensor
             y_dict: Dict of label arrays
             epochs: Max epochs per fold
             lr: Learning rate
@@ -455,7 +545,7 @@ class KFoldTrainer:
         for fold_idx in range(self.n_splits):
             # Create fold datasets
             train_loader, val_loader, test_loader = self.create_fold_datasets(
-                X, y_dict, fold_idx
+                X, X_static, y_dict, fold_idx
             )
 
             # Train fold
@@ -512,5 +602,27 @@ class KFoldTrainer:
                 indent=2,
             )
         self.logger.info(f"\n[SAVE] Results saved to {results_file}")
+
+        # Save fold-level summary table for quick comparison.
+        summary_rows = []
+        for fold_name, fold_data in all_fold_results.items():
+            m = fold_data["test_results"]["metrics"]
+            summary_rows.append(
+                {
+                    "fold": fold_name,
+                    "mortality_auc": float(m.get("mortality_auc", np.nan)),
+                    "mortality_f1": float(m.get("mortality_f1", np.nan)),
+                    "mortality_sensitivity": float(m.get("mortality_sensitivity", np.nan)),
+                    "mortality_specificity": float(m.get("mortality_specificity", np.nan)),
+                    "mortality_threshold": float(fold_data["test_results"].get("calibrated_threshold", np.nan)),
+                    "risk_f1": float(m.get("risk_f1", np.nan)),
+                    "los_mae": float(m.get("los_mae", np.nan)),
+                }
+            )
+
+        summary_df = pd.DataFrame(summary_rows)
+        summary_file = self.log_dir / f"kfold_summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+        summary_df.to_csv(summary_file, index=False)
+        self.logger.info(f"[SAVE] Fold summary saved to {summary_file}")
 
         return all_fold_results
