@@ -1,0 +1,54 @@
+{
+  "data": {
+    "n_patients": 2468,
+    "n_features": 45,
+    "n_deaths": 209,
+    "n_survivors": 2259,
+    "imbalance_ratio": 10.808612440191387
+  },
+  "cv_results": {
+    "mean_auc": 0.8641272426400851,
+    "std_auc": 0.0185375480304236,
+    "min_auc": 0.8283817951959545,
+    "max_auc": 0.8816914792524548,
+    "fold_details": [
+      {
+        "fold": 1,
+        "auc": 0.8672039612305098,
+        "n_test": 494,
+        "n_positive_test": 42
+      },
+      {
+        "fold": 2,
+        "auc": 0.8283817951959545,
+        "n_test": 494,
+        "n_positive_test": 42
+      },
+      {
+        "fold": 3,
+        "auc": 0.8696270543615675,
+        "n_test": 494,
+        "n_positive_test": 42
+      },
+      {
+        "fold": 4,
+        "auc": 0.8737319231599396,
+        "n_test": 493,
+        "n_positive_test": 41
+      },
+      {
+        "fold": 5,
+        "auc": 0.8816914792524548,
+        "n_test": 493,
+        "n_positive_test": 42
+      }
+    ]
+  },
+  "test_results": {
+    "train_auc": 0.9999536068979915,
+    "test_auc": 0.8643594605983986,
+    "overfitting_gap": 0.13559414629959288,
+    "train_size": 1974,
+    "test_size": 494
+  }
+}
