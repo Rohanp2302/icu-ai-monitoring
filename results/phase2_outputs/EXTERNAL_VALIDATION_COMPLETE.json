@@ -1,0 +1,27 @@
+{
+  "date": "2026-04-08",
+  "model": "Real PyTorch 3-Path Ensemble",
+  "external_datasets": [
+    "Challenge2012 (12000)",
+    "eICU (demo)"
+  ],
+  "phase2_test_auc": 0.9391339869281046,
+  "external_auc": null,
+  "auc_gap": null,
+  "external_samples_challenge2012": 12000,
+  "external_samples_eicu": 2520,
+  "external_samples_total": 14520,
+  "external_deaths": 5078303,
+  "external_mortality_rate": 349.74538567493113,
+  "sensitivity": 0.0,
+  "specificity": 0.0,
+  "precision": 0.0,
+  "confusion_matrix": {
+    "tp": 0,
+    "fp": 0,
+    "fn": 0,
+    "tn": 0
+  },
+  "decision": "INCONCLUSIVE",
+  "meets_deployment_criteria": "NO"
+}

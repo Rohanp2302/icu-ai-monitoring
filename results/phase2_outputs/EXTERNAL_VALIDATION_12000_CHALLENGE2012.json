@@ -1,0 +1,23 @@
+{
+  "date": "2026-04-08",
+  "model": "Real PyTorch 3-Path Ensemble",
+  "external_dataset": "Challenge2012 (all 12000)",
+  "phase2_test_auc": 0.9391339869281046,
+  "challenge2012_external_auc": 0.4989581193696058,
+  "auc_gap": -0.44017586755849875,
+  "external_samples": 12000,
+  "external_deaths": 1707,
+  "external_survivors": 10293,
+  "external_mortality_rate": 0.14225,
+  "sensitivity": 0.0,
+  "specificity": 1.0,
+  "precision": 0.0,
+  "confusion_matrix": {
+    "tp": 0,
+    "fp": 0,
+    "fn": 1707,
+    "tn": 10293
+  },
+  "decision": "FAIL - DO NOT DEPLOY",
+  "meets_deployment_criteria": "NO"
+}

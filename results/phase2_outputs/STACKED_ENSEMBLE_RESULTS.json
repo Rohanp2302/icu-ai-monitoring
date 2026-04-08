@@ -1,0 +1,42 @@
+{
+  "stacked_auc": 0.55,
+  "base_aucs": {
+    "Random Forest": 0.63125,
+    "XGBoost": 0.2,
+    "LightGBM": 0.53125,
+    "Neural Network": 0.18125000000000002,
+    "SVM": 0.4625
+  },
+  "mean_base_auc": 0.40125,
+  "improvement": 0.14875000000000005,
+  "sensitivity": 0.0,
+  "specificity": 1.0,
+  "precision": 0,
+  "f1_score": 0.0,
+  "confusion_matrix": {
+    "TP": 0,
+    "TN": 80,
+    "FP": 0,
+    "FN": 2
+  },
+  "roc_curve": {
+    "fpr": [
+      0.0,
+      0.0125,
+      0.375,
+      0.375,
+      0.525,
+      0.525,
+      1.0
+    ],
+    "tpr": [
+      0.0,
+      0.0,
+      0.0,
+      0.5,
+      0.5,
+      1.0,
+      1.0
+    ]
+  }
+}

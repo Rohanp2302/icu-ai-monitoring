@@ -1,0 +1,15 @@
+{
+  "sklearn_auc": 0.5773358585858587,
+  "pytorch_auc": 0.598800505050505,
+  "ensemble_auc": 0.5969065656565656,
+  "improvement": 0.01957070707070696,
+  "best_hyperparameters": {
+    "hidden_dim": 64,
+    "dropout_p": 0.4,
+    "learning_rate": 0.0009964956865600827,
+    "batch_size": 64,
+    "weight_decay": 1.0125096903700749e-06
+  },
+  "n_trials": 20,
+  "device": "cuda"
+}

@@ -1,10 +1,29 @@
 {
-  "false_positives": {},
-  "false_negatives": {
-    "count": 1,
-    "mean_prob": 0.004993837792426348
+  "timestamp": "2026-04-08T13:59:47.596949",
+  "test_set_size": 560,
+  "confusion_matrix": {
+    "true_negatives": 545,
+    "false_positives": 0,
+    "false_negatives": 2,
+    "true_positives": 13
   },
-  "correct_predictions": {
-    "count": 419
-  }
+  "metrics": {
+    "sensitivity_recall": 0.8666666666666667,
+    "specificity": 1.0,
+    "miss_rate": 0.13333333333333333,
+    "false_alarm_rate": 0.0,
+    "precision": 1.0
+  },
+  "error_analysis": {
+    "false_negatives_count": 2,
+    "false_negatives_critical": "YES - Misses detecting deaths",
+    "false_positives_count": 0,
+    "false_positives_issue": "May cause unnecessary interventions"
+  },
+  "clinical_interpretation": [
+    "The model correctly identifies 86.7% of ICU deaths",
+    "The model misses 13.3% of deaths (DANGEROUS)",
+    "False alarm rate is 0.0% (acceptable if low)",
+    "Focus on reducing false negatives for patient safety"
+  ]
 }

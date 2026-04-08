@@ -1,0 +1,228 @@
+{
+  "timestamp": "2026-04-08T13:57:22.671511",
+  "model_type": "Logistic Regression (proxy for neural network)",
+  "test_auc": 0.9964285714285714,
+  "total_features": 20,
+  "permutation_importance": [
+    {
+      "feature": "organ_renal_creatinine_mean",
+      "importance": 0.009406727828746075,
+      "std": 0.006766516510119062
+    },
+    {
+      "feature": "med_renal_creatinine_mean",
+      "importance": 0.009406727828746075,
+      "std": 0.006766516510119062
+    },
+    {
+      "feature": "respiration_min",
+      "importance": 0.0031192660550457773,
+      "std": 0.0025596165860509103
+    },
+    {
+      "feature": "organ_respiratory_sao2_mean",
+      "importance": 0.0028256880733943833,
+      "std": 0.004488296599695861
+    },
+    {
+      "feature": "med_respiratory_sao2_mean",
+      "importance": 0.0028256880733943833,
+      "std": 0.004488296599695861
+    },
+    {
+      "feature": "respiration_mean",
+      "importance": 0.0027400611620794434,
+      "std": 0.004126949555270375
+    },
+    {
+      "feature": "heartrate_std",
+      "importance": 0.001834862385320979,
+      "std": 0.001197277974629219
+    },
+    {
+      "feature": "respiration_std",
+      "importance": 0.0008685015290518904,
+      "std": 0.001296232122174966
+    },
+    {
+      "feature": "heartrate_max",
+      "importance": 0.0007706422018347592,
+      "std": 0.0007814398166940515
+    },
+    {
+      "feature": "organ_renal_SOFA",
+      "importance": 0.0007217125382262379,
+      "std": 0.0007589028682199966
+    },
+    {
+      "feature": "med_renal_SOFA",
+      "importance": 0.0007217125382262379,
+      "std": 0.0007589028682199966
+    },
+    {
+      "feature": "sao2_max",
+      "importance": 0.00045259938837912685,
+      "std": 0.00024495393754740094
+    },
+    {
+      "feature": "heartrate_min",
+      "importance": 0.0002813455657491359,
+      "std": 0.0013400498563986777
+    },
+    {
+      "feature": "sao2_mean",
+      "importance": 0.00025688073394487533,
+      "std": 0.0010270131253114047
+    },
+    {
+      "feature": "sao2_min",
+      "importance": 2.446483180419401e-05,
+      "std": 9.153901863670063e-05
+    },
+    {
+      "feature": "heartrate_mean",
+      "importance": -8.562691131507316e-05,
+      "std": 0.0005764830173919435
+    },
+    {
+      "feature": "organ_hematologic_platelets_mean",
+      "importance": -0.00012232415902150296,
+      "std": 0.004314766887221418
+    },
+    {
+      "feature": "med_hematologic_platelets_mean",
+      "importance": -0.00012232415902150296,
+      "std": 0.004314766887221418
+    },
+    {
+      "feature": "respiration_max",
+      "importance": -0.00022018348623863425,
+      "std": 0.0008091907233536872
+    },
+    {
+      "feature": "sao2_std",
+      "importance": -0.00033027522935787925,
+      "std": 0.000852854704027071
+    }
+  ],
+  "coefficient_importance": [
+    {
+      "feature": "organ_hematologic_platelets_mean",
+      "coefficient": 1.457413282434237,
+      "abs_coefficient": 1.457413282434237
+    },
+    {
+      "feature": "med_hematologic_platelets_mean",
+      "coefficient": 1.457413282434237,
+      "abs_coefficient": 1.457413282434237
+    },
+    {
+      "feature": "med_renal_creatinine_mean",
+      "coefficient": 1.0236908340331201,
+      "abs_coefficient": 1.0236908340331201
+    },
+    {
+      "feature": "organ_renal_creatinine_mean",
+      "coefficient": 1.0236908340331201,
+      "abs_coefficient": 1.0236908340331201
+    },
+    {
+      "feature": "respiration_mean",
+      "coefficient": 0.6561914845198793,
+      "abs_coefficient": 0.6561914845198793
+    },
+    {
+      "feature": "organ_respiratory_sao2_mean",
+      "coefficient": 0.6430612446814462,
+      "abs_coefficient": 0.6430612446814462
+    },
+    {
+      "feature": "med_respiratory_sao2_mean",
+      "coefficient": 0.6430612446814462,
+      "abs_coefficient": 0.6430612446814462
+    },
+    {
+      "feature": "respiration_min",
+      "coefficient": 0.541476571144058,
+      "abs_coefficient": 0.541476571144058
+    },
+    {
+      "feature": "sao2_std",
+      "coefficient": 0.2682257062390705,
+      "abs_coefficient": 0.2682257062390705
+    },
+    {
+      "feature": "sao2_mean",
+      "coefficient": 0.25639995692683815,
+      "abs_coefficient": 0.25639995692683815
+    },
+    {
+      "feature": "heartrate_min",
+      "coefficient": 0.2515403840564644,
+      "abs_coefficient": 0.2515403840564644
+    },
+    {
+      "feature": "heartrate_std",
+      "coefficient": -0.2027620060314728,
+      "abs_coefficient": 0.2027620060314728
+    },
+    {
+      "feature": "respiration_max",
+      "coefficient": 0.18705438602247063,
+      "abs_coefficient": 0.18705438602247063
+    },
+    {
+      "feature": "heartrate_max",
+      "coefficient": -0.17069482331225588,
+      "abs_coefficient": 0.17069482331225588
+    },
+    {
+      "feature": "organ_renal_SOFA",
+      "coefficient": 0.16858135585245518,
+      "abs_coefficient": 0.16858135585245518
+    },
+    {
+      "feature": "med_renal_SOFA",
+      "coefficient": 0.16858135585245518,
+      "abs_coefficient": 0.16858135585245518
+    },
+    {
+      "feature": "respiration_std",
+      "coefficient": -0.16598473123038707,
+      "abs_coefficient": 0.16598473123038707
+    },
+    {
+      "feature": "heartrate_mean",
+      "coefficient": 0.12035316615426858,
+      "abs_coefficient": 0.12035316615426858
+    },
+    {
+      "feature": "sao2_max",
+      "coefficient": -0.09135743441558054,
+      "abs_coefficient": 0.09135743441558054
+    },
+    {
+      "feature": "sao2_min",
+      "coefficient": -0.02338303870192821,
+      "abs_coefficient": 0.02338303870192821
+    }
+  ],
+  "top_5_features_by_permutation": [
+    "organ_renal_creatinine_mean",
+    "med_renal_creatinine_mean",
+    "respiration_min",
+    "organ_respiratory_sao2_mean",
+    "med_respiratory_sao2_mean"
+  ],
+  "top_5_features_by_coefficient": [
+    "organ_hematologic_platelets_mean",
+    "med_hematologic_platelets_mean",
+    "med_renal_creatinine_mean",
+    "organ_renal_creatinine_mean",
+    "respiration_mean"
+  ],
+  "interpretation": {
+    "permutation_importance": "How much the model's performance decreases when each feature is randomly shuffled",
+    "coefficients": "Raw model weights (positive = increases mortality risk, negative = decreases risk)"
+  }
+}

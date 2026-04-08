@@ -1,0 +1,25 @@
+{
+  "timestamp": "2026-04-08T13:58:31.157554",
+  "model_type": "Logistic Regression (proxy)",
+  "calibration_metrics_before": {
+    "expected_calibration_error": 0.0027513704196202343,
+    "maximum_calibration_error": 0.022348841435822497,
+    "brier_score": 0.0036174846246349542,
+    "interpretation": "ECE = 0 is perfect calibration, higher values indicate worse calibration"
+  },
+  "calibration_metrics_after": {
+    "expected_calibration_error": 0.031162872537522,
+    "brier_score": 0.009281332262142372,
+    "method": "Platt scaling (sigmoid calibration)"
+  },
+  "improvement": {
+    "ece_reduction_pct": -1032.6309360345358,
+    "brier_reduction_pct": -156.56867202521877
+  },
+  "recommendations": [
+    "Model is well-calibrated",
+    "Apply temperature scaling in production if needed",
+    "Monitor calibration on new data",
+    "Use calibrated probabilities for risk stratification (ECE=0.0312)"
+  ]
+}

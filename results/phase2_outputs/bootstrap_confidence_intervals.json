@@ -1,0 +1,54 @@
+{
+  "timestamp": "2026-04-08T14:00:42.572922",
+  "n_bootstrap_samples": 1000,
+  "test_set_size": 560,
+  "confidence_level": 95,
+  "confidence_intervals": {
+    "AUC": {
+      "mean": 0.9849268829423052,
+      "lower_bound_95_percent": 0.960341408323389,
+      "upper_bound_95_percent": 1.0,
+      "ci_width": 0.03965859167661101,
+      "stability": "Stable"
+    },
+    "Accuracy": {
+      "mean": 0.9964428571428571,
+      "lower_bound_95_percent": 0.9910714285714286,
+      "upper_bound_95_percent": 1.0,
+      "ci_width": 0.008928571428571397,
+      "stability": "Stable"
+    },
+    "Sensitivity": {
+      "mean": 0.8673844766484842,
+      "lower_bound_95_percent": 0.6666666666666666,
+      "upper_bound_95_percent": 1.0,
+      "ci_width": 0.33333333333333337,
+      "stability": "Unstable"
+    },
+    "Specificity": {
+      "mean": 1.0,
+      "lower_bound_95_percent": 1.0,
+      "upper_bound_95_percent": 1.0,
+      "ci_width": 0.0,
+      "stability": "Stable"
+    },
+    "Precision": {
+      "mean": 1.0,
+      "lower_bound_95_percent": 1.0,
+      "upper_bound_95_percent": 1.0,
+      "ci_width": 0.0,
+      "stability": "Stable"
+    }
+  },
+  "interpretation": {
+    "meaning": "95% CI means we're 95% confident the true metric lies in this range",
+    "narrow_ci": "Good - metric is stable",
+    "wide_ci": "Bad - metric is unstable, may need more data"
+  },
+  "clinical_recommendations": [
+    "Model performance is stable within these confidence bounds",
+    "AUC 95% CI: [0.9603, 1.0000]",
+    "Expected generalization error: 0.0036",
+    "Consider CI width when deploying model in production"
+  ]
+}

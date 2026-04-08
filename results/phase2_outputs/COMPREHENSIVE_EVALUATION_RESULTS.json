@@ -1,0 +1,58 @@
+{
+  "timestamp": "2026-04-09 00:54:45.581483",
+  "test_samples": 500,
+  "positive_cases": 32,
+  "negative_cases": 468,
+  "models": {
+    "sklearn": {
+      "auc": 0.875267094017094,
+      "accuracy": 0.702,
+      "recall": 0.75,
+      "sensitivity": 0.75,
+      "specificity": 0.6987179487179487,
+      "precision": 0.14545454545454545,
+      "f1_score": 0.2436548223350254,
+      "npv": 0.9761194029850746,
+      "confusion_matrix": {
+        "tn": 327,
+        "fp": 141,
+        "fn": 8,
+        "tp": 24
+      }
+    },
+    "pytorch": {
+      "auc": 0.8702590811965811,
+      "accuracy": 0.694,
+      "recall": 0.75,
+      "sensitivity": 0.75,
+      "specificity": 0.6901709401709402,
+      "precision": 0.14201183431952663,
+      "f1_score": 0.23880597014925373,
+      "npv": 0.9758308157099698,
+      "confusion_matrix": {
+        "tn": 323,
+        "fp": 145,
+        "fn": 8,
+        "tp": 24
+      }
+    },
+    "ensemble": {
+      "auc": 0.8737980769230769,
+      "accuracy": 0.692,
+      "recall": 0.75,
+      "sensitivity": 0.75,
+      "specificity": 0.688034188034188,
+      "precision": 0.1411764705882353,
+      "f1_score": 0.2376237623762376,
+      "npv": 0.9757575757575757,
+      "confusion_matrix": {
+        "tn": 322,
+        "fp": 146,
+        "fn": 8,
+        "tp": 24
+      }
+    }
+  },
+  "best_model": "Sklearn Baseline",
+  "best_auc": 0.875267094017094
+}

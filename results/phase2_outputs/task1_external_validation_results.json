@@ -1,0 +1,14 @@
+{
+  "task": "External Validation Challenge2012",
+  "timestamp": "2026-04-08T13:51:07.842220",
+  "phase2_internal_auc": 0.9391339869281046,
+  "challenge2012_external_auc": 0.9889908256880735,
+  "auc_gap": 0.049856838759968936,
+  "sensitivity": 0.8666666666666667,
+  "specificity": 1.0,
+  "precision": 1.0,
+  "decision": "\u2705 PASS",
+  "samples_tested": 560,
+  "deaths_in_test": 15,
+  "mortality_rate": 0.026785714285714284
+}

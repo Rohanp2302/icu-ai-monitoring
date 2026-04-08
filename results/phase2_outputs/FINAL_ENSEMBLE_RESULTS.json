@@ -1,0 +1,53 @@
+{
+  "ensemble_auc": 0.5301816239316239,
+  "sklearn_auc": 0.5297364672364673,
+  "pytorch_auc": 0.5704237891737892,
+  "sensitivity": 0.20512820512820512,
+  "specificity": 0.8194444444444444,
+  "precision": 0.5517241379310345,
+  "npv": 0.48760330578512395,
+  "vs_apache": -0.20981837606837606,
+  "vs_sofa": -0.17981837606837603,
+  "top_features": [
+    {
+      "feature": "Feature_9",
+      "importance": 0.014289604925835397
+    },
+    {
+      "feature": "Feature_2",
+      "importance": 0.013907006997059768
+    },
+    {
+      "feature": "Feature_13",
+      "importance": 0.01387028716285625
+    },
+    {
+      "feature": "Feature_11",
+      "importance": 0.013074596766469744
+    },
+    {
+      "feature": "Feature_16",
+      "importance": 0.01247347532993562
+    },
+    {
+      "feature": "Feature_12",
+      "importance": 0.012259551805272656
+    },
+    {
+      "feature": "Feature_8",
+      "importance": 0.01213118307913123
+    },
+    {
+      "feature": "Feature_18",
+      "importance": 0.011954976468951398
+    },
+    {
+      "feature": "Feature_10",
+      "importance": 0.011926267657466585
+    },
+    {
+      "feature": "Feature_4",
+      "importance": 0.011668826778234519
+    }
+  ]
+}

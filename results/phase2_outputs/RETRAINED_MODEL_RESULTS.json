@@ -1,0 +1,62 @@
+{
+  "date": "2026-04-08",
+  "phase": "Retraining on External Data (Challenge2012)",
+  "model": "PyTorch 3-Path Ensemble",
+  "dataset": "Challenge2012 (12000 patients)",
+  "splits": {
+    "train": {
+      "samples": 8400,
+      "deaths": 1195,
+      "auc": 0.5,
+      "sensitivity": 0.0,
+      "specificity": 1.0,
+      "precision": 0,
+      "confusion_matrix": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 1195,
+        "tn": 7205
+      }
+    },
+    "validation": {
+      "samples": 1800,
+      "deaths": 256,
+      "auc": 0.5,
+      "sensitivity": 0.0,
+      "specificity": 1.0,
+      "precision": 0,
+      "confusion_matrix": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 256,
+        "tn": 1544
+      }
+    },
+    "test_external": {
+      "samples": 1800,
+      "deaths": 256,
+      "auc": 0.5,
+      "sensitivity": 0.0,
+      "specificity": 1.0,
+      "precision": 0,
+      "confusion_matrix": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 256,
+        "tn": 1544
+      }
+    }
+  },
+  "training": {
+    "epochs": 50,
+    "batch_size": 32,
+    "learning_rate": 0.001,
+    "optimizer": "Adam",
+    "loss": "BCELoss",
+    "best_val_auc": 0.5044931994818652,
+    "final_train_loss": 0.40947024512880204
+  },
+  "decision": "FAIL - DO NOT DEPLOY",
+  "meets_deployment_criteria": "NO",
+  "generalization_check": "Train AUC: 0.5000 \u2192 Test AUC: 0.5000"
+}
