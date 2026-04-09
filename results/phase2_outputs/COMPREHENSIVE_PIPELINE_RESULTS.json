@@ -1,0 +1,80 @@
+{
+  "data": {
+    "n_patients_original": 2468,
+    "n_deaths_original": 209,
+    "imbalance_ratio_original": 10.808612440191387,
+    "n_samples_balanced": 2886,
+    "n_synthetic_samples": 418,
+    "final_imbalance_ratio": 3.602870813397129
+  },
+  "best_model": {
+    "name": "RandomForest",
+    "cv_mean_auc": 0.964510026103594,
+    "cv_std_auc": 0.006080884424223481,
+    "cv_folds": [
+      0.9616343587582525,
+      0.95529203539823,
+      0.9721769911504425,
+      0.9633274336283185,
+      0.9701193115827262
+    ],
+    "test_auc_on_original_data": 0.8856405394016014,
+    "optimal_threshold": 0.15796264902521434,
+    "sensitivity": 0.8571428571428571,
+    "specificity": 0.7964601769911505
+  },
+  "disease_models": {
+    "Sepsis": {
+      "auc": 0.9983670459334176,
+      "features": [
+        "WBC x 1000",
+        "respiration",
+        "heartrate",
+        "Temperature"
+      ]
+    },
+    "Respiratory": {
+      "auc": 0.9806152549515382,
+      "features": [
+        "sao2",
+        "respiration",
+        "HCO3"
+      ]
+    },
+    "Renal": {
+      "auc": 0.9631268436578171,
+      "features": [
+        "creatinine",
+        "potassium",
+        "sodium",
+        "chloride"
+      ]
+    },
+    "Cardiac": {
+      "auc": 0.9924146649810367,
+      "features": [
+        "heartrate",
+        "Temperature",
+        "BUN"
+      ]
+    },
+    "Hepatic": {
+      "auc": 0.9587020648967551,
+      "features": [
+        "sodium",
+        "BUN",
+        "chloride"
+      ]
+    }
+  },
+  "all_models_comparison": {
+    "RandomForest": {
+      "cv_mean_auc": 0.964510026103594,
+      "cv_std_auc": 0.006080884424223481
+    },
+    "GradientBoosting": {
+      "cv_mean_auc": 0.9610787399759989,
+      "cv_std_auc": 0.005817796431573576
+    }
+  }
+}

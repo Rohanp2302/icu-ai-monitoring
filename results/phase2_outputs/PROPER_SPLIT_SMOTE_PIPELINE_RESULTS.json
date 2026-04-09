@@ -1,0 +1,66 @@
+{
+  "data_splits": {
+    "train_samples": 1727,
+    "test_samples": 370,
+    "val_samples": 371,
+    "train_deaths": 146,
+    "test_deaths": 31,
+    "val_deaths": 32,
+    "train_after_smote": 2019,
+    "synthetic_samples": 292
+  },
+  "best_model": "RandomForest",
+  "all_models": {
+    "RandomForest": {
+      "train_auc": 0.99997111821603,
+      "test_auc": 0.8561233228661147,
+      "val_auc": 0.9152839233038348
+    },
+    "GradientBoosting": {
+      "train_auc": 1.0,
+      "test_auc": 0.8312874678846702,
+      "val_auc": 0.8944505899705015
+    }
+  },
+  "test_set_performance": {
+    "auc": 0.8561233228661147,
+    "sensitivity": 0.9032258064516129,
+    "specificity": 0.7256637168141593,
+    "optimal_threshold": 0.17328954268135865,
+    "tp": 28,
+    "tn": 246,
+    "fp": 93,
+    "fn": 3
+  },
+  "validation_set_performance": {
+    "auc": 0.9152839233038348,
+    "sensitivity": 0.90625,
+    "specificity": 0.7138643067846607,
+    "tp": 29,
+    "tn": 242,
+    "fp": 97,
+    "fn": 3
+  },
+  "disease_models": {
+    "Sepsis": {
+      "test_auc": 0.5868779141688076,
+      "val_auc": 0.6535766961651918
+    },
+    "Respiratory": {
+      "test_auc": 0.7167665810257874,
+      "val_auc": 0.738292772861357
+    },
+    "Renal": {
+      "test_auc": 0.6954039394804453,
+      "val_auc": 0.6966261061946903
+    },
+    "Cardiac": {
+      "test_auc": 0.648729660291179,
+      "val_auc": 0.7142791297935104
+    },
+    "Hepatic": {
+      "test_auc": 0.6574364830145589,
+      "val_auc": 0.6688790560471977
+    }
+  }
+}
