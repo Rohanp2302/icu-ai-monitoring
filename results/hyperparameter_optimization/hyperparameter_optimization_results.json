@@ -1,0 +1,56 @@
+{
+  "algorithm": "Grid Search",
+  "date": "2026-04-09T14:58:47.114691",
+  "data": {
+    "total_features": 156,
+    "static_features": 44,
+    "trajectory_features": 112
+  },
+  "splits": {
+    "train": 1727,
+    "test": 370,
+    "validation": 371
+  },
+  "randomforest": {
+    "optimized_parameters": {
+      "n_estimators": 150,
+      "max_depth": 15,
+      "min_samples_split": 2,
+      "min_samples_leaf": 1,
+      "max_features": "log2"
+    },
+    "validation_auc": 0.926806784660767,
+    "test_auc": 0.8562660576648586,
+    "test_sensitivity": 0.7419354838709677,
+    "test_specificity": 0.8967551622418879,
+    "optimal_threshold": 0.15953395596936237,
+    "validation_auc_final": 0.926806784660767,
+    "validation_sensitivity": 0.6875,
+    "validation_specificity": 0.9026548672566371
+  },
+  "gradientboosting": {
+    "optimized_parameters": {
+      "max_iter": 100,
+      "learning_rate": 0.05,
+      "max_depth": 7,
+      "min_samples_leaf": 5,
+      "l2_regularization": 0.1
+    },
+    "validation_auc": 0.9219210914454277,
+    "test_auc": 0.8711580550004758,
+    "test_sensitivity": 0.6774193548387096,
+    "test_specificity": 0.9410029498525073,
+    "optimal_threshold": 0.06888948806014657,
+    "validation_auc_final": 0.9219210914454277,
+    "validation_sensitivity": 0.5625,
+    "validation_specificity": 0.9528023598820059
+  },
+  "improvement_vs_baseline": {
+    "baseline_test_auc": 0.8561,
+    "baseline_validation_auc": 0.9153,
+    "rf_test_improvement": "+0.02%",
+    "rf_validation_improvement": "+1.15%",
+    "gb_test_improvement": "+1.51%",
+    "gb_validation_improvement": "+0.66%"
+  }
+}

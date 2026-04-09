@@ -1,0 +1,88 @@
+{
+  "data": {
+    "total_samples": 200,
+    "total_features": 50,
+    "positive_samples": 9,
+    "negative_samples": 191,
+    "class_imbalance_ratio": 21.22222222222222
+  },
+  "cross_validation": {
+    "folds": 5,
+    "method": "Stratified K-Fold",
+    "fold_results": [
+      {
+        "fold": 1,
+        "auc": 0.28205128205128205,
+        "sensitivity": 1.0,
+        "specificity": 0.28205128205128205,
+        "precision": 0.034482758620689655,
+        "optimal_threshold": 0.03809523809523809,
+        "train_size": 160,
+        "test_size": 40,
+        "test_positives": 1
+      },
+      {
+        "fold": 2,
+        "auc": 0.42105263157894735,
+        "sensitivity": 1.0,
+        "specificity": 0.18421052631578946,
+        "precision": 0.06060606060606061,
+        "optimal_threshold": 0.01944941437802908,
+        "train_size": 160,
+        "test_size": 40,
+        "test_positives": 2
+      },
+      {
+        "fold": 3,
+        "auc": 0.6052631578947368,
+        "sensitivity": 0.5,
+        "specificity": 0.9736842105263158,
+        "precision": 0.5,
+        "optimal_threshold": 0.11887164966945994,
+        "train_size": 160,
+        "test_size": 40,
+        "test_positives": 2
+      },
+      {
+        "fold": 4,
+        "auc": 0.34210526315789475,
+        "sensitivity": 0.5,
+        "specificity": 0.6052631578947368,
+        "precision": 0.0625,
+        "optimal_threshold": 0.05944941437802908,
+        "train_size": 160,
+        "test_size": 40,
+        "test_positives": 2
+      },
+      {
+        "fold": 5,
+        "auc": 0.4736842105263158,
+        "sensitivity": 0.5,
+        "specificity": 0.7631578947368421,
+        "precision": 0.1,
+        "optimal_threshold": 0.06896608772876987,
+        "train_size": 160,
+        "test_size": 40,
+        "test_positives": 2
+      }
+    ],
+    "mean_auc": 0.4248313090418353,
+    "std_auc": 0.11152243831831525,
+    "mean_sensitivity": 0.7,
+    "mean_specificity": 0.5616734143049932
+  },
+  "final_validation": {
+    "train_size": 160,
+    "test_size": 40,
+    "train_auc": 1.0,
+    "test_auc": 0.2894736842105263,
+    "overfitting_gap": 0.7105263157894737
+  },
+  "critical_findings": [
+    "Original phase_d results (AUC 1.0) contained DATA LEAKAGE - evaluated on training data",
+    "True test performance on 200 samples: AUC 0.4248 \u00b1 0.1115",
+    "Proper cross-validation with NO SMOTE before split",
+    "Class weights applied to handle imbalance",
+    "No data leakage: test set kept completely separate"
+  ]
+}
