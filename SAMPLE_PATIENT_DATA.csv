@@ -1,0 +1,61 @@
+Patient_ID,Time_Hour,Heart_Rate,Respiratory_Rate,SpO2,Temperature,Systolic_BP,Diastolic_BP,Creatinine,Bilirubin,Platelets,Lactate,pH,PaO2,FiO2,SOFA_Score,Medication_1,Medication_2,Diagnosis_Primary,Diagnosis_Secondary,Risk_Score
+ICU-2026-001,0,95,24,92,38.5,145,88,1.2,0.8,180000,2.1,7.35,65,0.40,8,Ceftriaxone 1g IV Q6H,Norepinephrine 0.1mcg/kg/min,Dengue Fever,Thrombocytopenia,0.73
+ICU-2026-001,4,98,25,91,38.8,148,90,1.3,0.9,170000,2.3,7.34,62,0.40,8,Ceftriaxone 1g IV Q6H,Norepinephrine 0.1mcg/kg/min,Dengue Fever,Thrombocytopenia,0.71
+ICU-2026-001,8,92,23,93,38.2,140,85,1.1,0.7,185000,1.9,7.36,68,0.35,7,Ceftriaxone 1g IV Q6H,Norepinephrine 0.08mcg/kg/min,Dengue Fever,Thrombocytopenia,0.68
+ICU-2026-001,12,88,22,94,37.9,135,82,1.0,0.6,195000,1.7,7.37,72,0.35,7,Ceftriaxone 1g IV Q6H,Norepinephrine 0.05mcg/kg/min,Dengue Fever,Thrombocytopenia,0.65
+ICU-2026-001,16,85,21,95,37.6,130,80,0.9,0.5,205000,1.5,7.38,75,0.30,6,Ceftriaxone 1g IV Q12H,Norepinephrine PRN,Dengue Fever,Thrombocytopenia,0.60
+ICU-2026-001,20,82,20,96,37.4,128,78,0.8,0.4,215000,1.3,7.39,78,0.30,5,Ceftriaxone 1g IV Q12H,Supportive Care,Dengue Fever,Thrombocytopenia,0.55
+ICU-2026-002,0,120,32,88,39.2,165,95,2.8,1.5,95000,4.2,7.28,55,0.60,11,Meropenem 1g IV Q8H,Vasopressin 0.04U/min,Septic Shock,Multi-organ Failure,0.85
+ICU-2026-002,4,125,35,86,39.5,170,98,3.1,1.7,90000,4.8,7.26,52,0.60,11,Meropenem 1g IV Q8H,Vasopressin 0.04U/min + Norepinephrine,Septic Shock,Multi-organ Failure,0.87
+ICU-2026-002,8,122,34,87,39.3,168,96,2.9,1.6,92000,4.5,7.27,54,0.60,11,Meropenem 1g IV Q8H,Vasopressin + Norepinephrine,Septic Shock,Multi-organ Failure,0.86
+ICU-2026-002,12,118,33,89,39.0,160,93,2.6,1.4,98000,4.0,7.29,58,0.55,10,Meropenem 1g IV Q8H,Vasopressin + Norepinephrine,Septic Shock,Multi-organ Failure,0.84
+ICU-2026-002,16,115,31,90,38.8,155,90,2.4,1.3,105000,3.8,7.30,62,0.50,10,Meropenem 1g IV Q8H,Vasopressin + Norepinephrine 0.08,Septic Shock,Multi-organ Failure,0.81
+ICU-2026-002,20,112,30,91,38.5,150,88,2.2,1.1,110000,3.5,7.31,65,0.45,9,Meropenem 1g IV Q8H,Vasopressin + Norepinephrine 0.05,Septic Shock,Multi-organ Failure,0.78
+ICU-2026-003,0,78,18,94,37.3,125,75,0.7,0.3,280000,1.1,7.40,85,0.21,3,Aspirin 500mg BID,Clopidogrel 75mg,Acute Ischemic Stroke,Hypertension,0.25
+ICU-2026-003,4,80,19,94,37.4,128,76,0.7,0.3,280000,1.1,7.40,86,0.21,3,Aspirin 500mg BID,Clopidogrel 75mg,Acute Ischemic Stroke,Hypertension,0.24
+ICU-2026-003,8,82,18,95,37.5,130,78,0.7,0.3,280000,1.0,7.41,87,0.21,3,Aspirin 500mg BID,Clopidogrel 75mg,Acute Ischemic Stroke,Hypertension,0.23
+ICU-2026-003,12,84,19,95,37.6,132,79,0.7,0.3,280000,1.0,7.41,88,0.21,3,Aspirin 500mg BID,Labetalol 200mg,Acute Ischemic Stroke,Hypertension,0.22
+ICU-2026-003,16,86,18,96,37.7,135,80,0.7,0.3,280000,0.9,7.42,89,0.21,3,Aspirin 500mg BID,Labetalol 200mg,Acute Ischemic Stroke,Hypertension,0.21
+ICU-2026-003,20,88,17,96,37.8,138,82,0.7,0.3,280000,0.9,7.42,90,0.21,2,Aspirin 500mg BID,Labetalol 200mg,Acute Ischemic Stroke,Hypertension,0.20
+ICU-2026-004,0,108,28,85,38.9,155,88,4.2,2.1,110000,3.5,7.25,50,0.65,10,Piperacillin-Tazobactam 4.5g,Meropenem 1g IV,Community-Acquired Pneumonia with ARDS,Respiratory Failure,0.79
+ICU-2026-004,4,112,30,84,39.1,158,90,4.4,2.2,105000,3.8,7.24,48,0.65,10,Piperacillin-Tazobactam 4.5g,Meropenem 1g IV,Community-Acquired Pneumonia with ARDS,Respiratory Failure,0.81
+ICU-2026-004,8,110,29,85,38.8,156,89,4.3,2.0,108000,3.6,7.25,51,0.60,10,Piperacillin-Tazobactam 4.5g,Meropenem 1g IV,Community-Acquired Pneumonia with ARDS,Respiratory Failure,0.80
+ICU-2026-004,12,105,27,86,38.5,150,86,4.0,1.9,115000,3.3,7.27,55,0.55,9,Piperacillin-Tazobactam 4.5g,Meropenem 1g IV,Community-Acquired Pneumonia with ARDS,Respiratory Failure,0.76
+ICU-2026-004,16,100,26,87,38.2,145,84,3.8,1.8,120000,3.0,7.28,58,0.50,9,Piperacillin-Tazobactam 4.5g,Supportive Care,Community-Acquired Pneumonia with ARDS,Respiratory Failure,0.72
+ICU-2026-004,20,98,25,88,37.9,140,82,3.5,1.6,125000,2.8,7.29,62,0.45,8,Piperacillin-Tazobactam 4.5g,Supportive Care,Community-Acquired Pneumonia with ARDS,Respiratory Failure,0.68
+ICU-2026-005,0,92,24,93,38.1,138,82,3.5,0.9,150000,2.8,7.32,70,0.40,8,Furosemide 20mg IV,Lisinopril 10mg,Acute Decompensated Heart Failure,Acute Kidney Injury,0.68
+ICU-2026-005,4,95,25,92,38.3,140,84,3.6,1.0,148000,2.9,7.31,68,0.40,8,Furosemide 20mg IV Q4H,Lisinopril 5mg,Acute Decompensated Heart Failure,Acute Kidney Injury,0.70
+ICU-2026-005,8,98,26,91,38.5,142,85,3.7,1.1,145000,3.0,7.30,66,0.40,8,Furosemide 20mg IV Q6H,Dobutamine 5mcg/kg/min,Acute Decompensated Heart Failure,Acute Kidney Injury,0.72
+ICU-2026-005,12,100,27,90,38.7,144,86,3.8,1.2,142000,3.1,7.29,64,0.40,8,Furosemide 40mg IV,Dobutamine 5mcg/kg/min,Acute Decompensated Heart Failure,Acute Kidney Injury,0.73
+ICU-2026-005,16,95,25,92,38.4,140,84,3.5,1.0,150000,2.8,7.31,68,0.40,8,Furosemide 20mg IV Q6H,Dobutamine 3mcg/kg/min,Acute Decompensated Heart Failure,Acute Kidney Injury,0.70
+ICU-2026-005,20,92,24,93,38.1,138,82,3.2,0.9,155000,2.6,7.32,70,0.35,7,Furosemide 20mg IV,Dobutamine 2mcg/kg/min,Acute Decompensated Heart Failure,Acute Kidney Injury,0.66
+ICU-2026-006,0,85,22,94,37.2,132,80,1.8,0.4,220000,1.6,7.40,82,0.30,5,Cefazolin 1g IV Q8H,Morphine PRN,Post-operative Day 2 Abdominal Surgery,Mild ileus,0.38
+ICU-2026-006,4,84,21,95,37.1,130,78,1.7,0.4,225000,1.5,7.40,84,0.30,4,Cefazolin 1g IV Q8H,Morphine PRN,Post-operative Day 2 Abdominal Surgery,Mild ileus,0.36
+ICU-2026-006,8,83,21,95,37.0,128,77,1.6,0.3,230000,1.4,7.41,85,0.30,4,Cefazolin 1g IV Q12H,Morphine PRN,Post-operative Day 2 Abdominal Surgery,Mild ileus,0.34
+ICU-2026-006,12,82,20,96,36.9,126,76,1.5,0.3,235000,1.3,7.41,87,0.30,3,Cefazolin 1g IV Q12H,Acetaminophen,Post-operative Day 2 Abdominal Surgery,Mild ileus,0.32
+ICU-2026-006,16,81,20,96,36.8,125,75,1.4,0.3,240000,1.2,7.42,88,0.30,3,Cefazolin 1g IV Q12H,Acetaminophen,Post-operative Day 2 Abdominal Surgery,Mild ileus,0.30
+ICU-2026-006,20,80,19,97,36.8,124,74,1.3,0.3,245000,1.1,7.42,89,0.21,2,Cefazolin 1g IV Q12H,Acetaminophen,Post-operative Day 2 Abdominal Surgery,Recovery,0.28
+ICU-2026-007,0,110,30,87,39.0,152,85,2.5,1.2,125000,3.2,7.28,58,0.55,9,Vancomycin 15mg/kg Q12H,Cefepime 2g IV Q12H,Healthcare-Acquired Pneumonia,Hospital Sepsis,0.75
+ICU-2026-007,4,115,32,86,39.2,155,87,2.6,1.3,120000,3.4,7.27,56,0.55,9,Vancomycin 15mg/kg Q12H,Cefepime 2g IV Q12H,Healthcare-Acquired Pneumonia,Hospital Sepsis,0.77
+ICU-2026-007,8,112,31,86,39.1,153,86,2.7,1.4,118000,3.5,7.26,55,0.60,10,Vancomycin 15mg/kg Q12H,Cefepime 2g IV Q12H,Healthcare-Acquired Pneumonia,Hospital Sepsis,0.78
+ICU-2026-007,12,108,29,87,38.9,150,84,2.6,1.3,122000,3.3,7.27,57,0.55,9,Vancomycin 15mg/kg Q12H,Cefepime 2g IV Q12H,Healthcare-Acquired Pneumonia,Hospital Sepsis,0.76
+ICU-2026-007,16,105,28,88,38.7,148,82,2.5,1.2,128000,3.1,7.28,60,0.50,9,Vancomycin 15mg/kg Q12H,Cefepime 1g IV Q12H,Healthcare-Acquired Pneumonia,Hospital Sepsis,0.73
+ICU-2026-007,20,102,27,89,38.5,145,80,2.4,1.1,132000,2.9,7.29,63,0.45,8,Vancomycin 15mg/kg Q12H,Cefepime 1g IV Q12H,Healthcare-Acquired Pneumonia,Hospital Sepsis,0.70
+ICU-2026-008,0,130,36,82,39.8,170,98,3.8,2.0,85000,5.2,7.22,48,0.70,12,Meropenem 2g IV Q8H,Vasopressin 0.04 + Epinephrine,Polytrauma (MVA),Multi-organ Failure + Sepsis,0.88
+ICU-2026-008,4,135,38,80,40.1,175,102,4.0,2.2,80000,5.6,7.20,45,0.80,12,Meropenem 2g IV Q8H,Vasopressin + Epinephrine 0.1,Polytrauma (MVA),Multi-organ Failure + Sepsis,0.90
+ICU-2026-008,8,132,37,81,39.9,172,100,3.9,2.1,82000,5.4,7.21,46,0.75,12,Meropenem 2g IV Q8H,Vasopressin + Epinephrine 0.08,Polytrauma (MVA),Multi-organ Failure + Sepsis,0.89
+ICU-2026-008,12,128,35,83,39.6,168,98,3.7,2.0,88000,5.0,7.23,50,0.70,11,Meropenem 2g IV Q8H,Vasopressin + Epinephrine 0.06,Polytrauma (MVA),Multi-organ Failure + Sepsis,0.87
+ICU-2026-008,16,125,33,84,39.3,165,95,3.5,1.9,95000,4.7,7.24,53,0.65,11,Meropenem 2g IV Q8H,Vasopressin + Epinephrine 0.04,Polytrauma (MVA),Multi-organ Failure + Sepsis,0.85
+ICU-2026-008,20,122,32,85,39.0,162,93,3.3,1.8,100000,4.4,7.25,56,0.60,10,Meropenem 2g IV Q8H,Vasopressin + Epinephrine 0.02,Polytrauma (MVA),Multi-organ Failure + Sepsis,0.82
+ICU-2026-009,0,140,38,78,40.2,180,105,5.5,2.8,65000,6.8,7.18,42,0.80,13,Piperacillin-Tazobactam 4.5g Q8H,Meropenem 2g IV Q8H + Vasopressin + Epinephrine,Fulminant Septic Shock,Lactic Acidosis + AKI,0.92
+ICU-2026-009,4,145,40,76,40.5,185,108,5.8,3.0,60000,7.2,7.16,40,0.90,13,Piperacillin-Tazobactam 4.5g Q6H,Meropenem 2g IV Q8H + Vasopressin + Epinephrine,Fulminant Septic Shock,Lactic Acidosis + AKI,0.94
+ICU-2026-009,8,148,42,75,40.8,188,110,6.0,3.1,58000,7.5,7.15,38,0.95,13,Piperacillin-Tazobactam 4.5g Q6H,Meropenem 2g IV Q6H + Vasopressin + Epinephrine + Dobutamine,Fulminant Septic Shock,Lactic Acidosis + AKI,0.95
+ICU-2026-009,12,150,43,74,41.0,190,112,6.2,3.2,55000,7.8,7.14,36,0.95,14,Piperacillin-Tazobactam 4.5g Q6H,Meropenem 2g IV Q6H + Vasopressin + Epinephrine + Dobutamine,Fulminant Septic Shock,Lactic Acidosis + AKI,0.96
+ICU-2026-009,16,148,41,75,40.8,188,110,6.0,3.1,58000,7.5,7.15,38,0.95,13,Piperacillin-Tazobactam 4.5g Q6H,Meropenem 2g IV Q6H + Vasopressin + Epinephrine + Dobutamine,Fulminant Septic Shock,Lactic Acidosis + AKI,0.95
+ICU-2026-009,20,145,40,76,40.5,185,108,5.8,3.0,60000,7.2,7.16,40,0.90,13,Piperacillin-Tazobactam 4.5g Q6H,Meropenem 2g IV Q6H + Vasopressin + Epinephrine + Dobutamine,Fulminant Septic Shock,Lactic Acidosis + AKI,0.94
+ICU-2026-010,0,76,19,96,36.8,120,70,0.6,0.2,290000,0.8,7.42,92,0.21,1,Lisinopril 10mg,Metoprolol 25mg,Hypertension,Stable,0.12
+ICU-2026-010,4,77,18,96,36.9,122,71,0.6,0.2,290000,0.8,7.42,93,0.21,1,Lisinopril 10mg,Metoprolol 25mg,Hypertension,Stable,0.11
+ICU-2026-010,8,78,18,97,37.0,124,72,0.6,0.2,290000,0.8,7.43,94,0.21,1,Lisinopril 10mg,Metoprolol 25mg,Hypertension,Stable,0.10
+ICU-2026-010,12,79,19,97,37.1,125,73,0.6,0.2,290000,0.8,7.43,95,0.21,1,Lisinopril 10mg,Metoprolol 25mg,Hypertension,Stable,0.09
+ICU-2026-010,16,80,19,97,37.2,126,74,0.6,0.2,290000,0.8,7.43,96,0.21,0,Lisinopril 10mg,Metoprolol 25mg,Hypertension,Stable,0.08
+ICU-2026-010,20,81,19,97,37.3,128,75,0.6,0.2,290000,0.8,7.43,97,0.21,0,Lisinopril 10mg,Metoprolol 25mg,Hypertension,Stable,0.07

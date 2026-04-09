@@ -1,0 +1,150 @@
+📊 SAMPLE ICU PATIENT DATA - 10 Patients with Different Conditions
+=====================================================================
+
+PATIENTS INCLUDED:
+==================
+
+1. ICU-2026-001: DENGUE FEVER (Dengue Hemorrhagic Fever)
+   - Primary: Dengue Fever with Thrombocytopenia
+   - Vitals: Elevated HR (95), Fever (38.5°C), Low platelets (180K)
+   - Risk: HIGH (73%)
+   - Medications: Ceftriaxone (antibiotic), Norepinephrine (vasopressor)
+   - Trend: IMPROVING over 24 hours (risk decreases to 55%)
+   
+2. ICU-2026-002: SEPTIC SHOCK (Critical)
+   - Primary: Septic Shock with Multi-organ Failure
+   - Vitals: Very high HR (120+), Severe hypoxia (88%), Low platelets (95K)
+   - Labs: High creatinine (2.8), High bilirubin (1.5), High lactate (4.2)
+   - Risk: CRITICAL (85%)
+   - Medications: Meropenem (broad-spectrum), Vasopressin + Norepinephrine
+   - Trend: DETERIORATING (risk stays HIGH despite treatment)
+
+3. ICU-2026-003: ACUTE ISCHEMIC STROKE (Stable)
+   - Primary: Acute Ischemic Stroke with Hypertension
+   - Vitals: Normal vital signs (HR 78-88, SpO2 94-96%)
+   - Labs: Normal organ function, Normal coagulation
+   - Risk: LOW (20-25%)
+   - Medications: Aspirin (antiplatelet), Clopidogrel, Labetalol (antihypertensive)
+   - Trend: STEADY IMPROVEMENT (low risk remains stable)
+
+4. ICU-2026-004: SEVERE PNEUMONIA with ARDS
+   - Primary: Community-Acquired Pneumonia with ARDS (Respiratory Failure)
+   - Vitals: High HR (108-112), Low SpO2 (84-88%), Very low PaO2 (48-58)
+   - Labs: High creatinine (4.2+), High lactate (3.5)
+   - Risk: HIGH (79%)
+   - Medications: Piperacillin-Tazobactam + Meropenem (broad coverage)
+   - Trend: SLOW IMPROVEMENT (ventilator support with gradual SpO2 increase)
+
+5. ICU-2026-005: ACUTE DECOMPENSATED HEART FAILURE
+   - Primary: Acute Decompensated Heart Failure with AKI
+   - Vitals: Elevated HR (92-100), Tight BP control (138-144)
+   - Labs: Elevated creatinine (3.5-3.8) - kidney dysfunction
+   - Risk: MODERATE-HIGH (68-73%)
+   - Medications: Furosemide (diuretic), Lisinopril, Dobutamine (inotrope)
+   - Trend: FLUCTUATING - requires careful fluid management
+
+6. ICU-2026-006: POST-OPERATIVE RECOVERY (Low Risk)
+   - Primary: Day 2 Post-Operative Abdominal Surgery
+   - Vitals: Normal & stable (HR 80-85, SpO2 94-97%)
+   - Labs: Slightly elevated creatinine (1.3-1.8) - expected post-op
+   - Risk: LOW (28-38%)
+   - Medications: Prophylactic antibiotics, Pain control (Morphine/Acetaminophen)
+   - Trend: EXCELLENT RECOVERY (risk decreases daily)
+
+7. ICU-2026-007: HEALTHCARE-ASSOCIATED PNEUMONIA
+   - Primary: Hospital-Acquired Pneumonia with Hospital Sepsis
+   - Vitals: Elevated HR (102-115), Low SpO2 (86-89%)
+   - Labs: Elevated creatinine (2.4-2.7), High lactate (3.1-3.5)
+   - Risk: MODERATELY HIGH (70-78%)
+   - Medications: Vancomycin + Cefepime (ICU-level empiric therapy)
+   - Trend: GRADUAL IMPROVEMENT (HR and lactate declining)
+
+8. ICU-2026-008: POLYTRAUMA (Motor Vehicle Accident)
+   - Primary: Multiple Fractures with Multi-organ Failure + Sepsis
+   - Vitals: VERY HIGH HR (122-135), CRITICAL SpO2 (80-85%), Severe fever (39.8-40.1°C)
+   - Labs: CRITICAL - High creatinine (3.8-4.0), High lactate (5.0-5.6)
+   - Risk: CRITICAL (82-90%)
+   - Medications: High-dose Meropenem, Vasopressin + Epinephrine + ICU support
+   - Trend: CRITICAL BUT STABILIZING with aggressive multi-drug therapy
+
+9. ICU-2026-009: FULMINANT SEPTIC SHOCK (Most Critical)
+   - Primary: Fulminant Septic Shock with Lactic Acidosis + AKI
+   - Vitals: EXTREMELY CRITICAL - HR 140-150, SpO2 74-78%, T > 40°C
+   - Labs: WORST CASE - Creatinine 5.5-6.2, Lactate 6.8-7.8, Severe acidosis (pH 7.14-7.18)
+   - Risk: MAXIMUM (92-96%)
+   - Medications: Triple antibiotics + Triple vasopressor + Dobutamine (maximum support)
+   - Trend: EXTREMELY CRITICAL - Requires ICU Level 3 care, poor prognosis
+
+10. ICU-2026-010: STABLE CHRONIC (Control - Normal)
+    - Primary: Hypertension (Stable Control)
+    - Vitals: Completely Normal (HR 76-81, SpO2 96-97°C, BP well-controlled)
+    - Labs: All normal organ function (Creatinine 0.6, Lactate 0.8, pH 7.42-7.43)
+    - Risk: MINIMAL (7-12%)
+    - Medications: Standard antihypertensive therapy only
+    - Trend: STABLE BASELINE - Normal vital signs throughout
+
+=====================================
+HOW TO USE THIS DATA:
+=====================================
+
+1. DOWNLOAD THE CSV FILE:
+   File: SAMPLE_PATIENT_DATA.csv
+   Location: E:\icu_project\SAMPLE_PATIENT_DATA.csv
+
+2. TEST WITH UPLOAD PAGE:
+   - Go to http://localhost:5000/login
+   - Login with Patient ID: 1011D (Doctor) or 1011F (Family)
+   - Go to /upload page
+   - Drag & drop SAMPLE_PATIENT_DATA.csv OR click "Use Demo Data"
+   - Dashboard will show data from these 10 patients
+
+3. DEMONSTRATE DIFFERENT FEATURES:
+   - Show Login system → File upload → Dashboard flow
+   - Switch between Doctor view (detailed) & Family view (simple)
+   - Click on different patient IDs to see various conditions:
+     * ICU-2026-001 (Dengue) → Shows improvement
+     * ICU-2026-002 (Septic Shock) → Shows critical state
+     * ICU-2026-009 (Fulminant Sepsis) → Shows maximum risk/urgency
+   - Show trajectory graphs (expected vs actual recovery)
+   - Show organ health panel (cardiac, pulmonary, renal status)
+   - Show theme toggle (Dark/Light mode)
+   - Click Settings → Theme change works smoothly
+
+4. FEATURES TO HIGHLIGHT IN DEMO:
+   ✓ Role-based login (Doctor vs Family views)
+   ✓ Real-time vital signs monitoring
+   ✓ Risk scoring (7-day mortality prediction)
+   ✓ Hospital stay prediction (12 days ±3 days)
+   ✓ Organ health status (Cardiac/Pulmonary/Renal)
+   ✓ Trajectory graphs (medicine response, recovery curves)
+   ✓ Medication tracking with interaction checking
+   ✓ Disease pattern analysis
+   ✓ AI-powered family chatbot support
+   ✓ Professional UI with dark/light themes
+   ✓ Responsive design (works on all devices)
+   ✓ PDF export & printing capabilities
+
+=====================================
+DISEASE SPECTRUM COVERED:
+=====================================
+
+VIRAL:           Dengue Fever
+BACTERIAL:       Sepsis, Hospital-Acquired Pneumonia, Community-Acquired Pneumonia
+CARDIAC:         Acute Decompensated Heart Failure
+NEUROLOGICAL:    Acute Ischemic Stroke
+TRAUMA:          Polytrauma (MVA)
+POST-OPERATIVE:  Abdominal Surgery Recovery
+CRITICAL:        Multi-organ Failure, Septic Shock, Fulminant Sepsis
+STABLE:          Hypertension (Control Group)
+
+=====================================
+RISK STRATIFICATION SHOWN:
+=====================================
+
+MINIMAL RISK (0-12%):           ICU-2026-010
+LOW RISK (20-40%):              ICU-2026-003, ICU-2026-006
+MODERATE-HIGH RISK (60-80%):    ICU-2026-001, ICU-2026-005, ICU-2026-007
+HIGH RISK (80-90%):             ICU-2026-002, ICU-2026-004, ICU-2026-008
+CRITICAL RISK (90-96%):         ICU-2026-009
+
+=====================================

@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareCast - Enhanced ICU Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://html2pdf.es.js.org/html2pdf.bundle.min.js"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1392ec",
+                        "success": "#10b981",
+                        "warning": "#f59e0b",
+                        "danger": "#ef4444",
+                        "info": "#0ea5e9",
+                        "background-dark": "#101a22",
+                        "card-dark": "#192833",
+                        "card-border": "#2c3e4e",
+                        "text-secondary": "#92b2c9",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        body.dark-mode {
+            background: linear-gradient(135deg, #0f1419 0%, #1a2332 100%);
+            color: #e1e8ed;
+        }
+
+        body.light-mode {
+            background: linear-gradient(135deg, #f0f4f8 0%, #e8f1f7 100%);
+            color: #1a2332;
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #2c3e4e; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3e5466; }
+
+        .container-main {
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        @media (max-width: 1024px) {
+            .container-main {
+                max-width: 95%;
+            }
+        }
+
+        .alert-banner {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            border-left: 4px solid;
+        }
+
+        body.dark-mode .alert-critical {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: #ef4444;
+            color: #fecaca;
+        }
+
+        body.dark-mode .alert-warning {
+            background: rgba(245, 158, 11, 0.1);
+            border-color: #f59e0b;
+            color: #fcd34d;
+        }
+
+        body.dark-mode .alert-success {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: #10b981;
+            color: #86efac;
+        }
+
+        body.light-mode .alert-critical {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: #ef4444;
+            color: #dc2626;
+        }
+
+        body.light-mode .alert-warning {
+            background: rgba(245, 158, 11, 0.15);
+            border-color: #f59e0b;
+            color: #d97706;
+        }
+
+        body.light-mode .alert-success {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: #10b981;
+            color: #059669;
+        }
+
+        .card {
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        body.dark-mode .card {
+            background: rgba(25, 40, 51, 0.7);
+            border: 1px solid rgba(44, 62, 78, 0.5);
+        }
+
+        body.light-mode .card {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(19, 146, 236, 0.2);
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal.show {
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #192833 0%, #233f4f 100%);
+            padding: 30px;
+            border-radius: 16px;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 1px solid rgba(44, 62, 78, 0.5);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        body.light-mode .modal-content {
+            background: linear-gradient(135deg, #ffffff 0%, #f0f4f8 100%);
+            border: 1px solid rgba(19, 146, 236, 0.2);
+        }
+
+        .chatbot-widget {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 360px;
+            height: 500px;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            z-index: 500;
+            transition: all 0.3s ease;
+        }
+
+        body.dark-mode .chatbot-widget {
+            background: rgba(25, 40, 51, 0.95);
+            border: 1px solid rgba(44, 62, 78, 0.5);
+        }
+
+        body.light-mode .chatbot-widget {
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(19, 146, 236, 0.2);
+        }
+
+        .chatbot-widget.collapsed {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+        }
+
+        .chatbot-header {
+            padding: 16px;
+            border-bottom: 1px solid rgba(44, 62, 78, 0.5);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chatbot-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .chatbot-input {
+            padding: 12px;
+            border-top: 1px solid rgba(44, 62, 78, 0.5);
+            display: flex;
+            gap: 8px;
+        }
+
+        .chatbot-message {
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        .chatbot-message.user {
+            background: linear-gradient(135deg, #1392ec, #0d6dd8);
+            color: white;
+            align-self: flex-end;
+        }
+
+        .chatbot-message.bot {
+            background: rgba(44, 62, 78, 0.5);
+            color: #92b2c9;
+            align-self: flex-start;
+        }
+
+        body.light-mode .chatbot-message.bot {
+            background: rgba(19, 146, 236, 0.1);
+            color: #456478;
+        }
+
+        .button {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .button-primary {
+            background: linear-gradient(135deg, #1392ec, #0d6dd8);
+            color: white;
+        }
+
+        .button-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(19, 146, 236, 0.4);
+        }
+
+        .button-secondary {
+            background: transparent;
+            border: 1.5px solid #1392ec;
+            color: #1392ec;
+        }
+
+        .button-secondary:hover {
+            background: rgba(19, 146, 236, 0.1);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .badge-critical { background: rgba(239, 68, 68, 0.3); color: #ef4444; }
+        .badge-warning { background: rgba(245, 158, 11, 0.3); color: #f59e0b; }
+        .badge-success { background: rgba(16, 185, 129, 0.3); color: #10b981; }
+
+        .stat-box {
+            text-align: center;
+            padding: 12px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            margin: 8px 0;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            opacity: 0.7;
+            text-transform: uppercase;
+        }
+
+        .theme-toggle {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.3s ease;
+        }
+
+        body.dark-mode .theme-toggle {
+            background: rgba(44, 62, 78, 0.5);
+            color: #fbbf24;
+        }
+
+        body.light-mode .theme-toggle {
+            background: rgba(19, 146, 236, 0.1);
+            color: #1392ec;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        .profile-menu {
+            position: absolute;
+            top: 50px;
+            right: 0;
+            background: rgba(25, 40, 51, 0.98);
+            border: 1px solid rgba(44, 62, 78, 0.5);
+            border-radius: 8px;
+            min-width: 220px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+            display: none !important;
+            flex-direction: column;
+            z-index: 1000;
+        }
+
+        body.light-mode .profile-menu {
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(19, 146, 236, 0.2);
+        }
+
+        .profile-menu.show {
+            display: flex !important;
+        }
+
+        .profile-menu-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(44, 62, 78, 0.3);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .profile-menu-item:hover {
+            background: rgba(19, 146, 236, 0.1);
+        }
+
+        .tab-button {
+            padding: 12px 16px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        body.dark-mode .tab-button.active {
+            border-bottom-color: #1392ec;
+            color: #1392ec;
+        }
+
+        body.dark-mode .tab-button {
+            color: #92b2c9;
+        }
+
+        body.light-mode .tab-button {
+            color: #456478;
+        }
+
+        body.light-mode .tab-button.active {
+            border-bottom-color: #1392ec;
+            color: #1392ec;
+        }
+    </style>
+</head>
+<body class="dark-mode font-display antialiased">
+
+<!-- Header -->
+<header class="sticky top-0 z-40 border-b bg-background-dark/80 backdrop-blur-md border-card-border">
+    <div class="container-main px-4 py-4">
+        <div class="flex items-center justify-between">
+            <!-- Left: Logo & Patient Info -->
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-2xl">local_hospital</span>
+                    <span class="font-bold text-lg">CareCast</span>
+                </div>
+                <div class="hidden sm:flex items-center gap-3 text-sm border-l border-card-border pl-4 ml-4">
+                    <span class="text-text-secondary">Patient:</span>
+                    <strong id="patient-id-header">ICU-2026-001</strong>
+                    <span class="text-text-secondary">|</span>
+                    <span class="badge badge-success" id="role-badge">Doctor</span>
+                </div>
+            </div>
+
+            <!-- Center: View Switcher -->
+            <div class="hidden md:flex items-center gap-2">
+                <button onclick="switchView('doctor')" id="doc-btn" class="px-3 py-2 rounded-lg text-xs font-semibold border-2 border-primary text-primary bg-primary/10 transition-all">
+                    <span class="material-symbols-outlined" style="font-size: 14px; vertical-align: middle; margin-right: 4px;">medical_information</span>
+                    Doctor
+                </button>
+                <button onclick="switchView('family')" id="fam-btn" class="px-3 py-2 rounded-lg text-xs font-semibold border-2 border-transparent text-text-secondary hover:text-white transition-all">
+                    <span class="material-symbols-outlined" style="font-size: 14px; vertical-align: middle; margin-right: 4px;">family_restroom</span>
+                    Family
+                </button>
+            </div>
+
+            <!-- Right: Controls -->
+            <div class="flex items-center gap-3">
+                <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
+                    <span class="material-symbols-outlined" id="theme-icon">light_mode</span>
+                </button>
+                <div class="relative">
+                    <button onclick="toggleProfileMenu()" class="w-10 h-10 rounded-lg bg-primary/20 border border-primary flex items-center justify-center text-primary hover:bg-primary/30 transition-all">
+                        <span class="material-symbols-outlined">account_circle</span>
+                    </button>
+                    <div class="profile-menu" id="profile-menu">
+                        <div class="profile-menu-item" onclick="openSettings()">
+                            <span class="material-symbols-outlined" style="font-size: 16px;">settings</span>
+                            Settings
+                        </div>
+                        <div class="profile-menu-item" onclick="logout()">
+                            <span class="material-symbols-outlined" style="font-size: 16px;">logout</span>
+                            Logout
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Alerts Banner -->
+<div class="container-main px-4 pt-4">
+    <div id="alerts-container"></div>
+</div>
+
+<!-- Main Content -->
+<main class="container-main px-4 py-6">
+    <!-- Doctor View -->
+    <div id="doctor-view" class="space-y-6">
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="card">
+                <div class="stat-box">
+                    <div class="stat-label">7-Day Mortality Risk</div>
+                    <div class="stat-value text-danger" id="mort-7day">73%</div>
+                    <div class="text-xs opacity-60">High Risk</div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="stat-box">
+                    <div class="stat-label">24h Deterioration</div>
+                    <div class="stat-value text-warning" id="deter-risk">92%</div>
+                    <div class="text-xs opacity-60">Monitor Closely</div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="stat-box">
+                    <div class="stat-label">Expected Hospital Stay</div>
+                    <div class="stat-value text-primary" id="expected-stay">12 Days</div>
+                    <div class="text-xs opacity-60">±3 days variance</div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="stat-box">
+                    <div class="stat-label">System Status</div>
+                    <div style="font-size: 20px; margin: 8px 0;">
+                        <span class="material-symbols-outlined text-success">check_circle</span>
+                    </div>
+                    <div class="text-xs text-success">All Systems Ready</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Organ Health Panel -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Vitals Grid -->
+            <div class="card">
+                <h3 class="font-bold text-sm mb-4 flex items-center gap-2">
+                    <span class="material-symbols-outlined">monitor_heart</span>
+                    Vital Signs
+                </h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-primary" id="vital-hr">85</div>
+                        <div class="text-xs text-text-secondary">Heart Rate (bpm)</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-primary" id="vital-rr">22</div>
+                        <div class="text-xs text-text-secondary">Resp. Rate (/min)</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-success" id="vital-o2">95</div>
+                        <div class="text-xs text-text-secondary">SpO2 (%)</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-primary" id="vital-temp">37.5</div>
+                        <div class="text-xs text-text-secondary">Temp (°C)</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Organ Health Status -->
+            <div class="card">
+                <h3 class="font-bold text-sm mb-4 flex items-center gap-2">
+                    <span class="material-symbols-outlined">favorite</span>
+                    Organ System Status
+                </h3>
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between p-3 rounded-lg" style="background: rgba(16, 185, 129, 0.1); border-left: 3px solid #10b981;">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-success">favorite</span>
+                            <div>
+                                <div class="font-semibold text-sm">Cardiac</div>
+                                <div class="text-xs text-text-secondary">Stable, HR 85 bpm</div>
+                            </div>
+                        </div>
+                        <span class="badge badge-success">OK</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 rounded-lg" style="background: rgba(16, 185, 129, 0.1); border-left: 3px solid #10b981;">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-success">lungs</span>
+                            <div>
+                                <div class="font-semibold text-sm">Pulmonary</div>
+                                <div class="text-xs text-text-secondary">SpO2 95%, RR 22</div>
+                            </div>
+                        </div>
+                        <span class="badge badge-success">OK</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 rounded-lg" style="background: rgba(245, 158, 11, 0.1); border-left: 3px solid #f59e0b;">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-warning">kidney</span>
+                            <div>
+                                <div class="font-semibold text-sm">Renal</div>
+                                <div class="text-xs text-text-secondary">Creatinine 1.8 (↑)</div>
+                            </div>
+                        </div>
+                        <span class="badge badge-warning">WATCH</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs for Graphs & Data -->
+        <div class="card">
+            <div class="flex border-b border-card-border mb-4" style="overflow-x: auto;">
+                <button class="tab-button active" onclick="switchTab('trajectory')">
+                    <span class="material-symbols-outlined" style="font-size: 16px; vertical-align: middle; margin-right: 4px;">trending_up</span>
+                    Trajectory & Recovery
+                </button>
+                <button class="tab-button" onclick="switchTab('medications')">
+                    <span class="material-symbols-outlined" style="font-size: 16px; vertical-align: middle; margin-right: 4px;">medication</span>
+                    Medications
+                </button>
+                <button class="tab-button" onclick="switchTab('analysis')">
+                    <span class="material-symbols-outlined" style="font-size: 16px; vertical-align: middle; margin-right: 4px;">analytics</span>
+                    Analysis
+                </button>
+                <button class="tab-button" onclick="switchTab('notes')">
+                    <span class="material-symbols-outlined" style="font-size: 16px; vertical-align: middle; margin-right: 4px;">description</span>
+                    Notes
+                </button>
+            </div>
+
+            <!-- Trajectory Tab -->
+            <div id="tab-trajectory" class="tab-content">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <h4 class="font-semibold text-sm mb-3">Medicine Response (Expected vs Actual)</h4>
+                        <canvas id="medicine-response-chart"></canvas>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-sm mb-3">Recovery Trajectory (Expected vs Actual)</h4>
+                        <canvas id="recovery-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Medications Tab -->
+            <div id="tab-medications" class="tab-content hidden">
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center p-3 rounded-lg" style="background: rgba(19, 146, 236, 0.1);">
+                        <div>
+                            <div class="font-semibold text-sm">Ceftriaxone 1g IV</div>
+                            <div class="text-xs text-text-secondary">Antibiotic - Q6H</div>
+                        </div>
+                        <div class="text-xs badge badge-success">Active</div>
+                    </div>
+                    <div class="flex justify-between items-center p-3 rounded-lg" style="background: rgba(19, 146, 236, 0.1);">
+                        <div>
+                            <div class="font-semibold text-sm">Norepinephrine 0.1 mcg/kg/min</div>
+                            <div class="text-xs text-text-secondary">Vasopressor - Continuous</div>
+                        </div>
+                        <div class="text-xs badge badge-warning">Monitoring</div>
+                    </div>
+                    <div class="flex justify-between items-center p-3 rounded-lg" style="background: rgba(19, 146, 236, 0.1);">
+                        <div>
+                            <div class="font-semibold text-sm">Interaction Check</div>
+                            <div class="text-xs text-success">✓ No critical interactions detected</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analysis Tab -->
+            <div id="tab-analysis" class="tab-content hidden">
+                <div class="space-y-4">
+                    <div class="p-4 rounded-lg" style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3);">
+                        <div class="font-semibold text-sm mb-2">Disease Pattern Detected</div>
+                        <div class="text-sm">Dengue Fever</div>
+                        <div class="text-xs text-text-secondary mt-1">Monitor platelet count for DHF progression</div>
+                    </div>
+                    <div class="p-4 rounded-lg" style="background: rgba(19, 146, 236, 0.1);">
+                        <div class="font-semibold text-sm mb-2">Lab Abnormalities</div>
+                        <div class="text-sm grid grid-cols-2 gap-2">
+                            <div>Creatinine: <strong>High</strong></div>
+                            <div>Platelets: <strong>Low</strong></div>
+                        </div>
+                    </div>
+                    <div class="p-4 rounded-lg" style="background: rgba(19, 146, 236, 0.1);">
+                        <div class="font-semibold text-sm mb-2">Resource Recommendations</div>
+                        <div class="text-sm">Dialysis unit on standby • Platelet stock: Adequate</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notes Tab -->
+            <div id="tab-notes" class="tab-content hidden">
+                <div class="space-y-3">
+                    <button class="button button-primary w-full" onclick="openNotesModal('doctor')">
+                        <span class="material-symbols-outlined" style="font-size: 16px; vertical-align: middle; margin-right: 4px;">edit</span>
+                        Add/Edit Detailed Notes
+                    </button>
+                    <div class="p-4 rounded-lg bg-card-dark/50">
+                        <div class="text-xs text-text-secondary mb-2">Last updated: 2:30 PM</div>
+                        <div class="text-sm">Patient responding well to current antibiotic regimen. Creatinine levels trending downward. Continue vasopressor support. Reassess in 6 hours.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-wrap gap-3">
+            <button class="button button-primary" onclick="exportPDF()">
+                <span class="material-symbols-outlined" style="font-size: 16px; vertical-align: middle; margin-right: 4px;">download</span>
+                Export PDF
+            </button>
+            <button class="button button-secondary" onclick="printReport()">
+                <span class="material-symbols-outlined" style="font-size: 16px; vertical-align: middle; margin-right: 4px;">print</span>
+                Print
+            </button>
+        </div>
+    </div>
+
+    <!-- Family View -->
+    <div id="family-view" class="space-y-6 hidden">
+        <!-- Patient Status Card -->
+        <div class="card">
+            <h2 class="text-xl font-bold mb-4">Room 7 - Patient Status</h2>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div class="text-center">
+                    <div class="text-3xl mb-2">❤️</div>
+                    <div class="font-semibold text-sm">Heart</div>
+                    <div class="text-xs text-success">Normal</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-3xl mb-2">💨</div>
+                    <div class="font-semibold text-sm">Lungs</div>
+                    <div class="text-xs text-success">Supported</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-3xl mb-2">🫁</div>
+                    <div class="font-semibold text-sm">Kidneys</div>
+                    <div class="text-xs text-warning">Monitored</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Summary -->
+        <div class="card" style="border-left: 4px solid #1392ec;">
+            <div class="flex items-center gap-2 mb-3">
+                <span class="material-symbols-outlined text-primary">smart_toy</span>
+                <span class="font-semibold">AI Health Summary</span>
+            </div>
+            <p class="text-sm leading-relaxed">
+                Your loved one is receiving excellent medical care. Doctors are actively treating the infection with powerful antibiotics. The support machines are helping him recover step by step. We see signs of improvement, especially in the kidneys. His medical team is very experienced with this condition.
+            </p>
+        </div>
+
+        <!-- Treatment Timeline -->
+        <div class="card">
+            <h3 class="font-bold text-sm mb-4 flex items-center gap-2">
+                <span class="material-symbols-outlined">timeline</span>
+                Treatment Journey
+            </h3>
+            <div class="space-y-4">
+                <div class="flex gap-4">
+                    <div class="flex flex-col items-center">
+                        <div class="w-8 h-8 rounded-full bg-success text-white flex items-center justify-center text-sm">✓</div>
+                        <div class="w-1 h-12 bg-success/30"></div>
+                    </div>
+                    <div>
+                        <div class="font-semibold text-sm">Day 1: Admitted with fever</div>
+                        <div class="text-xs text-text-secondary">Strong antibiotics started immediately</div>
+                    </div>
+                </div>
+                <div class="flex gap-4">
+                    <div class="flex flex-col items-center">
+                        <div class="w-8 h-8 rounded-full bg-success text-white flex items-center justify-center text-sm">✓</div>
+                        <div class="w-1 h-12 bg-success/30"></div>
+                    </div>
+                    <div>
+                        <div class="font-semibold text-sm">Day 2: Extra oxygen support added</div>
+                        <div class="text-xs text-text-secondary">Breathing is now easier, oxygen levels excellent</div>
+                    </div>
+                </div>
+                <div class="flex gap-4">
+                    <div class="flex flex-col items-center">
+                        <div class="w-8 h-8 rounded-full bg-warning text-white flex items-center justify-center text-sm font-bold">→</div>
+                    </div>
+                    <div>
+                        <div class="font-semibold text-sm">Today: Recovery progressing well</div>
+                        <div class="text-xs text-text-secondary">Lab tests show improvement, infection under control</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Expected Recovery Timeline -->
+        <div class="card">
+            <h3 class="font-bold text-sm mb-4">Recovery Outlook (7-10 Days)</h3>
+            <canvas id="family-recovery-chart"></canvas>
+        </div>
+
+        <!-- Family Info -->
+        <div class="card">
+            <h3 class="font-bold text-sm mb-3 flex items-center gap-2">
+                <span class="material-symbols-outlined">info</span>
+                What You Should Know
+            </h3>
+            <div class="space-y-3 text-sm">
+                <div>
+                    <strong>✓ Visiting Hours:</strong> 10:00 AM - 8:00 PM daily
+                </div>
+                <div>
+                    <strong>✓ Visitors:</strong> 2 people maximum at a time
+                </div>
+                <div>
+                    <strong>✓ Questions?</strong> Ask any doctor or nurse anytime
+                </div>
+                <div>
+                    <strong>✓ Support:</strong> 24/7 helpline available
+                </div>
+            </div>
+        </div>
+
+        <!-- Ask Doctor Button -->
+        <button class="button button-primary w-full" onclick="openNotesModal('family')">
+            <span class="material-symbols-outlined" style="font-size: 16px; vertical-align: middle; margin-right: 4px;">chat</span>
+            Ask Doctor (via Family Portal)
+        </button>
+    </div>
+</main>
+
+<!-- Notes Modal -->
+<div id="notes-modal" class="modal">
+    <div class="modal-content">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="font-bold text-lg" id="notes-title">Doctor Notes</h2>
+            <button onclick="closeNotesModal()" class="text-text-secondary hover:text-white">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <textarea id="notes-textarea" class="w-full p-3 rounded-lg border min-h-[200px] bg-card-dark/50 border-card-border text-white resize-none" placeholder="Add your notes here..."></textarea>
+        <div class="flex gap-2 mt-4">
+            <button class="button button-primary flex-1" onclick="saveNotes()">Save Notes</button>
+            <button class="button button-secondary flex-1" onclick="closeNotesModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- Settings Modal -->
+<div id="settings-modal" class="modal">
+    <div class="modal-content">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="font-bold text-lg">Settings</h2>
+            <button onclick="closeSettings()" class="text-text-secondary hover:text-white">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <div class="space-y-4">
+            <div>
+                <label class="font-semibold text-sm block mb-2">Theme Preference</label>
+                <div class="flex gap-2">
+                    <button class="flex-1 py-2 px-3 rounded-lg border border-primary/50 text-primary hover:bg-primary/10" id="theme-dark-btn" onclick="setTheme('dark')">
+                        <span class="material-symbols-outlined" style="vertical-align: middle; margin-right: 4px;">dark_mode</span>
+                        Dark
+                    </button>
+                    <button class="flex-1 py-2 px-3 rounded-lg border border-gray-500/50 text-text-secondary hover:bg-gray-500/10" id="theme-light-btn" onclick="setTheme('light')">
+                        <span class="material-symbols-outlined" style="vertical-align: middle; margin-right: 4px;">light_mode</span>
+                        Light
+                    </button>
+                </div>
+            </div>
+            <div>
+                <label class="font-semibold text-sm block mb-2">Auto-refresh Rate</label>
+                <select class="w-full p-2 rounded-lg bg-card-dark/50 border border-card-border text-white">
+                    <option>Every 5 minutes</option>
+                    <option>Every 10 minutes</option>
+                    <option>Every 30 minutes</option>
+                    <option>Manual only</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chatbot Widget (Family Only) -->
+<div id="chatbot-widget" class="chatbot-widget hidden">
+    <div class="chatbot-header" onclick="toggleChatbot()">
+        <span class="font-semibold text-sm">CareCast Assistant</span>
+        <span class="material-symbols-outlined" id="chatbot-toggle-icon">expand_less</span>
+    </div>
+    <div id="chatbot-messages-area" class="chatbot-messages">
+        <div class="chatbot-message bot">Hi! I'm here to help answer questions about your loved one's care. What would you like to know?</div>
+    </div>
+    <div class="chatbot-input">
+        <input type="text" id="chatbot-input" class="flex-1 p-2 rounded-lg bg-card-dark/50 border border-card-border text-white text-sm" placeholder="Ask a question..." onkeypress="handleChatbotInput(event)">
+        <button onclick="sendChatbotMessage()" class="text-primary hover:text-white">
+            <span class="material-symbols-outlined">send</span>
+        </button>
+    </div>
+</div>
+
+<script>
+    // ===== INITIALIZATION =====
+    document.addEventListener('DOMContentLoaded', function() {
+        const patientId = sessionStorage.getItem('patientId');
+        const userRole = sessionStorage.getItem('userRole');
+
+        if (!patientId) {
+            window.location.href = '/login';
+            return;
+        }
+
+        // Set patient info
+        document.getElementById('patient-id-header').textContent = patientId;
+        const roleText = userRole === 'D' ? 'Doctor' : 'Family';
+        document.getElementById('role-badge').textContent = roleText;
+
+        // Load theme
+        const theme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.classList.toggle('dark', theme === 'dark');
+        applyTheme(theme);
+
+        // Setup view
+        if (userRole === 'F') {
+            document.getElementById('doctor-view').classList.add('hidden');
+            document.getElementById('family-view').classList.remove('hidden');
+            document.getElementById('chatbot-widget').classList.remove('hidden');
+        } else {
+            document.getElementById('family-view').classList.add('hidden');
+            document.getElementById('doctor-view').classList.remove('hidden');
+        }
+
+        // Load data
+        loadData();
+        initCharts();
+
+        // Auto-refresh
+        setInterval(loadData, 5 * 60 * 1000);
+    });
+
+    // ===== THEME MANAGEMENT =====
+    function toggleTheme() {
+        const currentTheme = localStorage.getItem('theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        setTheme(newTheme);
+    }
+
+    function setTheme(theme) {
+        localStorage.setItem('theme', theme);
+        applyTheme(theme);
+        document.documentElement.classList.toggle('dark', theme === 'dark');
+    }
+
+    function applyTheme(theme) {
+        const body = document.body;
+        body.classList.remove('dark-mode', 'light-mode');
+        body.classList.add(theme + '-mode');
+        
+        const icon = document.getElementById('theme-icon');
+        icon.textContent = theme === 'dark' ? 'light_mode' : 'dark_mode';
+    }
+
+    // ===== VIEW SWITCHING =====
+    function switchView(view) {
+        const doctorView = document.getElementById('doctor-view');
+        const familyView = document.getElementById('family-view');
+        
+        if (view === 'doctor') {
+            doctorView.classList.remove('hidden');
+            familyView.classList.add('hidden');
+            document.getElementById('doc-btn').classList.add('border-primary', 'text-primary', 'bg-primary/10');
+            document.getElementById('fam-btn').classList.remove('border-primary', 'text-primary', 'bg-primary/10');
+        } else {
+            familyView.classList.remove('hidden');
+            doctorView.classList.add('hidden');
+            document.getElementById('fam-btn').classList.add('border-primary', 'text-primary', 'bg-primary/10');
+            document.getElementById('doc-btn').classList.remove('border-primary', 'text-primary', 'bg-primary/10');
+        }
+        
+        localStorage.setItem('currentView', view);
+    }
+
+    // ===== TAB SWITCHING =====
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+        document.getElementById('tab-' + tabName).classList.remove('hidden');
+        
+        document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+        event.target.closest('.tab-button').classList.add('active');
+    }
+
+    // ===== DATA LOADING =====
+    function loadData() {
+        // Load demo data or from API
+        updateUI({
+            mortality_risk: 0.73,
+            deterioration_risk: 0.92,
+            expected_stay: 12,
+            alerts: [
+                { type: 'critical', message: 'High mortality risk detected - close monitoring required' },
+                { type: 'warning', message: 'Drug interaction: Monitor for adverse effects' }
+            ]
+        });
+    }
+
+    function updateUI(data) {
+        document.getElementById('mort-7day').textContent = Math.round(data.mortality_risk * 100) + '%';
+        document.getElementById('deter-risk').textContent = Math.round(data.deterioration_risk * 100) + '%';
+        document.getElementById('expected-stay').textContent = data.expected_stay + ' Days';
+
+        // Update alerts
+        const alertsContainer = document.getElementById('alerts-container');
+        alertsContainer.innerHTML = '';
+        data.alerts.forEach(alert => {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert-banner alert-' + alert.type;
+            alertDiv.innerHTML = `<strong>${alert.type.toUpperCase()}:</strong> ${alert.message}`;
+            alertsContainer.appendChild(alertDiv);
+        });
+    }
+
+    // ===== CHARTS =====
+    let medicineChart, recoveryChart, familyRecoveryChart;
+
+    function initCharts() {
+        // Medicine Response Chart
+        const ctx1 = document.getElementById('medicine-response-chart');
+        if (ctx1) {
+            medicineChart = new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5'],
+                    datasets: [
+                        {
+                            label: 'Expected Response',
+                            data: [20, 35, 55, 75, 90],
+                            borderColor: '#1392ec',
+                            backgroundColor: 'rgba(19, 146, 236, 0.1)',
+                            borderDash: [5, 5],
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Actual Response',
+                            data: [18, 32, 48, 68, 82],
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: { legend: { position: 'bottom' } },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: { color: '#92b2c9', font: { size: 11 } },
+                            grid: { color: 'rgba(44, 62, 78, 0.2)' }
+                        },
+                        x: {
+                            ticks: { color: '#92b2c9', font: { size: 11 } },
+                            grid: { color: 'rgba(44, 62, 78, 0.2)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Recovery Chart
+        const ctx2 = document.getElementById('recovery-chart');
+        if (ctx2) {
+            recoveryChart = new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5'],
+                    datasets: [
+                        {
+                            label: 'Expected Recovery (SOFA Score)',
+                            data: [11, 9, 7, 5, 3],
+                            borderColor: '#1392ec',
+                            backgroundColor: 'rgba(19, 146, 236, 0.1)',
+                            borderDash: [5, 5],
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Actual Recovery (SOFA Score)',
+                            data: [11, 10, 8, 6, 4],
+                            borderColor: '#f59e0b',
+                            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: { legend: { position: 'bottom' } },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            reverse: true,
+                            max: 12,
+                            ticks: { color: '#92b2c9', font: { size: 11 } },
+                            grid: { color: 'rgba(44, 62, 78, 0.2)' }
+                        },
+                        x: {
+                            ticks: { color: '#92b2c9', font: { size: 11 } },
+                            grid: { color: 'rgba(44, 62, 78, 0.2)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Family Recovery Chart
+        const ctx3 = document.getElementById('family-recovery-chart');
+        if (ctx3) {
+            familyRecoveryChart = new Chart(ctx3, {
+                type: 'bar',
+                data: {
+                    labels: ['Today', '+2 Days', '+5 Days', '+7 Days', '+10 Days'],
+                    datasets: [
+                        {
+                            label: 'Recovery %',
+                            data: [15, 35, 65, 85, 95],
+                            backgroundColor: ['#ef4444', '#f59e0b', '#fbbf24', '#10b981', '#10b981'],
+                            borderRadius: 8
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: { color: '#92b2c9', font: { size: 11 } },
+                            grid: { color: 'rgba(44, 62, 78, 0.2)' }
+                        },
+                        x: {
+                            ticks: { color: '#92b2c9', font: { size: 11 } },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    // ===== MODALS & INTERACTIONS =====
+    function toggleProfileMenu() {
+        document.getElementById('profile-menu').classList.toggle('show');
+    }
+
+    function openSettings() {
+        document.getElementById('settings-modal').classList.add('show');
+        toggleProfileMenu();
+    }
+
+    function closeSettings() {
+        document.getElementById('settings-modal').classList.remove('show');
+    }
+
+    function openNotesModal(type) {
+        const modal = document.getElementById('notes-modal');
+        const title = document.getElementById('notes-title');
+        const textarea = document.getElementById('notes-textarea');
+        
+        if (type === 'doctor') {
+            title.textContent = 'Doctor Notes - Clinical Observations';
+            textarea.placeholder = 'Record detailed clinical observations, treatment plan, and follow-up actions...';
+        } else {
+            title.textContent = 'Message to Care Team';
+            textarea.placeholder = 'Ask your questions. Our team will respond within 2 hours...';
+        }
+        
+        modal.classList.add('show');
+        sessionStorage.setItem('notesType', type);
+    }
+
+    function closeNotesModal() {
+        document.getElementById('notes-modal').classList.remove('show');
+    }
+
+    function saveNotes() {
+        const content = document.getElementById('notes-textarea').value;
+        const type = sessionStorage.getItem('notesType');
+        
+        if (!content.trim()) {
+            alert('Please write something first');
+            return;
+        }
+
+        console.log(`${type === 'doctor' ? 'Doctor' : 'Family'} notes saved:`, content);
+        alert('Notes saved successfully!');
+        closeNotesModal();
+    }
+
+    // ===== CHATBOT =====
+    function toggleChatbot() {
+        const widget = document.getElementById('chatbot-widget');
+        widget.classList.toggle('collapsed');
+        document.getElementById('chatbot-messages-area').classList.toggle('hidden', widget.classList.contains('collapsed'));
+        const input = document.querySelector('.chatbot-input');
+        input.classList.toggle('hidden', widget.classList.contains('collapsed'));
+    }
+
+    function handleChatbotInput(event) {
+        if (event.key === 'Enter') {
+            sendChatbotMessage();
+        }
+    }
+
+    function sendChatbotMessage() {
+        const input = document.getElementById('chatbot-input');
+        const message = input.value.trim();
+        
+        if (!message) return;
+
+        // Add user message
+        const messagesArea = document.getElementById('chatbot-messages-area');
+        const userMsg = document.createElement('div');
+        userMsg.className = 'chatbot-message user';
+        userMsg.textContent = message;
+        messagesArea.appendChild(userMsg);
+
+        input.value = '';
+        const patientId = sessionStorage.getItem('patientId');
+        const userRole = sessionStorage.getItem('userRole');
+
+        // Call backend chatbot API
+        fetch('/api/chatbot', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                message: message,
+                patient_id: patientId,
+                user_role: userRole === 'D' ? 'doctor' : 'family'
+            })
+        })
+        .then(r => r.json())
+        .then(data => {
+            const botMsg = document.createElement('div');
+            botMsg.className = 'chatbot-message bot';
+            botMsg.textContent = data.message || 'I apologize, I could not process your request. Please try again.';
+            messagesArea.appendChild(botMsg);
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        })
+        .catch(err => {
+            const botMsg = document.createElement('div');
+            botMsg.className = 'chatbot-message bot';
+            botMsg.textContent = 'Service temporarily unavailable. Please try again later.';
+            messagesArea.appendChild(botMsg);
+            console.error('Chatbot error:', err);
+        });
+    }
+
+    // ===== EXPORT & PRINT =====
+    function exportPDF() {
+        const patientId = sessionStorage.getItem('patientId');
+        
+        // Prepare data for PDF
+        const pdfData = {
+            patient_id: patientId,
+            mortality_risk: parseFloat(document.getElementById('mort-7day').textContent) / 100 || 0.73,
+            expected_hospital_stay: parseInt(document.getElementById('expected-stay').textContent) || 12,
+            vitals: {
+                heart_rate: parseInt(document.getElementById('vital-hr').textContent) || 85,
+                resp_rate: parseInt(document.getElementById('vital-rr').textContent) || 22,
+                spo2: parseInt(document.getElementById('vital-o2').textContent) || 95,
+                temp: parseFloat(document.getElementById('vital-temp').textContent) || 37.5
+            },
+            medications: ['Ceftriaxone 1g IV Q6H', 'Norepinephrine 0.1mcg/kg/min'],
+            diagnosis: 'ICU Monitoring & Support'
+        };
+        
+        // Call backend PDF API
+        fetch('/api/export-pdf', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(pdfData)
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('PDF generation failed');
+            return response.blob();
+        })
+        .then(blob => {
+            // Download PDF
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `ICU-Report-${patientId}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            a.remove();
+        })
+        .catch(err => {
+            console.error('PDF export error:', err);
+            alert('PDF export using backend. Using browser fallback...');
+            // Fallback to client-side HTML2PDF
+            const element = document.getElementById('doctor-view');
+            const opt = {
+                margin: 10,
+                filename: `patient-report-${patientId}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
+            };
+            html2pdf().set(opt).from(element).save();
+        });
+    }
+
+    function printReport() {
+        window.print();
+    }
+
+    // ===== DATA PERSISTENCE =====
+    function savePatientData() {
+        const patientId = sessionStorage.getItem('patientId');
+        if (!patientId) return;
+        
+        const patientData = {
+            heart_rate: parseInt(document.getElementById('vital-hr').textContent) || 85,
+            resp_rate: parseInt(document.getElementById('vital-rr').textContent) || 22,
+            spo2: parseInt(document.getElementById('vital-o2').textContent) || 95,
+            temp: parseFloat(document.getElementById('vital-temp').textContent) || 37.5,
+            creatinine: 1.8,
+            lactate: 2.1,
+            sofa_score: 8,
+            timestamp: new Date().toISOString()
+        };
+        
+        fetch('/api/save-patient-data', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                patient_id: patientId,
+                data: patientData
+            })
+        })
+        .then(r => r.json())
+        .then(data => {
+            console.log('✅ Patient data saved:', data);
+        })
+        .catch(err => console.error('Data save error:', err));
+    }
+
+    // ===== LOGOUT =====
+    function logout() {
+        // Save data before logging out
+        savePatientData();
+        
+        sessionStorage.removeItem('patientId');
+        sessionStorage.removeItem('userRole');
+        window.location.href = '/login';
+    }
+
+    // Click outside profile menu to close
+    document.addEventListener('click', function(event) {
+        const profileMenu = document.getElementById('profile-menu');
+        if (!event.target.closest('.relative')) {
+            profileMenu.classList.remove('show');
+        }
+    });
+</script>
+
+</body>
+</html>
