@@ -1,0 +1,299 @@
+                                       Phase – 2 ​
+                              Project Presentation Format
+
+                  (Advanced Computing in Bio-Engineering)
+
+
+
+Objective of Phase-2
+In Phase-2, students must demonstrate the implementation progress, methodology, working
+pipeline, and outputs of the project based on the approved Phase-1 proposal.
+
+The presentation must clearly show:
+
+   ●​ Continuation of Phase-1 work
+   ●​ Research and implementation progress
+   ●​ Working model pipeline
+   ●​ Outputs and validation
+   ●​ Future completion plan
+
+Maximum Slides Allowed: 7 Slides Only​
+Time Allowed: 5 Minutes Presentation + 5 Minutes Q&A
+
+No student/team will be allowed to exceed the slide limit or time limit.
+
+
+
+Mandatory General Instructions
+   1.​ Slide 1 must include:
+           ○​ Project Title
+           ○​ One-line Idea Description
+           ○​ College Logo
+           ○​ Team Members Names
+           ○​ Faculty Name
+           ○​ Teaching Assistant Name (Compulsory)
+   2.​ No one is allowed to exceed 7 slides.
+    3.​ Coding screenshots are NOT allowed in PPT.
+    4.​ Allowed content:
+           ○​ Graphs
+           ○​ Outputs
+           ○​ Flowcharts
+           ○​ Methodology diagrams
+           ○​ System architecture
+           ○​ Pseudocode (Compulsory)
+    5.​ Students must keep:
+           ○​ Full code ready
+           ○​ Dataset ready
+           ○​ Working model ready​
+                (Required during Q&A if asked)
+    6.​ Presentation Time:
+           ○​ 5 Minutes Presentation
+           ○​ 5 Minutes Question Answer Round
+    7.​ No extra time will be given under any circumstances.
+
+
+
+Slide-Wise PPT Format (7 Slides only)
+
+Slide 1 — Project Introduction
+
+Title:​
+Project Title
+
+Content:
+
+• One-Line Idea Description​
+(Explain your project in one simple sentence)
+
+• Domain Name​
+(Example: Biomedical Imaging / Genomics / Healthcare Analytics)
+
+• Team Details:
+
+    ●​ Team Member Names
+    ●​ Roll Numbers
+• Faculty Guide Name
+
+• Teaching Assistant Name (Compulsory)
+
+• College Logo (Top corner)
+
+Purpose of Slide:​
+To quickly identify project ideas and team details.
+
+
+Slide 2 — Problem Statement & Phase-1 Summary
+
+Title:​
+Problem Statement and Phase-1 Work
+
+Content:
+
+• Finalized Problem Statement​
+(Approved in Phase-1)
+
+• Objective of Project​
+(What problem are you solving?)
+
+• Why this Problem is Important​
+(Real-world relevance)
+
+• Phase-1 Work Completed:
+
+    ●​ Literature Review Done
+    ●​ Dataset Identified
+    ●​ Initial Research Completed
+    ●​ Tools and Technology Selected
+    ●​ Proposed Solution Strategy
+
+Purpose:​
+Shows continuity from Phase-1.
+
+
+​
+​
+Slide 3 — Dataset and Research Information
+
+Title:​
+Dataset and Research Details
+
+Content:
+
+• Dataset Name​
+• Dataset Source​
+(Example: Kaggle / UCI / Clinical dataset / Custom collected)
+
+• Dataset Type:
+
+    ●​ Image / Signal / Text / Tabular / Sequence
+
+• Dataset Size:
+
+    ●​ Number of Samples
+    ●​ Number of Features
+
+• Data Preprocessing Done:
+
+    ●​ Cleaning
+    ●​ Normalization
+    ●​ Handling Missing Values
+    ●​ Data Augmentation (if applicable)
+
+Allowed visuals:
+
+    ●​ Dataset distribution graphs
+    ●​ Sample visualization
+    ●​ Class distribution chart
+
+Purpose:​
+Validates data understanding.
+
+
+​
+​
+Slide 4 — Methodology (Core Slide)
+
+Title:​
+Proposed Methodology
+
+Content:
+
+Must include:
+
+• System Architecture Diagram​
+• ML/DL Model Used​
+• Training Pipeline
+
+Mandatory Components:
+
+    1.​ Input Data
+    2.​ Preprocessing
+    3.​ Feature Engineering
+    4.​ Model Training
+    5.​ Prediction
+    6.​ Output Generation
+
+Also include:
+
+Pseudocode (Compulsory)
+
+Example Format:
+
+Step 1: Load Dataset​
+Step 2: Preprocess Data​
+Step 3: Train Model​
+Step 4: Evaluate Model​
+Step 5: Generate Output
+
+Purpose:​
+This slide carries maximum evaluation importance.
+Slide 5 — Model Implementation & Working Pipeline
+
+Title:​
+Implementation Workflow
+
+Content:
+
+• Model Used:​
+(Example: CNN / Random Forest / LSTM)
+
+• Training Details:
+
+    ●​ Epochs
+    ●​ Batch Size
+    ●​ Learning Rate
+
+• Tools Used:
+
+    ●​ Python
+    ●​ TensorFlow / PyTorch
+    ●​ Scikit-learn
+    ●​ OpenCV
+    ●​ Flask (if used)
+
+• Workflow Diagram:​
+Input → Processing → Model → Output
+
+Allowed visuals:
+
+    ●​ Pipeline diagrams
+    ●​ Training workflow
+
+Not allowed:​
+Coding screenshots.
+
+Purpose:​
+Shows practical implementation.
+Slide 6 — Results and Outputs
+
+Title:​
+Results and Model Output
+
+Content:
+
+Must include:
+
+• Output Screenshots​
+(Not code)
+
+Examples:
+
+    ●​ Prediction output
+    ●​ Classification results
+    ●​ Model output visualization
+
+• Performance Metrics:
+
+Examples:
+
+    ●​ Accuracy
+    ●​ Precision
+    ●​ Recall
+    ●​ F1-score
+    ●​ Loss Graph
+    ●​ Accuracy Graph
+
+Allowed visuals:
+
+    ●​ Confusion Matrix
+    ●​ Accuracy Graph
+    ●​ ROC Curve
+
+Purpose:​
+The proven model is working.
+​
+Slide 7 — Conclusion and Future Work
+
+Title:​
+Conclusion and Next Phase Plan
+
+Content:
+
+• Work Completed Till Now
+
+Examples:
+
+    ●​ Dataset prepared
+    ●​ Model trained
+    ●​ Initial results generated
+
+• Challenges Faced
+
+Examples:
+
+    ●​ Data imbalance
+    ●​ Training time
+    ●​ Overfitting
+
+• Future Work (Phase-3 Plan)
+
+Examples:
+
+    ●​ Improve model accuracy
+    ●​ Deploy model
+    ●​ Create user interface
+    ●​ Add real-time prediction
+
+Purpose:​
+Shows project continuity.
+
