@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ICU Mortality Prediction System - Hospital Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1392ec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101a22",
+                        "card-dark": "#1c2a35",
+                        "card-border": "#2c3e4e",
+                        "text-secondary": "#92b2c9",
+                        "danger": "#ef4444",
+                        "warning": "#f59e0b",
+                        "success": "#10b981",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2c3e4e;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3e5466;
+        }
+        .font-variation-settings-fill {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .smooth-transition {
+            transition: all 0.3s ease-in-out;
+        }
+        .hidden-view {
+            display: none;
+        }
+        .visible-view {
+            display: flex;
+        }
+    </style>
+</head>
+<body class="bg-background-dark font-display text-slate-100 antialiased">
+
+<!-- Main Container -->
+<div class="relative flex h-screen w-full flex-col bg-background-dark">
+
+    <!-- DOCTOR VIEW -->
+    <div id="doctorView" class="visible-view flex-col h-screen w-full">
+        <!-- Doctor Header Section -->
+        <header class="sticky top-0 z-50 bg-[#111b22]/95 backdrop-blur-md border-b border-[#233948]">
+            <div class="flex items-center justify-between p-4 pb-2 max-w-7xl mx-auto w-full">
+                <div class="flex items-center gap-4">
+                    <button onclick="toggleView()" class="text-white hover:text-primary transition-colors flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10">
+                        <span class="material-symbols-outlined">people</span>
+                        <span class="text-sm font-medium">Family View</span>
+                    </button>
+                </div>
+                <h1 class="text-white text-xl font-bold">ICU Clinical Dashboard</h1>
+                <div class="flex gap-3">
+                    <button class="relative text-white hover:text-primary transition-colors">
+                        <span class="material-symbols-outlined">notifications</span>
+                        <span class="absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-danger border-2 border-[#111b22]"></span>
+                    </button>
+                    <button class="text-white hover:text-primary transition-colors">
+                        <span class="material-symbols-outlined">more_vert</span>
+                    </button>
+                </div>
+            </div>
+            <!-- Patient Quick View -->
+            <div class="px-4 pb-4 max-w-7xl mx-auto w-full">
+                <div class="flex items-start justify-between gap-4 flex-wrap">
+                    <div class="flex gap-3 items-center flex-1">
+                        <div class="h-14 w-14 rounded-full bg-cover bg-center ring-2 ring-[#233948]" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA_7A8HZcsZKKg8brz9FXTw81NEcI9b8a__KEakOXo6uN1M1nhbd3w6ca9j5xHOCOYIhzwPFYzIx1nVxt69oDfre8tQv_3jPRUQx5qlylwjLALhRJWot4Rp7uMhBNxSpujky0dNu8LOpYcKLIqYmPtuXXkkTQdvvU_Utw750PL_zgoxSd_tx0jTJuq2v8UGwjaRfohZatHXKsXmgJV53qOHQoXkifEwZtzZTDnBMum8neoWFnZ_4Sz_VVANAjAbfyDqqNMApPVHVpU');"></div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h2 class="text-white text-lg font-bold">Patient ID: <span id="docPatientId">ICU-2026-001</span></h2>
+                                <span class="text-text-secondary text-sm" id="docPatientAge">(M, 64)</span>
+                            </div>
+                            <p class="text-text-secondary text-xs font-medium mt-0.5">MRN: <span id="docMRN">849302</span> <span class="mx-1">•</span> Bed: <span id="docBed">402-A</span></p>
+                            <p class="text-text-secondary text-xs mt-0.5">Admitted: <span id="docAdmitted">2d 4h ago</span></p>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-end gap-1">
+                        <div id="docRiskBadge" class="inline-flex items-center gap-1 rounded-full bg-danger/10 px-2.5 py-1 text-xs font-semibold text-danger border border-danger/20">
+                            <span class="material-symbols-outlined" style="font-size: 14px;">warning</span>
+                            High Risk
+                        </div>
+                        <span class="text-xs font-bold text-white" id="docMortalityScore">85% Score</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Doctor Main Content -->
+        <main class="flex-1 overflow-y-auto no-scrollbar">
+            <div class="max-w-7xl mx-auto w-full p-4 space-y-6">
+                
+                <!-- Predictive Risk Panel -->
+                <section>
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-white text-lg font-bold flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary text-2xl">ssid_chart</span>
+                            Predictive Risk Analysis
+                        </h3>
+                        <span class="text-xs text-text-secondary bg-[#233948] px-3 py-1 rounded-full">Updated 2m ago</span>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <!-- Mortality Risk -->
+                        <div class="bg-card-dark border border-card-border rounded-xl p-4 col-span-1">
+                            <p class="text-text-secondary text-xs font-medium uppercase tracking-wider mb-2">Mortality Risk (7-day)</p>
+                            <div class="flex items-end justify-between">
+                                <div>
+                                    <span class="text-3xl font-bold text-white" id="docMortality">12.5</span>
+                                    <span class="text-xs text-text-secondary">%</span>
+                                </div>
+                                <span class="material-symbols-outlined text-text-secondary/50 text-3xl">ecg_heart</span>
+                            </div>
+                            <div class="w-full bg-gray-700 h-2 mt-3 rounded-full overflow-hidden">
+                                <div id="docMortalityBar" class="bg-warning h-full w-[12%]"></div>
+                            </div>
+                        </div>
+
+                        <!-- Deterioration Risk -->
+                        <div class="bg-card-dark border border-card-border rounded-xl p-4 col-span-1 relative overflow-hidden">
+                            <p class="text-text-secondary text-xs font-medium uppercase tracking-wider mb-2">24h Deterioration</p>
+                            <div class="flex items-baseline gap-2">
+                                <span class="text-3xl font-bold text-white" id="docDeterioration">92</span>
+                                <span class="flex items-center text-xs font-bold text-danger bg-danger/10 px-2 py-1 rounded">
+                                    <span class="material-symbols-outlined text-sm">trending_up</span> +12%
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Transfer Risk -->
+                        <div class="bg-card-dark border border-card-border rounded-xl p-4 col-span-1">
+                            <p class="text-text-secondary text-xs font-medium uppercase tracking-wider mb-2">ICU Transfer Risk</p>
+                            <div class="flex items-end justify-between">
+                                <div>
+                                    <span class="text-3xl font-bold text-white">&lt;</span>
+                                    <span class="text-2xl font-bold text-white">5%</span>
+                                </div>
+                                <span class="material-symbols-outlined text-success text-2xl">check_circle</span>
+                            </div>
+                            <div class="w-full bg-gray-700 h-2 mt-3 rounded-full overflow-hidden">
+                                <div class="bg-success h-full w-[5%]"></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Vital Signs -->
+                <section>
+                    <h3 class="text-white text-lg font-bold flex items-center gap-2 mb-4">
+                        <span class="material-symbols-outlined text-primary text-2xl">vital_signs</span>
+                        Real-time Vital Signs
+                    </h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <div class="bg-card-dark border border-card-border rounded-lg p-3">
+                            <p class="text-text-secondary text-xs uppercase mb-2">Heart Rate</p>
+                            <p class="text-2xl font-bold text-white" id="docHR">--</p>
+                            <p class="text-xs text-text-secondary">bpm</p>
+                        </div>
+                        <div class="bg-card-dark border border-card-border rounded-lg p-3">
+                            <p class="text-text-secondary text-xs uppercase mb-2">Respiration</p>
+                            <p class="text-2xl font-bold text-white" id="docRR">--</p>
+                            <p class="text-xs text-text-secondary">breaths/min</p>
+                        </div>
+                        <div class="bg-card-dark border border-card-border rounded-lg p-3">
+                            <p class="text-text-secondary text-xs uppercase mb-2">O2 Saturation</p>
+                            <p class="text-2xl font-bold text-white" id="docSaO2">--</p>
+                            <p class="text-xs text-text-secondary">%</p>
+                        </div>
+                        <div class="bg-card-dark border border-card-border rounded-lg p-3">
+                            <p class="text-text-secondary text-xs uppercase mb-2">Temperature</p>
+                            <p class="text-2xl font-bold text-white" id="docTemp">--</p>
+                            <p class="text-xs text-text-secondary">°C</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Medication Timeline -->
+                <section>
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-white text-lg font-bold flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary text-2xl">medication_liquid</span>
+                            Active Medications
+                        </h3>
+                        <button class="text-primary text-sm font-medium hover:underline">View All</button>
+                    </div>
+                    <div class="bg-card-dark border border-card-border rounded-xl p-4">
+                        <div id="docMedicationsList" class="space-y-3">
+                            <div class="flex items-center justify-between p-3 bg-[#111b22] rounded-lg">
+                                <div>
+                                    <p class="text-white font-medium text-sm">No medications added</p>
+                                    <p class="text-xs text-text-secondary">Add medications to see timeline</p>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="text" id="docMedInput" placeholder="Add medication..." class="w-full mt-3 px-3 py-2 bg-[#111b22] border border-card-border rounded-lg text-white placeholder-text-secondary text-sm focus:outline-none focus:border-primary">
+                    </div>
+                </section>
+
+                <!-- India-Specific Analysis -->
+                <section>
+                    <h3 class="text-white text-lg font-bold flex items-center gap-2 mb-4">
+                        <span class="material-symbols-outlined text-primary text-2xl">public</span>
+                        India-Specific Clinical Analysis
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Lab Classifications -->
+                        <div class="bg-card-dark border border-card-border rounded-xl p-4">
+                            <h4 class="text-white font-semibold mb-3">Lab Value Classifications</h4>
+                            <div class="space-y-2">
+                                <div class="flex justify-between items-center p-2 bg-[#111b22] rounded">
+                                    <span class="text-sm text-text-secondary">Hemoglobin</span>
+                                    <span class="text-sm text-white font-medium" id="docHemoglobin">--</span>
+                                </div>
+                                <div class="flex justify-between items-center p-2 bg-[#111b22] rounded">
+                                    <span class="text-sm text-text-secondary">Platelets</span>
+                                    <span class="text-sm text-white font-medium" id="docPlatelets">--</span>
+                                </div>
+                                <div class="flex justify-between items-center p-2 bg-[#111b22] rounded">
+                                    <span class="text-sm text-text-secondary">WBC</span>
+                                    <span class="text-sm text-white font-medium" id="docWBC">--</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Disease Detection -->
+                        <div class="bg-card-dark border border-card-border rounded-xl p-4">
+                            <h4 class="text-white font-semibold mb-3">Disease Pattern Detection</h4>
+                            <div id="docDiseaseAlerts" class="space-y-2">
+                                <div class="p-2 bg-[#111b22] rounded text-xs text-text-secondary">
+                                    No alerts detected
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Cost Estimation -->
+                <section>
+                    <h3 class="text-white text-lg font-bold flex items-center gap-2 mb-4">
+                        <span class="material-symbols-outlined text-primary text-2xl">currency_rupee</span>
+                        Cost Estimation (INR)
+                    </h3>
+                    <div class="bg-card-dark border border-card-border rounded-xl p-4">
+                        <div id="docCostBreakdown" class="space-y-2">
+                            <div class="flex justify-between items-center p-3 bg-[#111b22] rounded-lg">
+                                <span class="text-text-secondary">ICU Bed (₹15,000/day)</span>
+                                <span class="font-bold text-white" id="costBed">₹--</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-[#111b22] rounded-lg">
+                                <span class="text-text-secondary">Medications</span>
+                                <span class="font-bold text-white" id="costMeds">₹--</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-primary/10 border border-primary/20 rounded-lg mt-3">
+                                <span class="text-white font-semibold">10-Day Estimate</span>
+                                <span class="text-xl font-bold text-primary" id="docTotalCost">₹--</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+
+        <!-- Doctor Bottom Navigation -->
+        <nav class="sticky bottom-0 w-full bg-[#192833] border-t border-[#233948] px-4 py-3">
+            <div class="max-w-7xl mx-auto flex justify-between items-center">
+                <a class="flex flex-col items-center justify-end gap-1 text-text-secondary hover:text-white transition-colors group">
+                    <span class="material-symbols-outlined text-xl">group</span>
+                    <span class="text-xs font-medium">Patients</span>
+                </a>
+                <a class="flex flex-col items-center justify-end gap-1 text-primary relative">
+                    <div class="absolute -top-3 w-8 h-1 bg-primary rounded-b-full"></div>
+                    <span class="material-symbols-outlined text-xl font-variation-settings-fill">monitoring</span>
+                    <span class="text-xs font-medium">Dashboard</span>
+                </a>
+                <a class="flex flex-col items-center justify-end gap-1 text-text-secondary hover:text-white transition-colors group">
+                    <div class="relative">
+                        <span class="material-symbols-outlined text-xl">notifications</span>
+                        <span class="absolute top-0 right-0 h-1.5 w-1.5 rounded-full bg-danger"></span>
+                    </div>
+                    <span class="text-xs font-medium">Alerts</span>
+                </a>
+                <a class="flex flex-col items-center justify-end gap-1 text-text-secondary hover:text-white transition-colors group">
+                    <span class="material-symbols-outlined text-xl">settings</span>
+                    <span class="text-xs font-medium">Settings</span>
+                </a>
+            </div>
+        </nav>
+    </div>
+
+    <!-- FAMILY VIEW -->
+    <div id="familyView" class="hidden-view flex-col h-screen w-full bg-background-dark">
+        <!-- Family Header -->
+        <div class="sticky top-0 z-20 bg-background-dark/95 backdrop-blur-md border-b border-[#233948] pt-4">
+            <div class="max-w-2xl mx-auto px-4">
+                <div class="flex items-center justify-between pb-4">
+                    <button onclick="toggleView()" class="text-white flex size-10 items-center justify-center rounded-full hover:bg-white/10 transition-colors">
+                        <span class="material-symbols-outlined text-2xl">arrow_back</span>
+                    </button>
+                    <div class="flex flex-col items-center flex-1">
+                        <h2 class="text-white text-lg font-bold">Patient Overview</h2>
+                        <span class="text-primary text-xs font-medium bg-primary/10 px-2 py-0.5 rounded-full mt-0.5" id="famRoomInfo">ICU - Ward</span>
+                    </div>
+                    <div class="flex size-10 items-center justify-center">
+                        <div class="relative">
+                            <span class="material-symbols-outlined text-white text-2xl">account_circle</span>
+                            <div class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-background-dark rounded-full"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center justify-center pb-2">
+                    <p class="text-text-secondary text-xs font-medium flex items-center gap-1">
+                        <span class="material-symbols-outlined text-sm">schedule</span>
+                        Last updated: <span id="famLastUpdate">now</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Family Main Content -->
+        <div class="flex-1 overflow-y-auto no-scrollbar pb-24">
+            <div class="max-w-2xl mx-auto w-full p-4 space-y-4">
+                
+                <!-- AI Summary Card -->
+                <div class="relative overflow-hidden rounded-2xl bg-card-dark shadow-lg border border-[#233948]">
+                    <div class="absolute inset-0 opacity-20 bg-gradient-to-br from-primary/40 via-transparent to-transparent"></div>
+                    <div class="relative p-5 space-y-4">
+                        <div class="flex items-start justify-between">
+                            <span class="bg-primary/20 text-primary text-xs font-bold px-2.5 py-1 rounded-full uppercase">AI Summary</span>
+                            <span class="material-symbols-outlined text-text-secondary">smart_toy</span>
+                        </div>
+                        <div id="famSummaryContent">
+                            <p class="text-white text-xl font-semibold mb-2">Patient Status</p>
+                            <p class="text-slate-300 text-base leading-relaxed">Monitoring your loved one closely. Medical team is providing comprehensive care.</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="relative flex h-3 w-3">
+                                <span class="animate-ping absolute h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                <span class="relative rounded-full h-3 w-3 bg-green-500"></span>
+                            </span>
+                            <span class="text-xs text-text-secondary">Monitoring active</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top Factors -->
+                <div>
+                    <h2 class="text-white text-lg font-bold mb-3 flex items-center gap-2">
+                        <span class="material-symbols-outlined">favorite</span>
+                        Key Health Indicators
+                    </h2>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div class="bg-card-dark rounded-xl p-4 border border-[#233948] text-center hover:border-primary/50 transition-colors">
+                            <div class="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center text-red-400 mx-auto mb-2">
+                                <span class="material-symbols-outlined">favorite</span>
+                            </div>
+                            <p class="text-xs text-text-secondary font-medium uppercase">Heart</p>
+                            <p class="text-white text-sm font-semibold mt-1" id="famHeart">Normal</p>
+                        </div>
+                        <div class="bg-card-dark rounded-xl p-4 border border-[#233948] text-center hover:border-primary/50 transition-colors">
+                            <div class="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400 mx-auto mb-2">
+                                <span class="material-symbols-outlined">air</span>
+                            </div>
+                            <p class="text-xs text-text-secondary font-medium uppercase">Lungs</p>
+                            <p class="text-white text-sm font-semibold mt-1" id="famLungs">Stable</p>
+                        </div>
+                        <div class="bg-card-dark rounded-xl p-4 border border-[#233948] text-center hover:border-primary/50 transition-colors">
+                            <div class="w-12 h-12 rounded-full bg-yellow-500/10 flex items-center justify-center text-yellow-400 mx-auto mb-2">
+                                <span class="material-symbols-outlined">water_drop</span>
+                            </div>
+                            <p class="text-xs text-text-secondary font-medium uppercase">Kidneys</p>
+                            <p class="text-white text-sm font-semibold mt-1" id="famKidneys">Stable</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Treatment Journey -->
+                <div>
+                    <h2 class="text-white text-lg font-bold mb-4 flex items-center gap-2">
+                        <span class="material-symbols-outlined">timeline</span>
+                        Treatment Timeline
+                    </h2>
+                    <div class="relative pl-6 border-l border-[#233948] space-y-6">
+                        <div class="relative">
+                            <div class="absolute -left-[21px] top-1 h-3 w-3 rounded-full bg-primary ring-4 ring-background-dark"></div>
+                            <div class="flex flex-col gap-2">
+                                <div class="flex justify-between items-baseline">
+                                    <h3 class="text-white font-semibold">Current Status</h3>
+                                    <span class="text-text-secondary text-xs">Now</span>
+                                </div>
+                                <p id="famCurrentStatus" class="text-slate-300 text-sm">Under observation with medical team monitoring closely.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hospital Guidelines -->
+                <div>
+                    <h2 class="text-white text-lg font-bold mb-3 flex items-center gap-2">
+                        <span class="material-symbols-outlined">info</span>
+                        Important Information
+                    </h2>
+                    <div class="bg-card-dark border border-[#233948] rounded-xl p-4 space-y-3">
+                        <div>
+                            <p class="text-primary text-sm font-bold mb-1">Visiting Hours</p>
+                            <p class="text-text-secondary text-sm">10:00 AM - 8:00 PM, 2 visitors max</p>
+                        </div>
+                        <div>
+                            <p class="text-primary text-sm font-bold mb-1">Contact Medical Team</p>
+                            <p class="text-text-secondary text-sm">Call during visiting hours or speak with floor staff</p>
+                        </div>
+                        <div class="pt-3 border-t border-[#233948] mt-3">
+                            <p class="text-xs text-slate-500">AI-generated summary to help you stay informed. Please speak with your doctor for clinical details.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Family Bottom Navigation -->
+        <div class="absolute bottom-0 w-full border-t border-[#233948] bg-background-dark px-4 py-3">
+            <div class="max-w-2xl mx-auto flex justify-between items-center">
+                <a class="flex flex-col items-center justify-end gap-1 text-white">
+                    <span class="material-symbols-outlined text-2xl">notifications</span>
+                    <p class="text-xs font-medium">Updates</p>
+                </a>
+                <a class="flex flex-col items-center justify-end gap-1 text-text-secondary hover:text-white transition-colors">
+                    <span class="material-symbols-outlined text-2xl">groups</span>
+                    <p class="text-xs font-medium">Team</p>
+                </a>
+                <a class="flex flex-col items-center justify-end gap-1 text-text-secondary hover:text-white transition-colors">
+                    <span class="material-symbols-outlined text-2xl">monitoring</span>
+                    <p class="text-xs font-medium">Vitals</p>
+                </a>
+                <a class="flex flex-col items-center justify-end gap-1 text-text-secondary hover:text-white transition-colors">
+                    <span class="material-symbols-outlined text-2xl">settings</span>
+                    <p class="text-xs font-medium">Settings</p>
+                </a>
+            </div>
+        </div>
+
+        <!-- Floating Chat Button -->
+        <div class="absolute bottom-24 right-4 z-30">
+            <button class="bg-primary hover:bg-blue-600 text-white rounded-full p-4 shadow-lg shadow-blue-500/20 transition-all active:scale-95">
+                <span class="material-symbols-outlined text-2xl">chat_bubble</span>
+            </button>
+        </div>
+    </div>
+
+</div>
+
+<!-- JavaScript -->
+<script>
+    let currentView = 'doctor';
+    let currentData = null;
+
+    function loadPredictions() {
+        try {
+            const predictionsStr = sessionStorage.getItem('predictions');
+            if (!predictionsStr) {
+                console.log('No predictions found in sessionStorage');
+                return;
+            }
+            
+            const predictions = JSON.parse(predictionsStr);
+            console.log('Loaded predictions:', predictions);
+            
+            if (!predictions.predictions || predictions.predictions.length === 0) {
+                console.log('No prediction data in response');
+                return;
+            }
+            
+            // Use the first patient's data
+            const pred = predictions.predictions[0];
+            currentData = pred;
+            
+            // Update doctor view
+            const mortality = pred.mortality_risk * 100;
+            document.getElementById('docPatientId').textContent = pred.patient_id || 'Patient-001';
+            document.getElementById('docMortality').textContent = mortality.toFixed(1);
+            document.getElementById('docMortalityBar').style.width = Math.min(100, mortality) + '%';
+            document.getElementById('docMortalityScore').textContent = mortality.toFixed(0) + '% Score';
+            
+            // Update risk badge
+            let riskLevel, riskColor;
+            if (mortality < 10) {
+                riskLevel = 'LOW RISK';
+                riskColor = 'bg-success/10 border-success/20 text-success';
+            } else if (mortality < 30) {
+                riskLevel = 'MODERATE RISK';
+                riskColor = 'bg-warning/10 border-warning/20 text-warning';
+            } else {
+                riskLevel = 'HIGH RISK';
+                riskColor = 'bg-danger/10 border-danger/20 text-danger';
+            }
+            document.getElementById('docRiskBadge').className = `inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold border ${riskColor}`;
+            document.getElementById('docRiskBadge').innerHTML = `<span class="material-symbols-outlined" style="font-size: 14px;">warning</span> ${riskLevel}`;
+            
+            // Update family view summary
+            if (mortality < 15) {
+                document.getElementById('famSummaryContent').innerHTML = `
+                    <p class="text-white text-xl font-semibold mb-2">Responding Well to Treatment</p>
+                    <p class="text-slate-300 text-base leading-relaxed">Your loved one is showing encouraging signs. The medical team continues to provide comprehensive care and monitoring.</p>
+                `;
+            } else if (mortality < 35) {
+                document.getElementById('famSummaryContent').innerHTML = `
+                    <p class="text-white text-xl font-semibold mb-2">Stable, Needs Continued Monitoring</p>
+                    <p class="text-slate-300 text-base leading-relaxed">Current condition is stable. The medical team remains vigilant with continuous monitoring and treatment adjustments as needed.</p>
+                `;
+            } else {
+                document.getElementById('famSummaryContent').innerHTML = `
+                    <p class="text-white text-xl font-semibold mb-2">Requires Intensive Care</p>
+                    <p class="text-slate-300 text-base leading-relaxed">Your loved one is receiving intensive care and monitoring. The medical team is working actively to improve their condition.</p>
+                `;
+            }
+            document.getElementById('famLastUpdate').textContent = 'just now';
+            
+        } catch (err) {
+            console.error('Error loading predictions:', err);
+        }
+    }
+
+    function toggleView() {
+        const doctorView = document.getElementById('doctorView');
+        const familyView = document.getElementById('familyView');
+        
+        if (currentView === 'doctor') {
+            doctorView.classList.remove('visible-view');
+            doctorView.classList.add('hidden-view');
+            familyView.classList.remove('hidden-view');
+            familyView.classList.add('visible-view');
+            currentView = 'family';
+        } else {
+            familyView.classList.remove('visible-view');
+            familyView.classList.add('hidden-view');
+            doctorView.classList.remove('hidden-view');
+            doctorView.classList.add('visible-view');
+            currentView = 'doctor';
+        }
+    }
+
+    function runPrediction() {
+        const patientData = {
+            patient_id: document.getElementById('patientId')?.value || 'ICU-2026-001',
+            HR_mean: parseFloat(document.getElementById('HR_mean')?.value) || 75,
+            RR_mean: parseFloat(document.getElementById('RR_mean')?.value) || 18,
+            SaO2_mean: parseFloat(document.getElementById('SaO2_mean')?.value) || 97,
+            temperature: parseFloat(document.getElementById('temperature')?.value) || 37,
+            age: parseFloat(document.getElementById('age')?.value) || 50
+        };
+
+        const hr_risk = Math.min(1.0, Math.abs(patientData.HR_mean - 75) / 50);
+        const rr_risk = Math.min(1.0, Math.abs(patientData.RR_mean - 18) / 10);
+        const sao2_risk = 1.0 - (patientData.SaO2_mean / 100);
+        const mortality_prob = (hr_risk + rr_risk + sao2_risk) / 3;
+
+        // Update Doctor View
+        document.getElementById('docPatientId').textContent = patientData.patient_id;
+        document.getElementById('docPatientAge').textContent = `(M, ${patientData.age})`;
+        document.getElementById('docMortality').textContent = (mortality_prob * 100).toFixed(1);
+        document.getElementById('docMortalityBar').style.width = (mortality_prob * 100) + '%';
+        document.getElementById('docMortalityScore').textContent = (mortality_prob * 100).toFixed(0) + '% Score';
+        document.getElementById('docHR').textContent = patientData.HR_mean;
+        document.getElementById('docRR').textContent = patientData.RR_mean;
+        document.getElementById('docSaO2').textContent = patientData.SaO2_mean;
+        document.getElementById('docTemp').textContent = patientData.temperature;
+
+        // Cost estimation
+        const bedCost = 15000 * 10;
+        const medsCost = 1000 * 10;
+        const totalCost = bedCost + medsCost + 5333 + 8750;
+        
+        document.getElementById('costBed').textContent = '₹' + bedCost.toLocaleString('en-IN');
+        document.getElementById('costMeds').textContent = '₹' + medsCost.toLocaleString('en-IN');
+        document.getElementById('docTotalCost').textContent = '₹' + totalCost.toLocaleString('en-IN');
+
+        // Risk classification
+        let riskLevel, riskColor;
+        if (mortality_prob < 0.1) {
+            riskLevel = 'LOW RISK';
+            riskColor = 'bg-success/10 border-success/20 text-success';
+        } else if (mortality_prob < 0.2) {
+            riskLevel = 'MODERATE RISK';
+            riskColor = 'bg-warning/10 border-warning/20 text-warning';
+        } else {
+            riskLevel = 'HIGH RISK';
+            riskColor = 'bg-danger/10 border-danger/20 text-danger';
+        }
+        
+        document.getElementById('docRiskBadge').className = `inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold border ${riskColor}`;
+        document.getElementById('docRiskBadge').innerHTML = `<span class="material-symbols-outlined" style="font-size: 14px;">warning</span> ${riskLevel}`;
+
+        // Family View Summary
+        if (mortality_prob < 0.15) {
+            document.getElementById('famSummaryContent').innerHTML = `
+                <p class="text-white text-xl font-semibold mb-2">Responding Well to Treatment</p>
+                <p class="text-slate-300 text-base leading-relaxed">Your loved one is showing encouraging signs. The medical team continues to provide comprehensive care and monitoring.</p>
+            `;
+        } else if (mortality_prob < 0.25) {
+            document.getElementById('famSummaryContent').innerHTML = `
+                <p class="text-white text-xl font-semibold mb-2">Stable, Needs Continued Monitoring</p>
+                <p class="text-slate-300 text-base leading-relaxed">Current condition is stable. The medical team remains vigilant with continuous monitoring and treatment adjustments as needed.</p>
+            `;
+        } else {
+            document.getElementById('famSummaryContent').innerHTML = `
+                <p class="text-white text-xl font-semibold mb-2">Requires Intensive Care</p>
+                <p class="text-slate-300 text-base leading-relaxed">Your loved one is receiving intensive care and monitoring. The medical team is working actively to improve their condition.</p>
+            `;
+        }
+
+        document.getElementById('famLastUpdate').textContent = 'just now';
+    }
+
+    // Initialize on page load
+    window.addEventListener('DOMContentLoaded', function() {
+        loadPredictions();
+    });
+</script>
+
+</body>
+</html>

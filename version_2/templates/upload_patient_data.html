@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ICU Mortality Demo Console</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/papaparse/5.4.1/papaparse.min.js"></script>
+    <style>
+        :root {
+            --desktop-ratio: 16 / 9;
+            --desktop-shell-gap: clamp(10px, 2vw, 24px);
+            --desktop-shell-min-width: 1100px;
+            --desktop-shell-max-width: 1720px;
+            --bg-soft: #0f1419;
+            --bg-strong: #1a2332;
+            --card: rgba(26, 35, 50, 0.92);
+            --card-border: rgba(44, 62, 78, 0.95);
+            --ink: #e1e8ed;
+            --ink-muted: #92b2c9;
+            --accent: #1392ec;
+            --accent-soft: #1f3f58;
+            --warn: #f59e0b;
+            --danger: #ef4444;
+            --ok: #10b981;
+            --radius: 18px;
+            --shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+        }
+
+        body.light-mode {
+            --bg-soft: #f0f4f8;
+            --bg-strong: #e8f1f7;
+            --card: rgba(255, 255, 255, 0.92);
+            --card-border: rgba(19, 146, 236, 0.25);
+            --ink: #1a2332;
+            --ink-muted: #4f6980;
+            --accent: #1392ec;
+            --accent-soft: #d9ecfb;
+            --warn: #b87508;
+            --danger: #dc2626;
+            --ok: #15803d;
+            --shadow: 0 20px 40px rgba(0, 32, 63, 0.12);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Space Grotesk', sans-serif;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at 10% 10%, rgba(131, 197, 190, 0.58), transparent 40%),
+                radial-gradient(circle at 90% 15%, rgba(0, 95, 115, 0.18), transparent 35%),
+                linear-gradient(145deg, var(--bg-soft), var(--bg-strong));
+            padding: var(--desktop-shell-gap);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: auto;
+        }
+
+        .desktop-frame {
+            width: min(
+                var(--desktop-shell-max-width),
+                max(
+                    var(--desktop-shell-min-width),
+                    calc((100vh - (var(--desktop-shell-gap) * 2)) * (16 / 9))
+                )
+            );
+            aspect-ratio: var(--desktop-ratio);
+            max-height: calc(100vh - (var(--desktop-shell-gap) * 2));
+            border-radius: 20px;
+            border: 1px solid rgba(18, 35, 58, 0.18);
+            box-shadow: 0 30px 70px rgba(0, 32, 63, 0.2);
+            background: rgba(255, 255, 255, 0.32);
+            overflow: auto;
+        }
+
+        .shell {
+            padding: 28px 16px 44px;
+            width: min(1180px, 100%);
+            margin: 0 auto;
+            display: grid;
+            gap: 18px;
+            animation: reveal 0.7s ease-out;
+        }
+
+        .hero {
+            background: var(--card);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 22px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::after {
+            content: "";
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            top: -120px;
+            right: -60px;
+            background: linear-gradient(120deg, rgba(131, 197, 190, 0.6), rgba(255, 255, 255, 0));
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .hero h1 {
+            font-size: clamp(1.55rem, 2.8vw, 2.3rem);
+            margin-bottom: 7px;
+            letter-spacing: 0.01em;
+        }
+
+        .hero p {
+            color: var(--ink-muted);
+            max-width: 70ch;
+            line-height: 1.55;
+        }
+
+        .hero-actions {
+            margin-top: 14px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .chip {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.82rem;
+            padding: 8px 11px;
+            border-radius: 999px;
+            background: rgba(19, 146, 236, 0.13);
+            border: 1px solid rgba(19, 146, 236, 0.32);
+            color: var(--accent);
+        }
+
+        .chip-strong {
+            background: rgba(146, 178, 201, 0.12);
+            border: 1px solid rgba(146, 178, 201, 0.25);
+            color: var(--ink);
+        }
+
+        .chip-btn {
+            border: 1px solid var(--card-border);
+            background: rgba(146, 178, 201, 0.12);
+            color: var(--ink);
+            border-radius: 999px;
+            padding: 8px 12px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.78rem;
+            cursor: pointer;
+        }
+
+        .layout {
+            display: grid;
+            gap: 18px;
+            grid-template-columns: 1.12fr 0.88fr;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 20px;
+        }
+
+        .card h2 {
+            font-size: 1.15rem;
+            margin-bottom: 10px;
+        }
+
+        .card p.helper {
+            font-size: 0.93rem;
+            color: var(--ink-muted);
+            line-height: 1.45;
+            margin-bottom: 14px;
+        }
+
+        .dropzone {
+            border: 2px dashed rgba(19, 146, 236, 0.45);
+            border-radius: 16px;
+            min-height: 168px;
+            display: grid;
+            place-items: center;
+            padding: 14px;
+            text-align: center;
+            cursor: pointer;
+            background: linear-gradient(145deg, rgba(19, 146, 236, 0.14), rgba(26, 35, 50, 0.92));
+            transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+        }
+
+        .dropzone:hover,
+        .dropzone.drag-over {
+            transform: translateY(-2px);
+            border-color: var(--accent);
+            background: linear-gradient(145deg, rgba(19, 146, 236, 0.22), rgba(26, 35, 50, 0.96));
+        }
+
+        .dropzone strong {
+            font-size: 1.02rem;
+        }
+
+        .dropzone span {
+            color: var(--ink-muted);
+            font-size: 0.9rem;
+            margin-top: 6px;
+            display: block;
+        }
+
+        .controls {
+            margin-top: 14px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        button {
+            border: none;
+            border-radius: 12px;
+            padding: 11px 14px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+        }
+
+        button:disabled {
+            opacity: 0.52;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(120deg, #1392ec, #0d6dd8);
+            color: #fff;
+            box-shadow: 0 10px 20px rgba(19, 146, 236, 0.35);
+        }
+
+        .btn-neutral {
+            background: rgba(17, 36, 63, 0.08);
+            color: var(--ink);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            border: 1px solid rgba(17, 36, 63, 0.2);
+            color: var(--ink);
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-1px);
+        }
+
+        input[type='file'] {
+            display: none;
+        }
+
+        .status {
+            margin-top: 12px;
+            padding: 10px 12px;
+            border-radius: 12px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.82rem;
+            display: none;
+        }
+
+        .status.ok { display: block; color: var(--ok); background: rgba(27, 127, 70, 0.1); border: 1px solid rgba(27, 127, 70, 0.2); }
+        .status.warn { display: block; color: var(--warn); background: rgba(178, 93, 0, 0.1); border: 1px solid rgba(178, 93, 0, 0.2); }
+        .status.error { display: block; color: var(--danger); background: rgba(157, 34, 34, 0.1); border: 1px solid rgba(157, 34, 34, 0.2); }
+
+        .required-grid {
+            margin-top: 16px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .required-item {
+            border-radius: 10px;
+            background: rgba(17, 36, 63, 0.05);
+            padding: 8px 10px;
+            font-size: 0.84rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .required-item .match {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.76rem;
+            color: var(--ink-muted);
+            white-space: nowrap;
+        }
+
+        .required-item.good {
+            outline: 1px solid rgba(27, 127, 70, 0.35);
+            background: rgba(27, 127, 70, 0.09);
+        }
+
+        .required-item.bad {
+            outline: 1px solid rgba(157, 34, 34, 0.35);
+            background: rgba(157, 34, 34, 0.08);
+        }
+
+        .models {
+            margin-top: 14px;
+            display: grid;
+            gap: 10px;
+        }
+
+        .model-tile {
+            border: 1px solid rgba(17, 36, 63, 0.14);
+            border-radius: 12px;
+            padding: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: border-color 0.2s ease, background 0.2s ease;
+        }
+
+        .model-tile.active {
+            border-color: rgba(0, 95, 115, 0.45);
+            background: rgba(0, 95, 115, 0.08);
+        }
+
+        .preview-wrap {
+            overflow: auto;
+            border: 1px solid rgba(17, 36, 63, 0.13);
+            border-radius: 12px;
+            max-height: 260px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        th,
+        td {
+            border-bottom: 1px solid rgba(17, 36, 63, 0.09);
+            padding: 8px;
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        th {
+            background: rgba(17, 36, 63, 0.07);
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+
+        .results {
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+            animation: reveal 0.5s ease;
+        }
+
+        .summary-grid {
+            display: grid;
+            gap: 10px;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            margin-bottom: 12px;
+        }
+
+        .stat {
+            border-radius: 12px;
+            padding: 12px;
+            background: rgba(17, 36, 63, 0.05);
+            border: 1px solid rgba(17, 36, 63, 0.09);
+        }
+
+        .stat .label {
+            font-size: 0.76rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--ink-muted);
+            margin-bottom: 5px;
+        }
+
+        .stat .value {
+            font-size: 1.15rem;
+            font-weight: 700;
+        }
+
+        .risk {
+            display: inline-block;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            padding: 3px 8px;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+            border: 1px solid;
+        }
+
+        .risk.low { color: #196b3b; border-color: #196b3b55; background: #196b3b1a; }
+        .risk.mediumlow { color: #00688f; border-color: #00688f55; background: #00688f1a; }
+        .risk.medium { color: #8c5a00; border-color: #8c5a0055; background: #8c5a001a; }
+        .risk.high { color: #ad5100; border-color: #ad510055; background: #ad51001a; }
+        .risk.veryhigh { color: #9d2222; border-color: #9d222255; background: #9d22221a; }
+        .risk.critical { color: #7b0f0f; border-color: #7b0f0f55; background: #7b0f0f1a; }
+
+        .muted {
+            color: var(--ink-muted);
+            font-size: 0.82rem;
+            margin-top: 6px;
+        }
+
+        @keyframes reveal {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 980px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 620px) {
+            .required-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="dark-mode">
+    <div class="desktop-frame">
+        <main class="shell">
+        <section class="hero">
+            <h1>ICU Mortality Demo Console</h1>
+            <p>Upload a CSV and run ML Baseline and Final Ensemble predictions side by side for a live presentation. The app validates columns, previews data, and shows risk results in one flow.</p>
+            <div class="hero-actions">
+                <button id="downloadSampleBtn" class="btn-ghost" type="button">Download Sample CSV</button>
+                <span class="chip chip-strong" id="patientChip">Patient: -</span>
+                <span class="chip chip-strong" id="roleChip">Role: -</span>
+                <button id="themeToggleBtn" class="chip-btn" type="button">Theme: Dark</button>
+                <button id="logoutBtn" class="chip-btn" type="button">Logout</button>
+                <span class="chip">Step 1: Upload CSV</span>
+                <span class="chip">Step 2: Run Models</span>
+                <span class="chip">Step 3: Present Results</span>
+            </div>
+        </section>
+
+        <section class="layout">
+            <section class="card">
+                <h2>Upload Dataset</h2>
+                <p class="helper">Required fields are patient_id (optional), HR_mean, RR_mean, SaO2_mean, and age. Common aliases such as HR, RR, and SpO2 are accepted automatically.</p>
+                <input id="fileInput" type="file" accept=".csv">
+                <div id="dropzone" class="dropzone" role="button" tabindex="0">
+                    <div>
+                        <strong>Drop CSV Here or Click to Select</strong>
+                        <span>Max size: 16 MB</span>
+                    </div>
+                </div>
+
+                <div id="fileStatus" class="status"></div>
+
+                <div class="required-grid" id="requiredGrid"></div>
+
+                <div class="controls">
+                    <button id="useSampleBtn" class="btn-neutral" type="button">Use Sample Data</button>
+                    <button id="runBtn" class="btn-primary" type="button" disabled>Run Selected Models</button>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Model Selection</h2>
+                <p class="helper">Enable one or both models. For presentation, running both gives a comparison table.</p>
+                <div class="models">
+                    <label id="rfTile" class="model-tile active" for="rfCheck">
+                        <div>
+                            <strong>ML Baseline Model</strong>
+                            <div class="muted">Fast baseline classifier</div>
+                        </div>
+                        <input id="rfCheck" type="checkbox" checked>
+                    </label>
+                    <label id="lstmTile" class="model-tile active" for="lstmCheck">
+                        <div>
+                            <strong>Final Ensemble Model</strong>
+                            <div class="muted">Temporal 5-fold simulation</div>
+                        </div>
+                        <input id="lstmCheck" type="checkbox" checked>
+                    </label>
+                </div>
+
+                <h2 style="margin-top: 18px;">CSV Preview</h2>
+                <div class="preview-wrap">
+                    <table id="previewTable">
+                        <thead></thead>
+                        <tbody>
+                            <tr><td class="muted" style="padding: 12px;">No file loaded yet.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </section>
+
+        <section id="resultsSection" class="card results">
+            <h2>Prediction Results</h2>
+            <div id="resultsSummary" class="summary-grid"></div>
+
+            <div class="preview-wrap" style="max-height: 420px; margin-top: 10px;">
+                <table id="resultsTable">
+                    <thead></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <p id="resultsFootnote" class="muted"></p>
+            <div class="controls" style="margin-top: 16px;">
+                <button id="goDashboardBtn" class="btn-primary" type="button" disabled>Go To Role Dashboard</button>
+            </div>
+        </section>
+        </main>
+    </div>
+
+    <script>
+        const state = {
+            file: null,
+            patientId: '',
+            userRole: 'D',
+            usingDemo: false,
+            selectedModels: {
+                rf: true,
+                lstm: true
+            },
+            mapping: {},
+            latestResults: {
+                rf: null,
+                lstm: null
+            }
+        };
+
+        const requiredColumns = ['patient_id', 'HR_mean', 'RR_mean', 'SaO2_mean', 'age'];
+        const mandatoryColumns = ['HR_mean', 'RR_mean', 'SaO2_mean', 'age'];
+        const aliases = {
+            patient_id: ['patientid', 'patient_id', 'patient', 'id'],
+            HR_mean: ['hrmean', 'hr', 'heartrate', 'heartratemean'],
+            RR_mean: ['rrmean', 'rr', 'respiratoryrate', 'respirationrate'],
+            SaO2_mean: ['sao2mean', 'spo2mean', 'sao2', 'spo2', 'oxygensaturation'],
+            age: ['age', 'ageyears']
+        };
+
+        const elements = {
+            fileInput: document.getElementById('fileInput'),
+            dropzone: document.getElementById('dropzone'),
+            fileStatus: document.getElementById('fileStatus'),
+            requiredGrid: document.getElementById('requiredGrid'),
+            runBtn: document.getElementById('runBtn'),
+            useSampleBtn: document.getElementById('useSampleBtn'),
+            downloadSampleBtn: document.getElementById('downloadSampleBtn'),
+            rfCheck: document.getElementById('rfCheck'),
+            lstmCheck: document.getElementById('lstmCheck'),
+            rfTile: document.getElementById('rfTile'),
+            lstmTile: document.getElementById('lstmTile'),
+            previewTable: document.getElementById('previewTable'),
+            resultsSection: document.getElementById('resultsSection'),
+            resultsSummary: document.getElementById('resultsSummary'),
+            resultsTable: document.getElementById('resultsTable'),
+            resultsFootnote: document.getElementById('resultsFootnote'),
+            goDashboardBtn: document.getElementById('goDashboardBtn'),
+            patientChip: document.getElementById('patientChip'),
+            roleChip: document.getElementById('roleChip'),
+            themeToggleBtn: document.getElementById('themeToggleBtn'),
+            logoutBtn: document.getElementById('logoutBtn')
+        };
+
+        initialize();
+
+        function initialize() {
+            applySavedTheme();
+
+            if (!ensureAuthenticated()) {
+                return;
+            }
+
+            renderRequiredGrid({});
+            setStatus('Load a CSV file to begin.', 'warn');
+
+            elements.dropzone.addEventListener('click', () => elements.fileInput.click());
+            elements.dropzone.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    elements.fileInput.click();
+                }
+            });
+
+            elements.dropzone.addEventListener('dragover', (event) => {
+                event.preventDefault();
+                elements.dropzone.classList.add('drag-over');
+            });
+
+            elements.dropzone.addEventListener('dragleave', () => {
+                elements.dropzone.classList.remove('drag-over');
+            });
+
+            elements.dropzone.addEventListener('drop', (event) => {
+                event.preventDefault();
+                elements.dropzone.classList.remove('drag-over');
+                if (event.dataTransfer.files && event.dataTransfer.files.length > 0) {
+                    prepareFile(event.dataTransfer.files[0]);
+                }
+            });
+
+            elements.fileInput.addEventListener('change', (event) => {
+                if (event.target.files && event.target.files.length > 0) {
+                    prepareFile(event.target.files[0]);
+                }
+            });
+
+            elements.rfCheck.addEventListener('change', syncModelState);
+            elements.lstmCheck.addEventListener('change', syncModelState);
+            elements.runBtn.addEventListener('click', runPredictions);
+            elements.useSampleBtn.addEventListener('click', loadSampleAsInput);
+            elements.downloadSampleBtn.addEventListener('click', downloadSampleCsv);
+            elements.goDashboardBtn.addEventListener('click', goToDashboard);
+            elements.themeToggleBtn.addEventListener('click', toggleTheme);
+            elements.logoutBtn.addEventListener('click', logout);
+        }
+
+        function applySavedTheme() {
+            const savedTheme = localStorage.getItem('carecast_theme') || localStorage.getItem('theme') || 'dark';
+            applyTheme(savedTheme);
+        }
+
+        function applyTheme(theme) {
+            document.body.classList.remove('dark-mode', 'light-mode');
+            document.body.classList.add(theme === 'light' ? 'light-mode' : 'dark-mode');
+            if (elements.themeToggleBtn) {
+                elements.themeToggleBtn.textContent = `Theme: ${theme === 'light' ? 'Light' : 'Dark'}`;
+            }
+        }
+
+        function toggleTheme() {
+            const nextTheme = document.body.classList.contains('light-mode') ? 'dark' : 'light';
+            localStorage.setItem('carecast_theme', nextTheme);
+            localStorage.setItem('theme', nextTheme);
+            applyTheme(nextTheme);
+        }
+
+        function logout() {
+            sessionStorage.removeItem('patientId');
+            sessionStorage.removeItem('userRole');
+            sessionStorage.removeItem('usingDemo');
+            sessionStorage.removeItem('predictions');
+            sessionStorage.removeItem('dashboardData');
+            window.location.href = '/login';
+        }
+
+        function ensureAuthenticated() {
+            const patientId = (sessionStorage.getItem('patientId') || '').trim().toUpperCase();
+            const userRole = (sessionStorage.getItem('userRole') || '').trim().toUpperCase();
+
+            if (!patientId || (userRole !== 'D' && userRole !== 'F')) {
+                window.location.href = '/login';
+                return false;
+            }
+
+            state.patientId = patientId;
+            state.userRole = userRole;
+            state.usingDemo = sessionStorage.getItem('usingDemo') === 'true';
+
+            elements.patientChip.textContent = `Patient: ${patientId}`;
+            elements.roleChip.textContent = `Role: ${userRole === 'D' ? 'Doctor' : 'Family'}`;
+            return true;
+        }
+
+        function normalizeColumnName(name) {
+            return String(name).trim().toLowerCase().replace(/[^a-z0-9]+/g, '');
+        }
+
+        function inferMapping(headers) {
+            const mapping = {};
+            for (const header of headers) {
+                const normalized = normalizeColumnName(header);
+                for (const canonical of Object.keys(aliases)) {
+                    const candidates = [normalizeColumnName(canonical), ...aliases[canonical]];
+                    if (candidates.includes(normalized) && !mapping[canonical]) {
+                        mapping[canonical] = header;
+                    }
+                }
+            }
+            return mapping;
+        }
+
+        function renderRequiredGrid(mapping) {
+            elements.requiredGrid.innerHTML = '';
+            for (const col of requiredColumns) {
+                const found = mapping[col];
+                const isMandatory = mandatoryColumns.includes(col);
+                const className = found || !isMandatory ? 'good' : 'bad';
+                const card = document.createElement('div');
+                card.className = `required-item ${className}`;
+                const label = document.createElement('span');
+                label.textContent = col;
+                const match = document.createElement('span');
+                match.className = 'match';
+                if (found) {
+                    match.textContent = found;
+                } else {
+                    match.textContent = isMandatory ? 'missing' : 'optional';
+                }
+                card.append(label, match);
+                elements.requiredGrid.append(card);
+            }
+        }
+
+        function setStatus(message, type) {
+            elements.fileStatus.className = 'status';
+            if (type) {
+                elements.fileStatus.classList.add(type);
+            }
+            elements.fileStatus.textContent = message;
+        }
+
+        function syncModelState() {
+            state.selectedModels.rf = elements.rfCheck.checked;
+            state.selectedModels.lstm = elements.lstmCheck.checked;
+            elements.rfTile.classList.toggle('active', state.selectedModels.rf);
+            elements.lstmTile.classList.toggle('active', state.selectedModels.lstm);
+            updateRunButtonState();
+        }
+
+        function updateRunButtonState() {
+            const modelSelected = state.selectedModels.rf || state.selectedModels.lstm;
+            const hasFile = !!state.file;
+            elements.runBtn.disabled = !(modelSelected && hasFile);
+        }
+
+        function prepareFile(file, options = {}) {
+            if (!file.name.toLowerCase().endsWith('.csv')) {
+                setStatus('Only CSV files are supported.', 'error');
+                return Promise.resolve(false);
+            }
+
+            state.file = file;
+            state.usingDemo = Boolean(options.isDemo);
+            setStatus(`Loaded file: ${file.name}. Parsing preview...`, 'warn');
+            return parsePreview(file).finally(() => updateRunButtonState());
+        }
+
+        function parsePreview(file) {
+            return parseCsvFile(file)
+                .then(({ headers, rows, parser }) => {
+                    if (!rows.length) {
+                        state.mapping = {};
+                        setStatus('CSV is empty.', 'error');
+                        renderRequiredGrid({});
+                        return false;
+                    }
+
+                    const mapping = inferMapping(headers);
+                    state.mapping = mapping;
+                    renderRequiredGrid(mapping);
+
+                    const missingMandatory = mandatoryColumns.filter((col) => !mapping[col]);
+                    if (missingMandatory.length) {
+                        setStatus(`Missing required columns: ${missingMandatory.join(', ')}`, 'error');
+                    } else if (parser === 'fallback') {
+                        setStatus(`Ready: ${rows.length} rows detected (built-in parser).`, 'ok');
+                    } else {
+                        setStatus(`Ready: ${rows.length} rows detected.`, 'ok');
+                    }
+
+                    renderPreviewTable(headers, rows.slice(0, 6));
+                    return true;
+                })
+                .catch((error) => {
+                    state.mapping = {};
+                    renderRequiredGrid({});
+                    setStatus(`Failed to parse CSV: ${error.message || error}`, 'error');
+                    return false;
+                });
+        }
+
+        function parseCsvFile(file) {
+            if (typeof Papa !== 'undefined') {
+                return new Promise((resolve, reject) => {
+                    Papa.parse(file, {
+                        header: true,
+                        skipEmptyLines: true,
+                        complete: (result) => {
+                            const rows = (result.data || []).filter((row) => {
+                                return Object.values(row).some((value) => String(value || '').trim() !== '');
+                            });
+                            const headers = result.meta && result.meta.fields
+                                ? result.meta.fields
+                                : (rows[0] ? Object.keys(rows[0]) : []);
+                            resolve({ headers, rows, parser: 'papa' });
+                        },
+                        error: (error) => reject(error)
+                    });
+                });
+            }
+
+            return parseCsvWithFallback(file);
+        }
+
+        function parseCsvWithFallback(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    try {
+                        const text = String(reader.result || '');
+                        const parsed = parseCsvText(text);
+                        resolve({ headers: parsed.headers, rows: parsed.rows, parser: 'fallback' });
+                    } catch (error) {
+                        reject(error);
+                    }
+                };
+                reader.onerror = () => reject(new Error('Unable to read CSV file'));
+                reader.readAsText(file);
+            });
+        }
+
+        function parseCsvText(text) {
+            const normalized = String(text || '').replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim();
+            if (!normalized) {
+                return { headers: [], rows: [] };
+            }
+
+            const lines = normalized.split('\n').filter((line) => line.trim().length > 0);
+            if (!lines.length) {
+                return { headers: [], rows: [] };
+            }
+
+            const headers = parseCsvLine(lines[0]).map((v, idx) => {
+                const clean = v.trim();
+                return idx === 0 ? clean.replace(/^\uFEFF/, '') : clean;
+            });
+            const rows = [];
+
+            for (let i = 1; i < lines.length; i += 1) {
+                const values = parseCsvLine(lines[i]);
+                const row = {};
+
+                headers.forEach((header, idx) => {
+                    row[header] = values[idx] !== undefined ? values[idx].trim() : '';
+                });
+
+                const hasContent = Object.values(row).some((value) => String(value || '').trim() !== '');
+                if (hasContent) {
+                    rows.push(row);
+                }
+            }
+
+            return { headers, rows };
+        }
+
+        function parseCsvLine(line) {
+            const values = [];
+            let current = '';
+            let inQuotes = false;
+
+            for (let i = 0; i < line.length; i += 1) {
+                const ch = line[i];
+
+                if (ch === '"') {
+                    if (inQuotes && line[i + 1] === '"') {
+                        current += '"';
+                        i += 1;
+                    } else {
+                        inQuotes = !inQuotes;
+                    }
+                } else if (ch === ',' && !inQuotes) {
+                    values.push(current);
+                    current = '';
+                } else {
+                    current += ch;
+                }
+            }
+
+            values.push(current);
+            return values;
+        }
+
+        function renderPreviewTable(headers, rows) {
+            const thead = elements.previewTable.querySelector('thead');
+            const tbody = elements.previewTable.querySelector('tbody');
+            thead.innerHTML = '';
+            tbody.innerHTML = '';
+
+            const headerRow = document.createElement('tr');
+            headers.forEach((header) => {
+                const th = document.createElement('th');
+                th.textContent = header;
+                headerRow.appendChild(th);
+            });
+            thead.appendChild(headerRow);
+
+            rows.forEach((row) => {
+                const tr = document.createElement('tr');
+                headers.forEach((header) => {
+                    const td = document.createElement('td');
+                    td.textContent = row[header] === undefined || row[header] === null || row[header] === '' ? '-' : row[header];
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function fetchSampleCsvPayload() {
+            const response = await fetch('/api/sample-csv');
+            const payload = await response.json();
+            if (!response.ok || !payload.data) {
+                throw new Error(payload.error || 'Unable to load sample CSV');
+            }
+            return payload;
+        }
+
+        async function loadSampleAsInput() {
+            try {
+                const payload = await fetchSampleCsvPayload();
+                const sampleFile = new File([payload.data], payload.filename || 'sample_patients.csv', { type: 'text/csv' });
+                const parsedOk = await prepareFile(sampleFile, { isDemo: true });
+                if (parsedOk) {
+                    setStatus('Sample CSV loaded. You can run models now.', 'ok');
+                }
+            } catch (error) {
+                setStatus(error.message, 'error');
+            }
+        }
+
+        async function downloadSampleCsv() {
+            try {
+                const payload = await fetchSampleCsvPayload();
+                const blob = new Blob([payload.data], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = payload.filename || 'sample_patients.csv';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            } catch (error) {
+                setStatus(error.message, 'error');
+            }
+        }
+
+        async function runPredictions() {
+            const mandatoryMissing = mandatoryColumns.filter((col) => !state.mapping[col]);
+            if (mandatoryMissing.length) {
+                setStatus(`Cannot run. Missing columns: ${mandatoryMissing.join(', ')}`, 'error');
+                return;
+            }
+
+            if (!state.selectedModels.rf && !state.selectedModels.lstm) {
+                setStatus('Select at least one model.', 'error');
+                return;
+            }
+
+            setStatus('Running predictions...', 'warn');
+            elements.runBtn.disabled = true;
+
+            const tasks = [];
+            if (state.selectedModels.rf) {
+                tasks.push(runModelRequest('rf', '/api/predict'));
+            }
+            if (state.selectedModels.lstm) {
+                tasks.push(runModelRequest('lstm', '/api/predict-lstm'));
+            }
+
+            const outcomes = await Promise.allSettled(tasks);
+            elements.runBtn.disabled = false;
+
+            state.latestResults.rf = null;
+            state.latestResults.lstm = null;
+
+            const errors = [];
+            outcomes.forEach((outcome) => {
+                if (outcome.status === 'fulfilled') {
+                    state.latestResults[outcome.value.model] = outcome.value.payload;
+                } else {
+                    errors.push(outcome.reason.message || String(outcome.reason));
+                }
+            });
+
+            if (!state.latestResults.rf && !state.latestResults.lstm) {
+                setStatus(`Prediction failed: ${errors.join(' | ')}`, 'error');
+                return;
+            }
+
+            if (errors.length) {
+                setStatus(`Partial success. ${errors.join(' | ')}`, 'warn');
+            } else {
+                setStatus('Predictions completed successfully.', 'ok');
+            }
+
+            persistPredictionSession();
+
+            renderResults();
+        }
+
+        function persistPredictionSession() {
+            const selectedPayload = chooseDashboardPayload();
+            if (!selectedPayload) {
+                return;
+            }
+
+            sessionStorage.setItem('predictions', JSON.stringify(selectedPayload));
+            sessionStorage.setItem('usingDemo', state.usingDemo ? 'true' : 'false');
+            sessionStorage.setItem('dashboardData', JSON.stringify({
+                patientId: state.patientId,
+                userRole: state.userRole,
+                rfResults: state.latestResults.rf,
+                lstmResults: state.latestResults.lstm,
+                selectedPayload: selectedPayload
+            }));
+
+            elements.goDashboardBtn.disabled = false;
+        }
+
+        function chooseDashboardPayload() {
+            const rfPreds = state.latestResults.rf && state.latestResults.rf.predictions ? state.latestResults.rf.predictions : [];
+            const lstmPreds = state.latestResults.lstm && state.latestResults.lstm.predictions ? state.latestResults.lstm.predictions : [];
+
+            if (!rfPreds.length && !lstmPreds.length) {
+                return null;
+            }
+
+            if (lstmPreds.length) {
+                return {
+                    success: true,
+                    n_patients: lstmPreds.length,
+                    predictions: lstmPreds
+                };
+            }
+
+            return {
+                success: true,
+                n_patients: rfPreds.length,
+                predictions: rfPreds
+            };
+        }
+
+        function goToDashboard() {
+            const route = state.userRole === 'F' ? '/family-dashboard' : '/dashboard';
+            window.location.href = route;
+        }
+
+        async function runModelRequest(modelKey, endpoint) {
+            const formData = new FormData();
+            formData.append('file', state.file, state.file.name || 'patients.csv');
+
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                body: formData
+            });
+
+            const payload = await response.json().catch(() => ({}));
+            if (!response.ok || !payload.success) {
+                throw new Error(payload.error || `${modelKey.toUpperCase()} request failed`);
+            }
+
+            return { model: modelKey, payload };
+        }
+
+        function riskClassToKey(riskClass) {
+            return String(riskClass || '').toLowerCase().replace(/[^a-z]/g, '');
+        }
+
+        function riskRank(riskClass) {
+            const ranks = {
+                low: 1,
+                mediumlow: 2,
+                medium: 3,
+                high: 4,
+                veryhigh: 5,
+                critical: 6
+            };
+            return ranks[riskClassToKey(riskClass)] || 0;
+        }
+
+        function mergePredictionRows() {
+            const merged = new Map();
+            const rfPreds = state.latestResults.rf ? (state.latestResults.rf.predictions || []) : [];
+            const lstmPreds = state.latestResults.lstm ? (state.latestResults.lstm.predictions || []) : [];
+
+            rfPreds.forEach((pred) => {
+                if (!merged.has(pred.patient_id)) {
+                    merged.set(pred.patient_id, { patient_id: pred.patient_id, rf: null, lstm: null });
+                }
+                merged.get(pred.patient_id).rf = pred;
+            });
+
+            lstmPreds.forEach((pred) => {
+                if (!merged.has(pred.patient_id)) {
+                    merged.set(pred.patient_id, { patient_id: pred.patient_id, rf: null, lstm: null });
+                }
+                merged.get(pred.patient_id).lstm = pred;
+            });
+
+            return Array.from(merged.values());
+        }
+
+        function formatRiskBadge(riskClass) {
+            if (!riskClass) {
+                return '-';
+            }
+            const cls = riskClassToKey(riskClass);
+            return `<span class="risk ${cls}">${riskClass}</span>`;
+        }
+
+        function computeSummary(rows) {
+            const rfValues = rows.filter((r) => r.rf).map((r) => Number(r.rf.mortality_risk || 0));
+            const lstmValues = rows.filter((r) => r.lstm).map((r) => Number(r.lstm.mortality_risk || 0));
+
+            const avg = (arr) => arr.length ? `${(arr.reduce((a, b) => a + b, 0) * 100 / arr.length).toFixed(1)}%` : '-';
+            const highRiskCount = rows.filter((row) => {
+                const rfRank = row.rf ? riskRank(row.rf.risk_class) : 0;
+                const lstmRank = row.lstm ? riskRank(row.lstm.risk_class) : 0;
+                return Math.max(rfRank, lstmRank) >= 4;
+            }).length;
+
+            return [
+                { label: 'Patients', value: String(rows.length) },
+                { label: 'Avg Baseline Risk', value: avg(rfValues) },
+                { label: 'Avg Final Ensemble Risk', value: avg(lstmValues) },
+                { label: 'High/Critical Cases', value: String(highRiskCount) }
+            ];
+        }
+
+        function recommendationForRow(row) {
+            const rfRank = row.rf ? riskRank(row.rf.risk_class) : 0;
+            const lstmRank = row.lstm ? riskRank(row.lstm.risk_class) : 0;
+            const topRank = Math.max(rfRank, lstmRank);
+
+            if (topRank >= 6) return 'Immediate ICU escalation';
+            if (topRank >= 5) return 'Senior review and rapid monitoring';
+            if (topRank >= 4) return 'Close observation in ICU';
+            if (topRank >= 3) return 'Routine observation with alerts';
+            return 'Continue standard monitoring';
+        }
+
+        function renderResults() {
+            const rows = mergePredictionRows();
+            const summary = computeSummary(rows);
+
+            elements.resultsSummary.innerHTML = summary.map((item) => {
+                return `<div class="stat"><div class="label">${item.label}</div><div class="value">${item.value}</div></div>`;
+            }).join('');
+
+            const thead = elements.resultsTable.querySelector('thead');
+            const tbody = elements.resultsTable.querySelector('tbody');
+            thead.innerHTML = `
+                <tr>
+                    <th>Patient</th>
+                    <th>Baseline Risk</th>
+                    <th>Baseline Prob</th>
+                    <th>Final Ensemble Risk</th>
+                    <th>Final Ensemble Prob</th>
+                    <th>Recommended Action</th>
+                </tr>`;
+
+            tbody.innerHTML = '';
+            rows.forEach((row) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${row.patient_id}</td>
+                    <td>${formatRiskBadge(row.rf ? row.rf.risk_class : '')}</td>
+                    <td>${row.rf ? row.rf.mortality_percent : '-'}</td>
+                    <td>${formatRiskBadge(row.lstm ? row.lstm.risk_class : '')}</td>
+                    <td>${row.lstm ? row.lstm.mortality_percent : '-'}</td>
+                    <td>${recommendationForRow(row)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            const hasBoth = !!state.latestResults.rf && !!state.latestResults.lstm;
+            elements.resultsFootnote.textContent = hasBoth
+                ? 'Both models are shown side by side. Highlight disagreement rows to explain ensemble reasoning.'
+                : 'One model was selected. Enable both models for side-by-side comparison.';
+
+            elements.resultsSection.classList.add('show');
+            elements.resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    </script>
+</body>
+</html>

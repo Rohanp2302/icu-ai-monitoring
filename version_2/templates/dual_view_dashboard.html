@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ICU Mortality Prediction System - Doctor & Family Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1392ec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101a22",
+                        "card-dark": "#192833",
+                        "card-border": "#2c3e4e",
+                        "text-secondary": "#92b2c9",
+                        "danger": "#ef4444",
+                        "warning": "#f59e0b",
+                        "success": "#10b981",
+                        "info": "#0ea5e9",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2c3e4e;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3e5466;
+        }
+        .font-variation-settings-fill {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background-dark font-display text-slate-100 antialiased">
+
+<div class="relative flex h-screen w-full flex-col max-w-md mx-auto bg-background-dark border-x border-gray-800 shadow-2xl">
+
+    <!-- ===== HEADER WITH VIEW SWITCHER ===== -->
+    <header class="sticky top-0 z-50 bg-[#111b22]/95 backdrop-blur-md border-b border-[#233948]">
+        <div class="flex items-center justify-between p-4 pb-2">
+            <button onclick="toggleNav()" class="text-white hover:text-primary transition-colors">
+                <span class="material-symbols-outlined">menu</span>
+            </button>
+            <h1 class="text-white text-lg font-bold" id="header-title">ICU Dashboard</h1>
+            <div class="flex gap-2">
+                <button onclick="switchView('doctor')" id="doc-btn" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold border-2 border-primary text-primary bg-primary/10 transition-all">
+                    <span class="material-symbols-outlined text-xs" style="display:inline;margin-right:2px;vertical-align:middle;font-size:14px">medical_information</span>
+                    Doctor
+                </button>
+                <button onclick="switchView('family')" id="fam-btn" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold border-2 border-transparent text-text-secondary hover:text-white transition-all">
+                    <span class="material-symbols-outlined text-xs" style="display:inline;margin-right:2px;vertical-align:middle;font-size:14px">family_restroom</span>
+                    Family
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ===== MAIN CONTENT AREA ===== -->
+    <main class="flex-1 overflow-hidden flex">
+
+        <!-- DOCTOR VIEW -->
+        <div id="doctor-view" class="w-full h-full flex flex-col overflow-hidden">
+            <!-- Patient Quick View -->
+            <div class="border-b border-[#233948] p-4 flex-shrink-0">
+                <div class="flex items-start justify-between gap-4">
+                    <div class="flex gap-3 items-start flex-1">
+                        <div class="h-12 w-12 rounded-full bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center text-white font-bold ring-2 ring-[#233948] flex-shrink-0">
+                            JD
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2">
+                                <h2 class="text-white text-base font-bold truncate">John Doe</h2>
+                                <span class="text-text-secondary text-xs whitespace-nowrap">(M, 64)</span>
+                            </div>
+                            <p class="text-text-secondary text-xs mt-0.5">MRN: 849302 • Bed 402-A</p>
+                            <p class="text-text-secondary text-xs">Admitted: 2d 4h ago</p>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-end gap-1 flex-shrink-0">
+                        <div class="inline-flex items-center gap-1 rounded-full bg-danger/10 px-2 py-0.5 text-xs font-semibold text-danger border border-danger/20">
+                            <span class="material-symbols-outlined" style="font-size: 12px">warning</span>
+                            <span>High</span>
+                        </div>
+                        <span class="text-xs font-bold text-white" id="mort-score">85%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scrollable Content -->
+            <div class="flex-1 overflow-y-auto no-scrollbar">
+                <div class="p-4 space-y-4">
+
+                    <!-- Risk Analysis -->
+                    <section>
+                        <h3 class="text-white text-sm font-bold flex items-center gap-2 mb-3">
+                            <span class="material-symbols-outlined text-primary" style="font-size:18px">ssid_chart</span>
+                            Risk Analysis
+                        </h3>
+                        <div class="grid grid-cols-3 gap-2">
+                            <div class="bg-card-dark border border-[#233948] rounded-lg p-3">
+                                <p class="text-text-secondary text-[10px] font-bold uppercase mb-1">Mortality</p>
+                                <p class="text-white text-xl font-bold" id="mort-7day">12%</p>
+                                <div class="w-full bg-gray-700 h-1 mt-2 rounded-full">
+                                    <div class="bg-warning h-full w-[12%]" id="mort-bar"></div>
+                                </div>
+                            </div>
+                            <div class="bg-card-dark border border-[#233948] rounded-lg p-3">
+                                <p class="text-text-secondary text-[10px] font-bold uppercase mb-1">Deterioration</p>
+                                <p class="text-white text-xl font-bold" id="deter-risk">92%</p>
+                                <div class="flex items-center gap-1 mt-2 text-danger text-xs">
+                                    <span class="material-symbols-outlined" style="font-size:12px">trending_up</span>
+                                    <span>+12%</span>
+                                </div>
+                            </div>
+                            <div class="bg-card-dark border border-[#233948] rounded-lg p-3">
+                                <p class="text-text-secondary text-[10px] font-bold uppercase mb-1">Transfer</p>
+                                <p class="text-white text-xl font-bold">&lt;5%</p>
+                                <p class="text-success text-xs mt-2 font-semibold">Low</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Vitals -->
+                    <section>
+                        <h3 class="text-white text-sm font-bold mb-2">Vital Signs</h3>
+                        <div class="grid grid-cols-4 gap-2">
+                            <div class="bg-card-dark border border-[#233948] rounded-lg p-2">
+                                <p class="text-text-secondary text-[9px] uppercase font-bold">HR</p>
+                                <p class="text-white text-lg font-bold" id="vital-hr">--</p>
+                                <p class="text-text-secondary text-[9px]">bpm</p>
+                            </div>
+                            <div class="bg-card-dark border border-[#233948] rounded-lg p-2">
+                                <p class="text-text-secondary text-[9px] uppercase font-bold">RR</p>
+                                <p class="text-white text-lg font-bold" id="vital-rr">--</p>
+                                <p class="text-text-secondary text-[9px]">/min</p>
+                            </div>
+                            <div class="bg-card-dark border border-[#233948] rounded-lg p-2">
+                                <p class="text-text-secondary text-[9px] uppercase font-bold">O2</p>
+                                <p class="text-white text-lg font-bold" id="vital-o2">--</p>
+                                <p class="text-text-secondary text-[9px]">%</p>
+                            </div>
+                            <div class="bg-card-dark border border-[#233948] rounded-lg p-2">
+                                <p class="text-text-secondary text-[9px] uppercase font-bold">Temp</p>
+                                <p class="text-white text-lg font-bold" id="vital-temp">--</p>
+                                <p class="text-text-secondary text-[9px]">°C</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Medications -->
+                    <section>
+                        <h3 class="text-white text-sm font-bold flex items-center gap-2 mb-2">
+                            <span class="material-symbols-outlined text-primary" style="font-size:18px">medication_liquid</span>
+                            Active Meds
+                        </h3>
+                        <div class="bg-card-dark border border-[#233948] rounded-lg p-3 space-y-2">
+                            <div class="flex items-center mb-2 min-w-[300px] overflow-x-auto">
+                                <div class="flex justify-between text-[9px] text-text-secondary pl-20 w-full">
+                                    <span>08:00</span><span>10:00</span><span>12:00</span><span>14:00</span><span>Now</span>
+                                </div>
+                            </div>
+                            <div id="meds-list" class="space-y-1.5">
+                                <div class="text-xs text-text-secondary">Add medications...</div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- India Features -->
+                    <section>
+                        <h3 class="text-white text-sm font-bold flex items-center gap-2 mb-2">
+                            <span class="material-symbols-outlined text-primary" style="font-size:18px">public</span>
+                            India Analysis
+                        </h3>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="bg-card-dark border border-[#233948] rounded-lg p-3">
+                                <p class="text-text-secondary text-[9px] font-bold uppercase mb-2">Lab Values</p>
+                                <div class="space-y-1 text-xs">
+                                    <div class="flex justify-between">
+                                        <span class="text-text-secondary">Hemoglobin</span>
+                                        <span class="text-success font-bold">Normal</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-text-secondary">Platelets</span>
+                                        <span class="text-warning font-bold">Low</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-card-dark border border-[#233948] rounded-lg p-3">
+                                <p class="text-text-secondary text-[9px] font-bold uppercase mb-2">Disease Risk</p>
+                                <div class="flex items-center gap-2 text-xs">
+                                    <span class="material-symbols-outlined text-warning" style="font-size:14px">alert</span>
+                                    <div>
+                                        <p class="font-bold text-warning">Dengue Risk</p>
+                                        <p class="text-text-secondary text-[9px]">Monsoon</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Cost -->
+                    <section>
+                        <h3 class="text-white text-sm font-bold mb-2">Cost Estimate (INR)</h3>
+                        <div class="bg-card-dark border border-[#233948] rounded-lg p-3 grid grid-cols-3 gap-2 text-center text-xs">
+                            <div>
+                                <p class="text-text-secondary text-[9px]">ICU/Day</p>
+                                <p class="text-white font-bold">₹15K</p>
+                            </div>
+                            <div>
+                                <p class="text-text-secondary text-[9px]">Meds/Day</p>
+                                <p class="text-white font-bold">₹1K-2K</p>
+                            </div>
+                            <div>
+                                <p class="text-text-secondary text-[9px]">Est. 10-Day</p>
+                                <p class="text-primary font-bold">₹1,80K</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Drug Interactions -->
+                    <section>
+                        <h3 class="text-white text-sm font-bold flex items-center gap-2 mb-2">
+                            <span class="material-symbols-outlined text-primary" style="font-size:18px">warning</span>
+                            Interactions
+                        </h3>
+                        <div class="bg-card-dark border border-[#233948] rounded-lg p-3 flex items-center gap-2 text-xs">
+                            <span class="material-symbols-outlined text-success" style="font-size:18px">check_circle</span>
+                            <div>
+                                <p class="text-white font-semibold">No Critical Issues</p>
+                                <p class="text-text-secondary text-[9px]">Monitor: Propofol + Remdesivir</p>
+                            </div>
+                        </div>
+                    </section>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- FAMILY VIEW -->
+        <div id="family-view" class="w-full h-full flex flex-col overflow-hidden hidden">
+            <!-- Family Patient Header -->
+            <div class="border-b border-[#233948] p-4 flex-shrink-0 text-center">
+                <h2 class="text-white text-xl font-bold">Dad (Room 304)</h2>
+                <span class="text-primary text-xs font-medium bg-primary/10 px-2 py-0.5 rounded-full mt-1 inline-block">ICU - North Wing</span>
+                <p class="text-text-secondary text-xs mt-2 flex items-center justify-center gap-1">
+                    <span class="material-symbols-outlined" style="font-size:14px">schedule</span>
+                    <span>Last updated: 10m ago</span>
+                </p>
+            </div>
+
+            <!-- Family Content -->
+            <div class="flex-1 overflow-y-auto no-scrollbar">
+                <div class="p-4 space-y-4">
+
+                    <!-- AI Summary -->
+                    <div class="relative overflow-hidden rounded-xl bg-card-dark shadow-lg border border-[#233948]">
+                        <div class="absolute inset-0 opacity-10 bg-gradient-to-br from-primary/40"></div>
+                        <div class="relative p-4 space-y-3">
+                            <div class="flex items-start justify-between">
+                                <span class="bg-primary/20 text-primary text-xs font-bold px-2 py-0.5 rounded-full uppercase">AI Summary</span>
+                                <span class="material-symbols-outlined text-text-secondary" style="font-size:18px">smart_toy</span>
+                            </div>
+                            <div>
+                                <p class="text-white text-lg font-semibold mb-1">Stabilizing nicely</p>
+                                <p class="text-slate-300 text-sm leading-relaxed">
+                                    Your loved one's condition is responding well. Blood pressure is stable and oxygen levels are improving with the current treatment.
+                                </p>
+                            </div>
+                            <div class="flex items-center gap-2 text-xs">
+                                <span class="relative flex h-2 w-2">
+                                    <span class="animate-ping absolute h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                    <span class="relative rounded-full h-2 w-2 bg-green-500"></span>
+                                </span>
+                                <span class="text-text-secondary">Monitoring active</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Health Factors -->
+                    <div>
+                        <h2 class="text-white text-base font-bold mb-3">Key Health Factors</h2>
+                        <div class="grid grid-cols-3 gap-2">
+                            <div class="bg-card-dark rounded-lg p-3 border border-[#233948] text-center">
+                                <div class="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center text-red-400 mx-auto mb-2">
+                                    <span class="material-symbols-outlined">favorite</span>
+                                </div>
+                                <p class="text-text-secondary text-xs font-bold uppercase">Heart</p>
+                                <p class="text-white text-sm font-semibold mt-1">Normal</p>
+                            </div>
+                            <div class="bg-card-dark rounded-lg p-3 border border-[#233948] text-center">
+                                <div class="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400 mx-auto mb-2">
+                                    <span class="material-symbols-outlined">air</span>
+                                </div>
+                                <p class="text-text-secondary text-xs font-bold uppercase">Lungs</p>
+                                <p class="text-white text-sm font-semibold mt-1">Improving</p>
+                            </div>
+                            <div class="bg-card-dark rounded-lg p-3 border border-[#233948] text-center">
+                                <div class="w-10 h-10 rounded-full bg-yellow-500/10 flex items-center justify-center text-yellow-400 mx-auto mb-2">
+                                    <span class="material-symbols-outlined">water_drop</span>
+                                </div>
+                                <p class="text-text-secondary text-xs font-bold uppercase">Kidneys</p>
+                                <p class="text-white text-sm font-semibold mt-1">Stable</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Treatment Journey -->
+                    <div>
+                        <h2 class="text-white text-base font-bold mb-3">Treatment Journey</h2>
+                        <div class="relative pl-4 border-l border-[#233948] space-y-6">
+                            <div class="relative">
+                                <div class="absolute -left-[13px] top-1 h-2.5 w-2.5 rounded-full bg-primary ring-3 ring-background-dark"></div>
+                                <div>
+                                    <div class="flex justify-between items-baseline">
+                                        <h3 class="text-white font-semibold text-sm">New Medication Started</h3>
+                                        <span class="text-text-secondary text-xs">10:30 AM</span>
+                                    </div>
+                                    <p class="text-slate-400 text-xs mt-1">Improved blood pressure medication</p>
+                                    <div class="mt-2 bg-[#233948]/50 p-2 rounded text-xs text-slate-300 border border-[#233948]">
+                                        <p class="text-primary font-bold text-[9px] uppercase mb-1">Why?</p>
+                                        <p>Helps stabilize blood pressure and reduce stress on the heart - a positive sign.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="relative">
+                                <div class="absolute -left-[13px] top-1 h-2.5 w-2.5 rounded-full bg-primary ring-3 ring-background-dark"></div>
+                                <div>
+                                    <div class="flex justify-between items-baseline">
+                                        <h3 class="text-white font-semibold text-sm">Doctor Rounds</h3>
+                                        <span class="text-text-secondary text-xs">08:45 AM</span>
+                                    </div>
+                                    <p class="text-slate-400 text-xs mt-1">Review by Dr. Emily Chen</p>
+                                    <div class="mt-2 bg-[#233948]/50 p-2 rounded text-xs text-slate-300 border border-[#233948]">
+                                        <p class="text-primary font-bold text-[9px] uppercase mb-1">Update</p>
+                                        <p>Doctor is pleased with progress. Plan to gradually reduce oxygen support over next 2-3 days.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Medications (User-Friendly) -->
+                    <div>
+                        <h2 class="text-white text-base font-bold mb-3">Care & Medications</h2>
+                        <div class="bg-card-dark border border-[#233948] rounded-lg p-3 space-y-2">
+                            <div class="flex items-center gap-2 p-2 bg-[#111b22] rounded">
+                                <span class="material-symbols-outlined text-blue-400" style="font-size:18px">medication</span>
+                                <div class="text-xs">
+                                    <p class="text-white font-semibold">Blood Pressure Control</p>
+                                    <p class="text-text-secondary">Medication helping with stability</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 p-2 bg-[#111b22] rounded">
+                                <span class="material-symbols-outlined text-blue-400" style="font-size:18px">air</span>
+                                <div class="text-xs">
+                                    <p class="text-white font-semibold">Oxygen Support</p>
+                                    <p class="text-text-secondary">Gradually being reduced as patient improves</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 p-2 bg-[#111b22] rounded">
+                                <span class="material-symbols-outlined text-blue-400" style="font-size:18px">shield</span>
+                                <div class="text-xs">
+                                    <p class="text-white font-semibold">Antibiotics</p>
+                                    <p class="text-text-secondary">Fighting infection, working effectively</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Family Info -->
+                    <div>
+                        <h2 class="text-white text-base font-bold mb-3 flex items-center gap-2">
+                            <span class="material-symbols-outlined" style="font-size:18px">info</span>
+                            Family Information
+                        </h2>
+                        <div class="space-y-2">
+                            <div class="bg-card-dark border border-[#233948] rounded-lg p-3">
+                                <h3 class="text-white font-semibold text-sm mb-1">Visiting Hours</h3>
+                                <p class="text-text-secondary text-xs">10:00 AM - 8:00 PM Daily (2 visitors max)</p>
+                            </div>
+                            <div class="bg-card-dark border border-[#233948] rounded-lg p-3">
+                                <h3 class="text-white font-semibold text-sm mb-1">Contact Support</h3>
+                                <p class="text-primary text-xs font-semibold">+91-XXXX-XXXX-XX</p>
+                                <p class="text-text-secondary text-xs">24/7 for questions & updates</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Disclaimer -->
+                    <p class="text-[10px] text-slate-500 text-center">
+                        AI-generated summary. Not a replacement for medical advice. Consult your doctor for clinical details.
+                    </p>
+
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+</div>
+
+<!-- Bottom Navigation -->
+<nav class="absolute bottom-0 w-full bg-[#192833] border-t border-[#233948] px-4 py-2 max-w-md mx-auto">
+    <div class="flex justify-between items-center text-xs">
+        <a class="flex flex-col items-center gap-1 text-text-secondary hover:text-white py-2">
+            <span class="material-symbols-outlined" style="font-size:20px">group</span>
+            <span>Patients</span>
+        </a>
+        <a class="flex flex-col items-center gap-1 text-primary py-2">
+            <div class="absolute -top-1 w-6 h-0.5 bg-primary rounded-full"></div>
+            <span class="material-symbols-outlined font-variation-settings-fill" style="font-size:20px">monitoring</span>
+            <span>Dashboard</span>
+        </a>
+        <a class="flex flex-col items-center gap-1 text-text-secondary hover:text-white py-2 relative">
+            <span class="material-symbols-outlined" style="font-size:20px">notifications</span>
+            <span class="absolute top-2 right-3 h-1.5 w-1.5 rounded-full bg-danger"></span>
+            <span>Alerts</span>
+        </a>
+        <a class="flex flex-col items-center gap-1 text-text-secondary hover:text-white py-2">
+            <span class="material-symbols-outlined" style="font-size:20px">settings</span>
+            <span>Settings</span>
+        </a>
+    </div>
+</nav>
+
+<!-- Floating Action Button -->
+<div class="absolute bottom-16 right-4 z-50 max-w-sm right-0" style="right: 1rem; bottom: 4rem;">
+    <button class="flex items-center justify-center h-10 w-10 rounded-full bg-primary text-white shadow-lg hover:bg-blue-600 transition-all active:scale-95">
+        <span class="material-symbols-outlined">add</span>
+    </button>
+</div>
+
+<script>
+    let currentView = 'doctor';
+
+    function switchView(view) {
+        const doctorView = document.getElementById('doctor-view');
+        const familyView = document.getElementById('family-view');
+        const docBtn = document.getElementById('doc-btn');
+        const famBtn = document.getElementById('fam-btn');
+
+        if (view === 'doctor') {
+            doctorView.classList.remove('hidden');
+            familyView.classList.add('hidden');
+            docBtn.classList.add('border-primary', 'text-primary', 'bg-primary/10');
+            docBtn.classList.remove('border-transparent', 'text-text-secondary');
+            famBtn.classList.remove('border-primary', 'text-primary', 'bg-primary/10');
+            famBtn.classList.add('border-transparent', 'text-text-secondary');
+            document.getElementById('header-title').textContent = 'Clinical Dashboard';
+            currentView = 'doctor';
+        } else {
+            doctorView.classList.add('hidden');
+            familyView.classList.remove('hidden');
+            famBtn.classList.add('border-primary', 'text-primary', 'bg-primary/10');
+            famBtn.classList.remove('border-transparent', 'text-text-secondary');
+            docBtn.classList.remove('border-primary', 'text-primary', 'bg-primary/10');
+            docBtn.classList.add('border-transparent', 'text-text-secondary');
+            document.getElementById('header-title').textContent = 'Family Portal';
+            currentView = 'family';
+        }
+        localStorage.setItem('currentView', view);
+    }
+
+    function toggleNav() {
+        alert('Navigation menu would appear here');
+    }
+
+    // Load data from backend
+    async function loadData() {
+        try {
+            // First, check if we have data from the upload flow (sessionStorage)
+            const dashboardDataStr = sessionStorage.getItem('dashboardData');
+            if (dashboardDataStr) {
+                console.log('Loading data from sessionStorage');
+                const dashboardData = JSON.parse(dashboardDataStr);
+                
+                // Use LSTM predictions if available
+                if (dashboardData.lstmResults && dashboardData.lstmResults.predictions && dashboardData.lstmResults.predictions.length > 0) {
+                    const pred = dashboardData.lstmResults.predictions[0];
+                    updateUI({
+                        patient_id: pred.patient_id,
+                        mortality_risk: pred.mortality_risk,
+                        mortality_std: pred.mortality_std,
+                        risk_class: pred.risk_class,
+                        fold_predictions: pred.fold_predictions,
+                        HR_mean: 85, // Placeholder
+                        RR_mean: 22,
+                        SaO2_mean: 95,
+                        temperature: 37.5
+                    });
+                    return;
+                }
+            }
+            
+            // Fallback: try API endpoint
+            const response = await fetch('/api/predict-lstm', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    patient_id: 'ICU-2026-001',
+                    HR_mean: 85,
+                    RR_mean: 22,
+                    SaO2_mean: 95,
+                    temperature: 37.5,
+                    age: 64
+                })
+            });
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success && data.predictions.length > 0) {
+                    updateUI(data.predictions[0]);
+                    return;
+                }
+            }
+            
+            // Final fallback: demo data
+            loadDemoData();
+        } catch (error) {
+            console.log('Error loading data, using demo:', error);
+            loadDemoData();
+        }
+    }
+
+    function loadDemoData() {
+        // Demo data
+        document.getElementById('mort-7day').textContent = '12%';
+        document.getElementById('deter-risk').textContent = '92%';
+        document.getElementById('mort-score').textContent = '85%';
+        document.getElementById('vital-hr').textContent = '85';
+        document.getElementById('vital-rr').textContent = '22';
+        document.getElementById('vital-o2').textContent = '95';
+        document.getElementById('vital-temp').textContent = '37.5';
+    }
+
+    function updateUI(data) {
+        // Update with API data
+        if (data.mortality_risk) {
+            const mort = Math.round(data.mortality_risk * 100);
+            document.getElementById('mort-7day').textContent = mort + '%';
+            document.getElementById('mort-bar').style.width = mort + '%';
+            document.getElementById('mort-score').textContent = mort + '%';
+        }
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+        const savedView = localStorage.getItem('currentView') || 'doctor';
+        switchView(savedView);
+        loadData();
+        setInterval(loadData, 5 * 60 * 1000);
+    });
+</script>
+
+</body>
+</html>

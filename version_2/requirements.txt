@@ -1,0 +1,113 @@
+# ICU Interpretable ML System - Requirements
+# Deep Learning + Data Processing + Explainability Stack
+
+# ============================================================================
+# CORE DEEP LEARNING
+# ============================================================================
+# PyTorch with CUDA support (GPU acceleration)
+# For CPU-only, use: pip install torch torchvision torchaudio
+# For GPU (CUDA 11.8+), use: pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+torch>=2.0.0
+torchvision>=0.15.0
+torchaudio>=2.0.0
+
+# ============================================================================
+# MODERN ARCHITECTURES
+# ============================================================================
+# Hugging Face Transformers - for attention mechanisms, BERT-like models
+transformers>=4.30.0
+
+# Lightning - simplified PyTorch training
+pytorch-lightning>=2.0.0
+
+# ============================================================================
+# EXPLAINABILITY & INTERPRETABILITY
+# ============================================================================
+# SHAP - explain any machine learning model
+shap>=0.42.0
+
+# LIME - local interpretable model explanations
+lime>=0.2.0
+
+# ============================================================================
+# HYPERPARAMETER TUNING
+# ============================================================================
+# Optuna - Bayesian optimization for hyperparameter tuning
+optuna>=3.0.0
+
+# Ray Tune - distributed hyperparameter tuning
+ray[tune]>=2.0.0
+
+# ============================================================================
+# EXPERIMENT TRACKING
+# ============================================================================
+# Weights & Biases - experiment tracking and visualization
+wandb>=0.16.0
+
+# ============================================================================
+# DATA PROCESSING & ANALYSIS
+# ============================================================================
+pandas>=2.0.0
+numpy>=1.24.0
+scikit-learn>=1.3.0
+scipy>=1.10.0
+
+# ============================================================================
+# VISUALIZATION
+# ============================================================================
+matplotlib>=3.5.0
+plotly>=5.0.0
+seaborn>=0.12.0
+
+# ============================================================================
+# UTILITIES
+# ============================================================================
+# Tqdm - progress bars
+tqdm>=4.65.0
+
+# Pydantic - data validation
+pydantic>=2.0.0
+
+# Python-dotenv - environment variable management
+python-dotenv>=1.0.0
+
+# ============================================================================
+# JUPYTER & NOTEBOOKS
+# ============================================================================
+jupyter>=1.0.0
+jupyterlab>=4.0.0
+ipython>=8.0.0
+
+# ============================================================================
+# OPTIONAL: Clinical/Medical
+# ============================================================================
+# For future: medical-specific packages
+# medcalc>=0.1
+# pymc>=5.0 (Bayesian regression for clinical studies)
+
+# ============================================================================
+# DEVELOPMENT
+# ============================================================================
+# Black - code formatting
+black>=24.0.0
+
+# Flake8 - code linting
+flake8>=6.0.0
+
+# Pytest - unit testing
+pytest>=7.0.0
+
+# ============================================================================
+# INSTALLATION NOTES
+# ============================================================================
+# For PyTorch GPU support (CUDA 11.8+):
+#   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+#
+# For PyTorch CPU-only:
+#   pip install torch torchvision torchaudio
+#
+# Then install this requirements file:
+#   pip install -r requirements.txt
+#
+# Note: Version constraints are flexible (>=) to handle available package versions.
+# The exact versions will be resolved by pip during installation.

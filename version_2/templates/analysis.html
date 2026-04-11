@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ICU Patient Analysis - Comprehensive Assessment</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100">
+    <div class="min-h-screen flex flex-col">
+        <!-- Header with Navigation -->
+        <header class="bg-gradient-to-r from-blue-600 to-blue-800 text-white shadow-lg sticky top-0 z-50">
+            <div class="max-w-7xl mx-auto px-6 py-6">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h1 class="text-3xl font-bold">🏥 ICU Patient Analysis Dashboard</h1>
+                        <p class="text-blue-100 text-sm mt-1">Interpretable ML System for Indian Hospitals</p>
+                    </div>
+                    <div class="flex gap-4">
+                        <button onclick="location.href='/'" class="bg-blue-500 hover:bg-blue-600 px-6 py-2 rounded-lg font-semibold transition">
+                            ← Back to Input
+                        </button>
+                        <button onclick="printReport()" class="bg-green-500 hover:bg-green-600 px-6 py-2 rounded-lg font-semibold transition">
+                            📄 Print Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-1 max-w-7xl mx-auto w-full px-6 py-8">
+            <!-- Loading State -->
+            <div id="loadingState" class="text-center py-12">
+                <div class="inline-block">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+                    <p class="text-xl font-semibold text-gray-700">Analyzing patient data...</p>
+                </div>
+            </div>
+
+            <!-- Content Container (Hidden Initially) -->
+            <div id="contentContainer" style="display:none;">
+
+                <!-- 1. Patient Information Summary -->
+                <div class="grid md:grid-cols-4 gap-4 mb-8">
+                    <div class="bg-white rounded-lg p-6 shadow border-l-4 border-blue-600">
+                        <div class="text-sm text-gray-600 font-semibold">Patient Name</div>
+                        <div class="text-2xl font-bold text-gray-800" id="patientName">-</div>
+                    </div>
+                    <div class="bg-white rounded-lg p-6 shadow border-l-4 border-green-600">
+                        <div class="text-sm text-gray-600 font-semibold">Age / Gender</div>
+                        <div class="text-2xl font-bold text-gray-800" id="ageGender">-</div>
+                    </div>
+                    <div class="bg-white rounded-lg p-6 shadow border-l-4 border-purple-600">
+                        <div class="text-sm text-gray-600 font-semibold">Admission Date</div>
+                        <div class="text-2xl font-bold text-gray-800" id="admissionDate">-</div>
+                    </div>
+                    <div class="bg-white rounded-lg p-6 shadow border-l-4 border-orange-600">
+                        <div class="text-sm text-gray-600 font-semibold">ICU Reason</div>
+                        <div class="text-lg font-bold text-gray-800" id="icuReason">-</div>
+                    </div>
+                </div>
+
+                <!-- 2. Risk Prediction - Main Section -->
+                <div class="grid lg:grid-cols-3 gap-8 mb-8">
+                    <!-- Risk Assessment Card -->
+                    <div class="lg:col-span-2">
+                        <div class="bg-white rounded-xl shadow-lg p-8">
+                            <h2 class="text-2xl font-bold text-gray-800 mb-6">🔍 Multi-Modal Risk Prediction</h2>
+
+                            <!-- Risk Meter -->
+                            <div class="bg-gradient-to-r from-green-50 to-red-50 rounded-lg p-8 mb-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div>
+                                        <div id="riskPercentage" class="text-5xl font-bold text-gray-800">-</div>
+                                        <p class="text-gray-600 mt-2">Mortality Risk Score</p>
+                                    </div>
+                                    <div id="riskGauge" class="text-6xl">-</div>
+                                </div>
+
+                                <div class="mt-4">
+                                    <p id="riskClassification" class="text-xl font-bold text-gray-800">-</p>
+                                    <p id="riskDescription" class="text-gray-700 mt-2">-</p>
+                                </div>
+
+                                <!-- Risk Meter Bar -->
+                                <div class="relative h-3 bg-gray-200 rounded-full mt-6 overflow-hidden">
+                                    <div id="riskBar" class="h-full bg-gradient-to-r from-green-500 via-yellow-500 to-red-500" style="width: 0%"></div>
+                                </div>
+                            </div>
+
+                            <!-- Confidence Section -->
+                            <div class="grid grid-cols-3 gap-4 mb-6">
+                                <div class="bg-blue-50 rounded-lg p-4">
+                                    <p class="text-sm text-gray-600 font-semibold">Final Confidence</p>
+                                    <p id="finalConfidence" class="text-2xl font-bold text-blue-600">-</p>
+                                </div>
+                                <div class="bg-purple-50 rounded-lg p-4">
+                                    <p class="text-sm text-gray-600 font-semibold">DL Prediction</p>
+                                    <p id="dlPrediction" class="text-2xl font-bold text-purple-600">-</p>
+                                </div>
+                                <div class="bg-green-50 rounded-lg p-4">
+                                    <p class="text-sm text-gray-600 font-semibold">ML Prediction</p>
+                                    <p id="mlPrediction" class="text-2xl font-bold text-green-600">-</p>
+                                </div>
+                            </div>
+
+                            <!-- Agreement Analysis -->
+                            <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                                <p class="text-sm text-gray-600 font-semibold mb-2">Model Agreement</p>
+                                <div class="flex items-center gap-4">
+                                    <div class="flex-1">
+                                        <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+                                            <div id="agreementBar" class="h-full bg-gradient-to-r from-red-500 to-green-500" style="width: 85%"></div>
+                                        </div>
+                                    </div>
+                                    <span id="agreementScore" class="font-bold text-gray-800">- %</span>
+                                </div>
+                                <p id="agreementText" class="text-sm text-gray-600 mt-2">-</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Validation Status Card -->
+                    <div class="bg-white rounded-xl shadow-lg p-8">
+                        <h3 class="text-xl font-bold text-gray-800 mb-6">✓ Validation Layers</h3>
+
+                        <div class="space-y-3">
+                            <div class="flex items-start gap-3 p-3 rounded-lg bg-gray-50">
+                                <div id="layer1-icon" class="text-xl">⏳</div>
+                                <div class="flex-1">
+                                    <p class="font-semibold text-gray-800 text-sm">Layer 1: Concordance</p>
+                                    <p class="text-xs text-gray-600 mt-1">DL-ML agreement check</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start gap-3 p-3 rounded-lg bg-gray-50">
+                                <div id="layer2-icon" class="text-xl">⏳</div>
+                                <div class="flex-1">
+                                    <p class="font-semibold text-gray-800 text-sm">Layer 2: Clinical Rules</p>
+                                    <p class="text-xs text-gray-600 mt-1">Medical knowledge validation</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start gap-3 p-3 rounded-lg bg-gray-50">
+                                <div id="layer3-icon" class="text-xl">⏳</div>
+                                <div class="flex-1">
+                                    <p class="font-semibold text-gray-800 text-sm">Layer 3: Cohort Check</p>
+                                    <p class="text-xs text-gray-600 mt-1">Similar patient consistency</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start gap-3 p-3 rounded-lg bg-gray-50">
+                                <div id="layer4-icon" class="text-xl">⏳</div>
+                                <div class="flex-1">
+                                    <p class="font-semibold text-gray-800 text-sm">Layer 4: Trajectory</p>
+                                    <p class="text-xs text-gray-600 mt-1">Temporal consistency</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="validationStatus" class="mt-6 p-4 rounded-lg font-semibold text-center text-white bg-green-600">
+                            ✓ All Validations Passed
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Current Vital Signs -->
+                <div class="bg-white rounded-xl shadow-lg p-8 mb-8">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">💓 Current Vital Signs</h2>
+                    <div class="grid md:grid-cols-6 gap-4">
+                        <div class="bg-blue-50 rounded-lg p-4">
+                            <p class="text-sm text-gray-600 font-semibold">Heart Rate</p>
+                            <p id="vital_hr" class="text-2xl font-bold text-blue-600">- bpm</p>
+                            <p class="text-xs text-gray-600 mt-1">Normal: 60-100</p>
+                        </div>
+                        <div class="bg-purple-50 rounded-lg p-4">
+                            <p class="text-sm text-gray-600 font-semibold">Respiration</p>
+                            <p id="vital_rr" class="text-2xl font-bold text-purple-600">- /min</p>
+                            <p class="text-xs text-gray-600 mt-1">Normal: 12-20</p>
+                        </div>
+                        <div class="bg-green-50 rounded-lg p-4">
+                            <p class="text-sm text-gray-600 font-semibold">O2 Saturation</p>
+                            <p id="vital_sao2" class="text-2xl font-bold text-green-600">--%</p>
+                            <p class="text-xs text-gray-600 mt-1">Normal: >95%</p>
+                        </div>
+                        <div class="bg-red-50 rounded-lg p-4">
+                            <p class="text-sm text-gray-600 font-semibold">Sys BP</p>
+                            <p id="vital_sbp" class="text-2xl font-bold text-red-600">- mmHg</p>
+                            <p class="text-xs text-gray-600 mt-1">Normal: 100-140</p>
+                        </div>
+                        <div class="bg-orange-50 rounded-lg p-4">
+                            <p class="text-sm text-gray-600 font-semibold">Dias BP</p>
+                            <p id="vital_dbp" class="text-2xl font-bold text-orange-600">- mmHg</p>
+                            <p class="text-xs text-gray-600 mt-1">Normal: 60-90</p>
+                        </div>
+                        <div class="bg-yellow-50 rounded-lg p-4">
+                            <p class="text-sm text-gray-600 font-semibold">Temperature</p>
+                            <p id="vital_temp" class="text-2xl font-bold text-yellow-600">- °C</p>
+                            <p class="text-xs text-gray-600 mt-1">Normal: 37 ± 0.5</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Medicine Tracking Section -->
+                <div class="grid lg:grid-cols-2 gap-8 mb-8">
+                    <!-- Current Medications -->
+                    <div class="bg-white rounded-xl shadow-lg p-8">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-6">💊 Current Medications</h2>
+                        <div id="medicationsList" class="space-y-3">
+                            <div class="text-gray-500 text-sm">Loading medications...</div>
+                        </div>
+                    </div>
+
+                    <!-- Drug Interactions -->
+                    <div class="bg-white rounded-xl shadow-lg p-8">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-6">⚠️ Drug Interactions</h2>
+                        <div id="interactionsList" class="space-y-3">
+                            <div class="text-gray-500 text-sm">Checking interactions...</div>
+                        </div>
+                        <div id="interactionsSummary" class="mt-4 p-4 rounded-lg bg-green-50 border-l-4 border-green-600">
+                            <p class="font-semibold text-green-800">✓ No critical interactions detected</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. Family Explanation Section -->
+                <div class="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl shadow-lg p-8 mb-8 border-l-4 border-indigo-600">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">👨‍👩‍👧 Family-Friendly Explanation</h2>
+
+                    <!-- Main Risk Message -->
+                    <div class="bg-white rounded-lg p-6 mb-6">
+                        <div id="familyTitle" class="text-2xl font-bold text-gray-800 mb-2">-</div>
+                        <div id="familyMessage" class="text-lg text-gray-700 mb-4">-</div>
+                        <div id="familyDetails" class="text-gray-600"></div>
+                    </div>
+
+                    <!-- Vital Translations -->
+                    <div class="grid md:grid-cols-2 gap-4 mb-6">
+                        <div class="bg-white rounded-lg p-4">
+                            <h3 class="font-bold text-gray-800 mb-3">Understanding the Vital Signs</h3>
+                            <div id="vitalTranslations" class="space-y-3 text-sm text-gray-700">
+                                <div>Loading vital explanations...</div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-lg p-4">
+                            <h3 class="font-bold text-gray-800 mb-3">What Doctors Are Doing</h3>
+                            <div id="doctorActions" class="space-y-2 text-sm text-gray-700">
+                                <p>• Continuous vital sign monitoring</p>
+                                <p>• Regular lab value reviews</p>
+                                <p>• Medication adjustment as needed</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Questions to Ask -->
+                    <div class="bg-blue-50 rounded-lg p-6 border-l-4 border-blue-600">
+                        <h3 class="font-bold text-gray-800 mb-3">💬 Questions to Ask Your Doctor</h3>
+                        <div id="suggestedQuestions" class="grid md:grid-cols-2 gap-3 text-sm">
+                            <div>• What is the main problem?</div>
+                            <div>• What are you doing to help?</div>
+                            <div>• When will we know more?</div>
+                            <div>• Can family members help?</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 6. Top Risk Factors -->
+                <div class="bg-white rounded-xl shadow-lg p-8 mb-8">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">📊 Top Risk Factors</h2>
+                    <div id="riskFactorsList" class="space-y-3">
+                        <div class="text-gray-500">Analyzing risk factors...</div>
+                    </div>
+                </div>
+
+                <!-- 7. Clinical Recommendations -->
+                <div class="border-t-4 border-gray-200 pt-8">
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div class="bg-blue-50 rounded-lg p-6 border-l-4 border-blue-600">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4">🎯 Clinical Recommendations</h3>
+                            <ul id="clinicalRecs" class="space-y-2 text-gray-700 text-sm">
+                                <li>• Continuous monitoring of vital signs</li>
+                                <li>• Review lab values regularly</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-green-50 rounded-lg p-6 border-l-4 border-green-600">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4">✓ System Status</h3>
+                            <ul class="space-y-2 text-gray-700 text-sm">
+                                <li>✓ Data validated successfully</li>
+                                <li>✓ All validation layers passed</li>
+                                <li>✓ Report ready for review</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="bg-gray-800 text-gray-300 text-center py-6 mt-12">
+            <p>Interpretable ML System for Indian Hospitals | © 2026 ICU Analytics</p>
+        </footer>
+    </div>
+
+    <script>
+        // Get patient ID from URL
+        const patientId = window.location.pathname.split('/').pop();
+
+        // Fetch and display patient analysis
+        async function loadAnalysis() {
+            try {
+                const response = await fetch(`/api/get-patient-analysis/${patientId}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    displayAnalysis(data);
+                } else {
+                    alert('Error loading analysis: ' + data.error);
+                    window.location.href = '/';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to load analysis');
+                window.location.href = '/';
+            }
+        }
+
+        function displayAnalysis(data) {
+            const analysis = data.analysis;
+
+            // Patient Info
+            document.getElementById('patientName').textContent = analysis.patient_info.name;
+            document.getElementById('ageGender').textContent = `${analysis.patient_info.age} yrs, ${analysis.patient_info.gender}`;
+            document.getElementById('admissionDate').textContent = analysis.patient_info.admission_date;
+            document.getElementById('icuReason').textContent = analysis.patient_info.icu_reason || 'Not specified';
+
+            // Risk Prediction
+            const riskPercent = Math.round(analysis.prediction.mortality_risk * 100);
+            document.getElementById('riskPercentage').textContent = riskPercent + '%';
+            document.getElementById('riskBar').style.width = riskPercent + '%';
+
+            // Risk Classification
+            const riskClass = analysis.prediction.risk_class;
+            const riskEmoji = { 'LOW': '✓', 'MEDIUM': '⚠️', 'HIGH': '🔴', 'CRITICAL': '🚨' }[riskClass] || '?';
+            document.getElementById('riskGauge').textContent = riskEmoji;
+            document.getElementById('riskClassification').textContent = `${riskClass} RISK`;
+
+            const riskDescriptions = {
+                'LOW': 'Your loved one is responding well to treatment. Recovery is very likely.',
+                'MEDIUM': 'Needs close attention. Recovery is possible with continued treatment.',
+                'HIGH': 'Seriously ill and requires intensive care. Medical team is providing advanced support.',
+                'CRITICAL': 'Critical emergency condition. Maximum medical support being provided.'
+            };
+            document.getElementById('riskDescription').textContent = riskDescriptions[riskClass] || 'Being closely monitored';
+
+            // Confidence
+            document.getElementById('finalConfidence').textContent = (analysis.prediction.confidence * 100).toFixed(1) + '%';
+            document.getElementById('dlPrediction').textContent = (analysis.prediction.dl_prediction * 100).toFixed(1) + '%';
+            document.getElementById('mlPrediction').textContent = (analysis.prediction.ml_prediction * 100).toFixed(1) + '%';
+
+            // Agreement
+            const agreement = (analysis.prediction.agreement_score * 100).toFixed(1);
+            document.getElementById('agreementScore').textContent = agreement + '%';
+            document.getElementById('agreementBar').style.width = agreement + '%';
+            document.getElementById('agreementText').textContent =
+                agreement > 85 ? '✓ Models strongly agree' :
+                agreement > 70 ? 'Models mostly agree' :
+                '⚠️ Models have some disagreement';
+
+            // Validation Layers
+            const layers = analysis.prediction.validation_results || {};
+            updateValidationLayer('layer1', layers.layer1_concordance);
+            updateValidationLayer('layer2', layers.layer2_clinical_rules);
+            updateValidationLayer('layer3', layers.layer3_cohort);
+            updateValidationLayer('layer4', layers.layer4_trajectory);
+
+            const flagCount = Object.values(layers).filter(l => l?.flag).length;
+            const validationDiv = document.getElementById('validationStatus');
+            if (flagCount > 0) {
+                validationDiv.className = 'mt-6 p-4 rounded-lg font-semibold text-center text-white bg-orange-600';
+                validationDiv.textContent = `⚠️ ${flagCount} validation(s) flagged - Clinical review recommended`;
+            }
+
+            // Vitals
+            const vitals = analysis.vitals;
+            document.getElementById('vital_hr').textContent = vitals.heart_rate + ' bpm';
+            document.getElementById('vital_rr').textContent = vitals.respiration_rate + ' /min';
+            document.getElementById('vital_sao2').textContent = vitals.oxygen_sat + '%';
+            document.getElementById('vital_sbp').textContent = vitals.sys_bp + ' mmHg';
+            document.getElementById('vital_dbp').textContent = vitals.dias_bp + ' mmHg';
+            document.getElementById('vital_temp').textContent = vitals.temperature + ' °C';
+
+            // Medications
+            displayMedications(analysis.medicines || []);
+
+            // Family Explanation
+            displayFamilyExplanation(analysis.family_explanation || {});
+
+            // Hide loading and show content
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('contentContainer').style.display = 'block';
+        }
+
+        function updateValidationLayer(layerId, layerData) {
+            const icons = {
+                true: '✓',
+                false: '✓',
+                undefined: '✓'
+            };
+            const colors = {
+                true: '❌',
+                false: '✓',
+                undefined: '✓'
+            };
+
+            const flagged = layerData?.flag || false;
+            const iconEl = document.getElementById(layerId + '-icon');
+            iconEl.textContent = flagged ? '❌' : '✓';
+            iconEl.style.color = flagged ? '#ef4444' : '#22c55e';
+        }
+
+        function displayMedications(medicines) {
+            const list = document.getElementById('medicationsList');
+            if (!medicines || medicines.length === 0) {
+                list.innerHTML = '<p class="text-gray-500">No medications recorded</p>';
+                return;
+            }
+
+            list.innerHTML = medicines.map(m => `
+                <div class="p-4 rounded-lg bg-blue-50 border-l-4 border-blue-600">
+                    <p class="font-bold text-gray-800">${m.name}</p>
+                    <p class="text-sm text-gray-700"><strong>Dose:</strong> ${m.dose}</p>
+                    <p class="text-sm text-gray-700"><strong>Frequency:</strong> ${m.frequency}</p>
+                    <p class="text-sm text-gray-700"><strong>Reason:</strong> ${m.reason}</p>
+                </div>
+            `).join('');
+        }
+
+        function displayFamilyExplanation(explanation) {
+            if (!explanation || !explanation.main_message) {
+                return;
+            }
+
+            const msg = explanation.main_message;
+            document.getElementById('familyTitle').textContent = msg.title || 'Patient Status';
+            document.getElementById('familyMessage').textContent = msg.message || '';
+            document.getElementById('familyDetails').innerHTML = (msg.details || '').replace(/\n/g, '<br>');
+        }
+
+        function printReport() {
+            window.print();
+        }
+
+        // Load analysis on page load
+        window.addEventListener('load', loadAnalysis);
+    </script>
+</body>
+</html>

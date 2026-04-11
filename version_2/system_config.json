@@ -1,0 +1,13 @@
+{
+  "hospital_name": "ICU Mortality Prediction System",
+  "version": "1.0",
+  "deployment_date": "2026-04-09T15:47:57.629189",
+  "india_customized": true,
+  "features_count": 156,
+  "model_auc": 0.8835,
+  "inference_time_ms": "<10",
+  "sensitivity": "85.13%",
+  "max_content_length_mb": 16,
+  "flask_port": 5000,
+  "flask_host": "0.0.0.0"
+}

@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ICU Patient Data Input - Interpretable ML System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100">
+    <div class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="bg-gradient-to-r from-blue-600 to-blue-800 text-white shadow-lg">
+            <div class="max-w-7xl mx-auto px-6 py-8">
+                <h1 class="text-4xl font-bold">🏥 Multi-Modal ICU Prediction System</h1>
+                <p class="text-blue-100 mt-2">Interpretable ML for Indian Hospitals - Patient Data Input</p>
+            </div>
+        </header>
+
+        <main class="flex-1 max-w-7xl mx-auto w-full px-6 py-12">
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- CSV Upload Section -->
+                <div class="bg-white rounded-xl shadow-lg p-8 border-l-4 border-blue-600">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">📤 Upload CSV File</h2>
+
+                    <div class="space-y-4">
+                        <p class="text-gray-600 text-sm">Upload a CSV file with patient vitals and ICU report</p>
+
+                        <div class="border-2 border-dashed border-blue-300 rounded-lg p-8 text-center hover:border-blue-500 transition cursor-pointer"
+                             id="csvDropZone"
+                             onclick="document.getElementById('csvFile').click()">
+                            <svg class="mx-auto h-12 w-12 text-blue-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+                            </svg>
+                            <p class="text-gray-600 font-semibold">Drag and drop CSV here</p>
+                            <p class="text-gray-400 text-sm mt-1">or click to browse</p>
+                        </div>
+
+                        <input type="file" id="csvFile" accept=".csv" style="display:none" onchange="handleCSVUpload(event)">
+
+                        <div id="csvPreview" style="display:none;">
+                            <p class="text-green-600 font-semibold">✓ File ready to upload</p>
+                            <p id="csvFileName" class="text-gray-600 text-sm mt-1"></p>
+                        </div>
+
+                        <button onclick="uploadCSV()"
+                                class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition">
+                            Analyze CSV Data
+                        </button>
+
+                        <details class="mt-6 p-4 bg-blue-50 rounded text-sm">
+                            <summary class="font-semibold text-blue-800 cursor-pointer">📋 CSV Format Example</summary>
+                            <pre class="mt-3 bg-white p-3 rounded text-xs overflow-x-auto">
+patient_name,age,gender,admission_date,heart_rate,respiration_rate,oxygen_sat,sys_bp,dias_bp,temperature,glucose,creatinine,platelets,medications,icu_reason
+
+John Doe,65,M,2026-03-20,95,18,96,130,80,37.2,150,1.2,250,"Propofol, Noradrenaline","Sepsis, ARDS"
+            </pre>
+                        </details>
+
+                        <details class="p-4 bg-green-50 rounded text-sm">
+                            <summary class="font-semibold text-green-800 cursor-pointer">📊 Download Sample CSV</summary>
+                            <p class="mt-2 text-gray-600">Use this template to prepare your data</p>
+                            <button onclick="downloadSampleCSV()" class="mt-2 text-green-600 font-semibold hover:underline">
+                                ⬇️ sample_patients.csv
+                            </button>
+                        </details>
+                    </div>
+                </div>
+
+                <!-- Manual Form Entry Section -->
+                <div class="bg-white rounded-xl shadow-lg p-8 border-l-4 border-green-600">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">📝 Manual Patient Entry</h2>
+
+                    <form id="patientForm" class="space-y-4">
+                        <!-- Patient Info -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Patient Name*</label>
+                                <input type="text" name="patient_name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Age*</label>
+                                <input type="number" name="age" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Gender*</label>
+                                <select name="gender" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
+                                    <option value="">Select</option>
+                                    <option value="M">Male</option>
+                                    <option value="F">Female</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Admission Date*</label>
+                                <input type="date" name="admission_date" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
+                            </div>
+                        </div>
+
+                        <!-- Current Vitals -->
+                        <div class="border-t pt-4 mt-4">
+                            <h3 class="font-semibold text-gray-700 mb-3">Current Vital Signs</h3>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1">Heart Rate (bpm)*</label>
+                                    <input type="number" name="heart_rate" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1">Respiration Rate*</label>
+                                    <input type="number" name="respiration_rate" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1">O2 Saturation (%)*</label>
+                                    <input type="number" name="oxygen_sat" min="0" max="100" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1">Sys BP (mmHg)*</label>
+                                    <input type="number" name="sys_bp" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1">Dias BP (mmHg)*</label>
+                                    <input type="number" name="dias_bp" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1">Temperature (°C)*</label>
+                                    <input type="number" name="temperature" step="0.1" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Lab Values -->
+                        <div class="border-t pt-4 mt-4">
+                            <h3 class="font-semibold text-gray-700 mb-3">Lab Values (Optional)</h3>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1">Glucose (mg/dL)</label>
+                                    <input type="number" name="glucose" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1">Creatinine (mg/dL)</label>
+                                    <input type="number" name="creatinine" step="0.1" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1">Platelets (×10³/μL)</label>
+                                    <input type="number" name="platelets" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Medications -->
+                        <div class="border-t pt-4 mt-4">
+                            <h3 class="font-semibold text-gray-700 mb-3">Current Medications (Optional)</h3>
+                            <textarea name="medications" placeholder="Enter medications separated by commas&#10;E.g., Propofol, Noradrenaline, Ceftriaxone"
+                                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none h-20 resize-none"></textarea>
+                        </div>
+
+                        <!-- ICU Reason -->
+                        <div>
+                            <h3 class="font-semibold text-gray-700 mb-3">ICU Admission Reason (Optional)</h3>
+                            <textarea name="icu_reason" placeholder="Enter primary reason for ICU admission&#10;E.g., Sepsis, ARDS, Post-operative monitoring"
+                                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none h-20 resize-none"></textarea>
+                        </div>
+
+                        <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition">
+                            Analyze Patient Data
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Info Section -->
+            <div class="mt-12 grid md:grid-cols-3 gap-6">
+                <div class="bg-white rounded-lg p-6 shadow">
+                    <div class="text-3xl mb-3">🔬</div>
+                    <h3 class="font-bold text-gray-800 mb-2">Multi-Modal Predictions</h3>
+                    <p class="text-gray-600 text-sm">Deep Learning + Machine Learning ensemble with 4 validation layers for accurate mortality risk assessment</p>
+                </div>
+                <div class="bg-white rounded-lg p-6 shadow">
+                    <div class="text-3xl mb-3">💊</div>
+                    <h3 class="font-bold text-gray-800 mb-2">Medicine Tracking</h3>
+                    <p class="text-gray-600 text-sm">Real-time drug interaction detection with 10+ critical interactions and adverse event prediction</p>
+                </div>
+                <div class="bg-white rounded-lg p-6 shadow">
+                    <div class="text-3xl mb-3">👨‍👩‍👧</div>
+                    <h3 class="font-bold text-gray-800 mb-2">Family Explanations</h3>
+                    <p class="text-gray-600 text-sm">Plain-language explanations in multiple Indian languages for improved patient family transparency</p>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-gray-800 text-gray-300 text-center py-6 mt-12">
+            <p>Interpretable ML System for Indian Hospitals | Phase 7-10 Implementation</p>
+        </footer>
+    </div>
+
+    <script>
+        // CSV Drag and Drop
+        const csvDropZone = document.getElementById('csvDropZone');
+        const csvFile = document.getElementById('csvFile');
+        const csvPreview = document.getElementById('csvPreview');
+        const csvFileName = document.getElementById('csvFileName');
+
+        csvDropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            csvDropZone.style.borderColor = '#2563eb';
+            csvDropZone.style.backgroundColor = '#f0f9ff';
+        });
+
+        csvDropZone.addEventListener('dragleave', () => {
+            csvDropZone.style.borderColor = '#93c5fd';
+            csvDropZone.style.backgroundColor = 'transparent';
+        });
+
+        csvDropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            csvDropZone.style.borderColor = '#93c5fd';
+            csvDropZone.style.backgroundColor = 'transparent';
+
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                csvFile.files = files;
+                handleCSVUpload();
+            }
+        });
+
+        function handleCSVUpload(event) {
+            if (csvFile.files.length > 0) {
+                csvFileName.textContent = `Selected: ${csvFile.files[0].name}`;
+                csvPreview.style.display = 'block';
+            }
+        }
+
+        function uploadCSV() {
+            if (csvFile.files.length === 0) {
+                alert('Please select a CSV file');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', csvFile.files[0]);
+
+            fetch('/api/upload-csv', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = `/analysis/${data.patient_id}`;
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        function downloadSampleCSV() {
+            const csvContent = `patient_name,age,gender,admission_date,heart_rate,respiration_rate,oxygen_sat,sys_bp,dias_bp,temperature,glucose,creatinine,platelets,medications,icu_reason
+John Doe,65,M,2026-03-20,95,18,96,130,80,37.2,150,1.2,250,"Propofol, Noradrenaline","Sepsis, ARDS"
+Jane Smith,72,F,2026-03-19,110,22,92,145,85,38.5,180,1.8,180,"Midazolam, Ceftriaxone","Post-operative infection"
+Rahul Kumar,58,M,2026-03-21,78,16,98,120,75,37.0,120,0.9,350,"Aspirin, Lisinopril","Stable cardiac monitoring"`;
+
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'sample_patients.csv';
+            a.click();
+        }
+
+        // Form Submission
+        document.getElementById('patientForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+
+            // Validate vitals
+            if (data.heart_rate <= 0 || data.respiration_rate <= 0) {
+                alert('Please enter valid vital signs');
+                return;
+            }
+
+            fetch('/api/analyze-patient', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    window.location.href = `/analysis/${result.patient_id}`;
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    </script>
+</body>
+</html>

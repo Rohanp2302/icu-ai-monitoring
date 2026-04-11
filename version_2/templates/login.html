@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareCast - ICU Mortality Prediction System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --desktop-ratio: 16 / 9;
+            --desktop-shell-gap: clamp(10px, 2vw, 24px);
+            --desktop-shell-min-width: 1100px;
+            --desktop-shell-max-width: 1720px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            min-height: 100vh;
+            padding: var(--desktop-shell-gap);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: auto;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .desktop-frame {
+            width: min(
+                var(--desktop-shell-max-width),
+                max(
+                    var(--desktop-shell-min-width),
+                    calc((100vh - (var(--desktop-shell-gap) * 2)) * (16 / 9))
+                )
+            );
+            aspect-ratio: var(--desktop-ratio);
+            max-height: calc(100vh - (var(--desktop-shell-gap) * 2));
+            border-radius: 20px;
+            overflow: auto;
+            border: 1px solid;
+            box-shadow: 0 30px 70px rgba(0, 0, 0, 0.25);
+        }
+
+        body.dark-mode {
+            background: linear-gradient(135deg, #0f1419 0%, #1a2332 100%);
+            color: #e1e8ed;
+        }
+
+        body.dark-mode .desktop-frame {
+            background: rgba(15, 20, 25, 0.82);
+            border-color: rgba(44, 62, 78, 0.7);
+        }
+
+        body.light-mode {
+            background: linear-gradient(135deg, #f0f4f8 0%, #e8f1f7 100%);
+            color: #1a2332;
+        }
+
+        body.light-mode .desktop-frame {
+            background: rgba(255, 255, 255, 0.82);
+            border-color: rgba(19, 146, 236, 0.35);
+        }
+
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100%;
+            padding: 20px;
+        }
+
+        .login-box {
+            width: 100%;
+            max-width: 420px;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        body.dark-mode .login-box {
+            background: rgba(25, 40, 51, 0.8);
+            border: 1px solid rgba(35, 57, 72, 0.5);
+        }
+
+        body.light-mode .login-box {
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(19, 146, 236, 0.2);
+        }
+
+        .logo-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 15px;
+            background: linear-gradient(135deg, #1392ec, #0d6dd8);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+        }
+
+        .logo-text {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 8px;
+        }
+
+        body.dark-mode .logo-text {
+            color: #ffffff;
+        }
+
+        body.light-mode .logo-text {
+            color: #1392ec;
+        }
+
+        .tagline {
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            opacity: 0.7;
+            margin-bottom: 5px;
+        }
+
+        body.dark-mode .tagline {
+            color: #92b2c9;
+        }
+
+        body.light-mode .tagline {
+            color: #1392ec;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            opacity: 0.6;
+            line-height: 1.5;
+        }
+
+        body.dark-mode .subtitle {
+            color: #c5d3dd;
+        }
+
+        body.light-mode .subtitle {
+            color: #456478;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        body.dark-mode .form-label {
+            color: #92b2c9;
+        }
+
+        body.light-mode .form-label {
+            color: #1392ec;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 14px;
+            border-radius: 8px;
+            border: 1.5px solid;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        body.dark-mode .form-input {
+            background: rgba(16, 26, 34, 0.5);
+            border-color: rgba(44, 62, 78, 0.5);
+            color: #e1e8ed;
+        }
+
+        body.dark-mode .form-input:focus {
+            outline: none;
+            border-color: #1392ec;
+            background: rgba(16, 26, 34, 0.8);
+            box-shadow: 0 0 0 3px rgba(19, 146, 236, 0.1);
+        }
+
+        body.light-mode .form-input {
+            background: rgba(255, 255, 255, 0.6);
+            border-color: rgba(19, 146, 236, 0.3);
+            color: #1a2332;
+        }
+
+        body.light-mode .form-input:focus {
+            outline: none;
+            border-color: #1392ec;
+            background: rgba(255, 255, 255, 1);
+            box-shadow: 0 0 0 3px rgba(19, 146, 236, 0.1);
+        }
+
+        .form-input::placeholder {
+            opacity: 0.5;
+        }
+
+        .login-button {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: linear-gradient(135deg, #1392ec, #0d6dd8);
+            color: white;
+            margin-bottom: 16px;
+        }
+
+        .login-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(19, 146, 236, 0.4);
+        }
+
+        .login-button:active {
+            transform: translateY(0);
+        }
+
+        .login-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .demo-link {
+            text-align: center;
+            font-size: 12px;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 16px;
+        }
+
+        body.dark-mode .demo-link {
+            background: rgba(44, 62, 78, 0.3);
+            color: #92b2c9;
+        }
+
+        body.light-mode .demo-link {
+            background: rgba(19, 146, 236, 0.1);
+            color: #1392ec;
+        }
+
+        .demo-link:hover {
+            opacity: 0.8;
+        }
+
+        .info-section {
+            font-size: 11px;
+            padding: 12px;
+            border-radius: 8px;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        body.dark-mode .info-section {
+            background: rgba(44, 62, 78, 0.2);
+            color: #92b2c9;
+        }
+
+        body.light-mode .info-section {
+            background: rgba(19, 146, 236, 0.05);
+            color: #456478;
+        }
+
+        .info-section strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        body.dark-mode .theme-toggle {
+            background: rgba(44, 62, 78, 0.5);
+            color: #fbbf24;
+        }
+
+        body.light-mode .theme-toggle {
+            background: rgba(19, 146, 236, 0.2);
+            color: #1392ec;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        .error-message {
+            display: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            margin-bottom: 16px;
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .success-message {
+            display: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            margin-bottom: 16px;
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="dark-mode">
+
+<!-- Theme Toggle Button -->
+<button class="theme-toggle" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
+    <span class="material-symbols-outlined" id="theme-icon">light_mode</span>
+</button>
+
+<!-- Login Container -->
+<div class="desktop-frame">
+    <div class="login-container">
+        <div class="login-box">
+            <!-- Logo Section -->
+            <div class="logo-section">
+                <div class="logo-icon">
+                    <span class="material-symbols-outlined">local_hospital</span>
+                </div>
+                <div class="logo-text">CareCast</div>
+                <div class="tagline">ICU Mortality Prediction</div>
+                <div class="subtitle">Interpretable ML for Indian Hospitals</div>
+            </div>
+
+            <!-- Error Message -->
+            <div class="error-message" id="error-msg"></div>
+            <div class="success-message" id="success-msg"></div>
+
+            <!-- Login Form -->
+            <form id="login-form" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label class="form-label">
+                        <span class="material-symbols-outlined" style="font-size: 14px; vertical-align: middle; margin-right: 4px;">badge</span>
+                        Patient ID
+                    </label>
+                    <input type="text" 
+                           id="patient-id" 
+                           class="form-input" 
+                           placeholder="Enter patient ID (e.g., 1011 or 1011D/F)" 
+                           required 
+                           maxlength="10"
+                           autocomplete="off">
+                </div>
+
+                <button type="submit" class="login-button" id="login-btn">
+                    <span style="vertical-align: middle;">Sign In</span>
+                </button>
+
+                <div class="demo-link" onclick="loginWithDemo()">
+                    <span class="material-symbols-outlined" style="font-size: 14px; vertical-align: middle; margin-right: 4px;">play_circle</span>
+                    Try Demo (ID: 1011D)
+                </div>
+
+                <!-- Info Section -->
+                <div class="info-section">
+                    <strong>Access Guide:</strong>
+                    • Doctor: ID ending with <strong>D</strong> (e.g., <strong>1011D</strong>) - Full medical notes<br>
+                    • Family: ID ending with <strong>F</strong> (e.g., <strong>1011F</strong>) - Soft, supportive messages
+                </div>
+            </form>
+
+            <!-- Footer Info -->
+            <div style="text-align: center; font-size: 11px; opacity: 0.5; margin-top: 24px;">
+                <p>CareCast v1.0 | Secure ICU Management System</p>
+                <p style="margin-top: 8px;">Protected by AI-assisted clinical decision support</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Theme Management
+    function toggleTheme() {
+        const body = document.body;
+        const icon = document.getElementById('theme-icon');
+        
+        if (body.classList.contains('dark-mode')) {
+            body.classList.remove('dark-mode');
+            body.classList.add('light-mode');
+            icon.textContent = 'dark_mode';
+            localStorage.setItem('theme', 'light');
+            localStorage.setItem('carecast_theme', 'light');
+        } else {
+            body.classList.remove('light-mode');
+            body.classList.add('dark-mode');
+            icon.textContent = 'light_mode';
+            localStorage.setItem('theme', 'dark');
+            localStorage.setItem('carecast_theme', 'dark');
+        }
+    }
+
+    // Load saved theme
+    document.addEventListener('DOMContentLoaded', function() {
+        const savedTheme = localStorage.getItem('carecast_theme') || localStorage.getItem('theme') || 'dark';
+        document.body.className = savedTheme + '-mode';
+        const icon = document.getElementById('theme-icon');
+        icon.textContent = savedTheme === 'dark' ? 'light_mode' : 'dark_mode';
+    });
+
+    // Login Handler
+    function handleLogin(event) {
+        event.preventDefault();
+        const demoMode = Boolean(event && event.demo === true);
+        const patientId = document.getElementById('patient-id').value.trim().toUpperCase();
+        const errorMsg = document.getElementById('error-msg');
+        const successMsg = document.getElementById('success-msg');
+        const loginBtn = document.getElementById('login-btn');
+        
+        // Clear messages
+        errorMsg.style.display = 'none';
+        successMsg.style.display = 'none';
+        
+        // Validation
+        if (!patientId) {
+            showError('Please enter a Patient ID');
+            return;
+        }
+
+        if (patientId.length < 3) {
+            showError('Patient ID must be at least 3 characters');
+            return;
+        }
+
+        // Check if ID ends with D or F
+        const role = patientId.slice(-1);
+        if (!['D', 'F'].includes(role)) {
+            showError('Patient ID must end with D (Doctor) or F (Family)');
+            return;
+        }
+
+        // Show loading state
+        loginBtn.disabled = true;
+        loginBtn.textContent = '🔄 Authenticating...';
+
+        // Determine user role based on ID suffix.
+        let userRole = 'D';
+        let destination = '/upload';
+
+        if (patientId.toUpperCase().endsWith('F')) {
+            userRole = 'F';
+        }
+
+        // Simulate authentication (in production, validate against backend)
+        setTimeout(() => {
+            // Save session
+            sessionStorage.setItem('patientId', patientId);
+            sessionStorage.setItem('userRole', userRole);
+            sessionStorage.setItem('usingDemo', demoMode ? 'true' : 'false');
+            sessionStorage.removeItem('predictions');
+            
+            showSuccess('Login successful! Redirecting...');
+            
+            setTimeout(() => {
+                window.location.href = destination;
+            }, 1000);
+        }, 800);
+    }
+
+    function loginWithDemo() {
+        document.getElementById('patient-id').value = '1011D';
+        handleLogin({ preventDefault: () => {}, demo: true });
+    }
+
+    function showError(message) {
+        const errorMsg = document.getElementById('error-msg');
+        errorMsg.textContent = '❌ ' + message;
+        errorMsg.style.display = 'block';
+        document.getElementById('login-btn').disabled = false;
+        document.getElementById('login-btn').textContent = 'Sign In';
+    }
+
+    function showSuccess(message) {
+        const successMsg = document.getElementById('success-msg');
+        successMsg.textContent = '✓ ' + message;
+        successMsg.style.display = 'block';
+    }
+
+    // Enter key handling
+    document.getElementById('patient-id').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            handleLogin(e);
+        }
+    });
+</script>
+
+</body>
+</html>

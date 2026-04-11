@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareCast - Advanced ICU Clinical Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1392ec",
+                        "background-dark": "#0f1419",
+                        "card-dark": "#1a2332",
+                        "card-border": "#2c3e4e",
+                        "text-secondary": "#92b2c9",
+                        "danger": "#ef4444",
+                        "warning": "#f59e0b",
+                        "success": "#10b981",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        :root {
+            --desktop-ratio: 16 / 9;
+            --desktop-shell-gap: clamp(10px, 2vw, 24px);
+            --desktop-shell-min-width: 1180px;
+            --desktop-shell-max-width: 1820px;
+        }
+        body {
+            min-height: 100vh;
+            margin: 0;
+            padding: var(--desktop-shell-gap);
+            background: linear-gradient(135deg, #0f1419 0%, #1a2332 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: auto;
+        }
+        .desktop-frame {
+            width: min(
+                var(--desktop-shell-max-width),
+                max(
+                    var(--desktop-shell-min-width),
+                    calc((100vh - (var(--desktop-shell-gap) * 2)) * (16 / 9))
+                )
+            );
+            aspect-ratio: var(--desktop-ratio);
+            max-height: calc(100vh - (var(--desktop-shell-gap) * 2));
+            border-radius: 18px;
+            overflow: hidden;
+            border: 1px solid #2c3e4e;
+            box-shadow: 0 30px 70px rgba(0, 0, 0, 0.35);
+            background: #0f1419;
+        }
+        .sidebar { width: 280px; border-right: 1px solid #2c3e4e; }
+        .main-content { flex: 1; overflow-y-auto; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .nav-item { transition: all 0.2s; }
+        .nav-item.active { background: rgba(19, 146, 236, 0.1); border-left: 3px solid #1392ec; }
+        .metric-card { border: 1px solid #2c3e4e; border-radius: 8px; padding: 16px; background: #1a2332; }
+        .chart-container { position: relative; height: 300px; margin-bottom: 24px; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 1000; }
+        .modal.active { display: flex; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #2c3e4e; border-radius: 3px; }
+    </style>
+</head>
+<body class="bg-background-dark text-white font-display">
+
+<div class="desktop-frame">
+<div class="flex h-full bg-background-dark">
+    
+    <!-- Left Sidebar Navigation -->
+    <div class="sidebar bg-[#141d24] overflow-y-auto flex flex-col">
+        <!-- Logo -->
+        <div class="p-6 border-b border-card-border">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-primary">medical_services</span>
+                </div>
+                <div>
+                    <h1 class="font-bold text-white">CareCast</h1>
+                    <p class="text-xs text-text-secondary">Clinical AI</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Menu -->
+        <nav class="flex-1 p-4 space-y-2">
+            <!-- Overview -->
+            <button onclick="switchTab('overview')" class="nav-item active w-full text-left px-4 py-3 rounded-lg hover:bg-white/5 flex items-center gap-3 text-sm">
+                <span class="material-symbols-outlined">dashboard</span>
+                <span>Overview</span>
+            </button>
+
+            <!-- Patient Information Dropdown -->
+            <div class="space-y-1">
+                <button onclick="toggleMenu('patientMenu')" class="w-full text-left px-4 py-3 rounded-lg hover:bg-white/5 flex items-center gap-3 text-sm">
+                    <span class="material-symbols-outlined">person</span>
+                    <span>Patient Info</span>
+                    <span class="material-symbols-outlined ml-auto text-xs" id="patientMenuIcon">expand_more</span>
+                </button>
+                <div id="patientMenu" class="ml-4 space-y-1 max-h-0 overflow-hidden transition-all">
+                    <button onclick="switchTab('medical-history')" class="nav-item w-full text-left px-4 py-2 rounded text-sm text-text-secondary hover:text-white">Medical History & Diagnosis</button>
+                    <button onclick="switchTab('medications')" class="nav-item w-full text-left px-4 py-2 rounded text-sm text-text-secondary hover:text-white">Current Medications</button>
+                    <button onclick="switchTab('treatment-plan')" class="nav-item w-full text-left px-4 py-2 rounded text-sm text-text-secondary hover:text-white">Treatment Plan</button>
+                    <button onclick="switchTab('lab-results')" class="nav-item w-full text-left px-4 py-2 rounded text-sm text-text-secondary hover:text-white">Lab Results</button>
+                </div>
+            </div>
+
+            <!-- Predictions & Analysis -->
+            <button onclick="switchTab('predictions')" class="nav-item w-full text-left px-4 py-3 rounded-lg hover:bg-white/5 flex items-center gap-3 text-sm">
+                <span class="material-symbols-outlined">analytics</span>
+                <span>Predictions</span>
+            </button>
+
+            <!-- Vital Signs Trajectories -->
+            <button onclick="switchTab('trajectories')" class="nav-item w-full text-left px-4 py-3 rounded-lg hover:bg-white/5 flex items-center gap-3 text-sm">
+                <span class="material-symbols-outlined">trending_up</span>
+                <span>Trajectories</span>
+            </button>
+
+            <!-- Team Features -->
+            <div class="space-y-1">
+                <button onclick="toggleMenu('teamMenu')" class="w-full text-left px-4 py-3 rounded-lg hover:bg-white/5 flex items-center gap-3 text-sm">
+                    <span class="material-symbols-outlined">groups</span>
+                    <span>Team</span>
+                    <span class="material-symbols-outlined ml-auto text-xs" id="teamMenuIcon">expand_more</span>
+                </button>
+                <div id="teamMenu" class="ml-4 space-y-1 max-h-0 overflow-hidden transition-all">
+                    <button onclick="switchTab('team-notes')" class="nav-item w-full text-left px-4 py-2 rounded text-sm text-text-secondary hover:text-white">Team Notes</button>
+                    <button onclick="switchTab('team-communication')" class="nav-item w-full text-left px-4 py-2 rounded text-sm text-text-secondary hover:text-white">Communication</button>
+                    <button onclick="switchTab('handoff')" class="nav-item w-full text-left px-4 py-2 rounded text-sm text-text-secondary hover:text-white">Shift Handoff</button>
+                </div>
+            </div>
+
+            <!-- Settings -->
+            <button onclick="switchTab('settings')" class="nav-item w-full text-left px-4 py-3 rounded-lg hover:bg-white/5 flex items-center gap-3 text-sm">
+                <span class="material-symbols-outlined">settings</span>
+                <span>Settings</span>
+            </button>
+        </nav>
+
+        <!-- Logout -->
+        <div class="p-4 border-t border-card-border">
+            <button onclick="logout()" class="w-full px-4 py-2 rounded-lg bg-danger/10 text-danger hover:bg-danger/20 text-sm font-medium flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-sm">logout</span>
+                Logout
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content flex flex-col flex-1">
+        
+        <!-- Top Header -->
+        <header class="sticky top-0 bg-[#141d24]/95 backdrop-blur border-b border-card-border p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 id="pageTitle" class="text-2xl font-bold text-white">Overview</h2>
+                    <p id="pageSubtitle" class="text-text-secondary text-sm mt-1">Real-time patient monitoring</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-2 px-3 py-2 bg-success/10 rounded-lg border border-success/20">
+                        <span class="material-symbols-outlined text-success text-sm">check_circle</span>
+                        <span class="text-sm text-success font-medium">Active</span>
+                    </div>
+                    <button onclick="toggleTheme()" class="w-10 h-10 rounded-lg border border-card-border bg-white/5 hover:bg-white/10">
+                        <span class="material-symbols-outlined" id="themeIcon">dark_mode</span>
+                    </button>
+                    <button onclick="enforceRoleView()" class="px-4 py-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 text-sm font-medium">
+                        <span class="material-symbols-outlined">people</span>
+                        <span id="viewModeText">Doctor View</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content Scroll Area -->
+        <div class="flex-1 overflow-y-auto p-6 space-y-6">
+
+            <!-- ============ OVERVIEW TAB ============ -->
+            <div id="overview" class="tab-content active">
+                
+                <!-- Patient Quick Info -->
+                <div class="metric-card">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <p class="text-text-secondary text-xs uppercase mb-2">Patient Information</p>
+                            <h3 class="text-xl font-bold" id="ov-patient-id">Patient-001</h3>
+                            <p class="text-text-secondary text-sm mt-1" id="ov-patient-age">Age: -- | Admitted: --</p>
+                        </div>
+                        <div class="text-right">
+                            <div id="ov-risk-badge" class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-danger/10 border border-danger/20">
+                                <span class="material-symbols-outlined text-danger text-sm">warning</span>
+                                <span class="text-danger text-sm font-semibold">High Risk</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mortality Risk & ICU Stay -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="metric-card">
+                        <p class="text-text-secondary text-xs uppercase mb-3">Mortality Risk (7-day)</p>
+                        <div class="flex items-baseline gap-2">
+                            <span class="text-4xl font-bold" id="ov-mortality">--</span>
+                            <span class="text-text-secondary">%</span>
+                        </div>
+                        <div class="w-full bg-gray-700 h-2 mt-3 rounded-full overflow-hidden">
+                            <div id="ov-mortality-bar" class="bg-warning h-full w-0"></div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <p class="text-text-secondary text-xs uppercase mb-3">Expected ICU Stay</p>
+                        <div class="flex items-baseline gap-2">
+                            <span class="text-4xl font-bold" id="ov-icu-stay">--</span>
+                            <span class="text-text-secondary">days</span>
+                        </div>
+                        <p class="text-text-secondary text-xs mt-3">Based on risk profile</p>
+                    </div>
+
+                    <div class="metric-card">
+                        <p class="text-text-secondary text-xs uppercase mb-3">Risk Classification</p>
+                        <div id="ov-risk-class" class="text-2xl font-bold text-danger">HIGH</div>
+                        <p class="text-text-secondary text-xs mt-3">Immediate monitoring required</p>
+                    </div>
+                </div>
+
+                <!-- Vital Signs -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="metric-card">
+                        <p class="text-text-secondary text-xs uppercase mb-2">Heart Rate</p>
+                        <p class="text-2xl font-bold" id="ov-hr">--</p>
+                        <p class="text-text-secondary text-xs">bpm</p>
+                    </div>
+                    <div class="metric-card">
+                        <p class="text-text-secondary text-xs uppercase mb-2">Respiration</p>
+                        <p class="text-2xl font-bold" id="ov-rr">--</p>
+                        <p class="text-text-secondary text-xs">breaths/min</p>
+                    </div>
+                    <div class="metric-card">
+                        <p class="text-text-secondary text-xs uppercase mb-2">SpO2</p>
+                        <p class="text-2xl font-bold" id="ov-spo2">--</p>
+                        <p class="text-text-secondary text-xs">%</p>
+                    </div>
+                    <div class="metric-card">
+                        <p class="text-text-secondary text-xs uppercase mb-2">Temperature</p>
+                        <p class="text-2xl font-bold" id="ov-temp">--</p>
+                        <p class="text-text-secondary text-xs">°C</p>
+                    </div>
+                </div>
+
+                <!-- Model Comparison -->
+                <div class="metric-card">
+                    <p class="text-text-secondary text-xs uppercase mb-4">Model Predictions Comparison</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-3 bg-primary/10 rounded border border-primary/20">
+                            <p class="text-sm font-semibold text-white mb-2">🌲 Random Forest</p>
+                            <p class="text-2xl font-bold text-primary" id="ov-rf-pred">--</p>
+                            <p class="text-xs text-text-secondary mt-1">Fast, classical approach</p>
+                        </div>
+                        <div class="p-3 bg-success/10 rounded border border-success/20">
+                            <p class="text-sm font-semibold text-white mb-2">📊 LSTM Ensemble</p>
+                            <p class="text-2xl font-bold text-success" id="ov-lstm-pred">--</p>
+                            <p class="text-xs text-text-secondary mt-1">5-fold temporal model</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ PREDICTIONS TAB ============ -->
+            <div id="predictions" class="tab-content">
+                <div class="metric-card mb-4">
+                    <p class="text-text-secondary text-xs uppercase mb-4">Detailed Risk Analysis</p>
+                    <div class="space-y-4">
+                        <div>
+                            <p class="text-sm font-semibold mb-2">7-Day Mortality Risk</p>
+                            <div class="w-full bg-gray-700 h-3 rounded-full overflow-hidden">
+                                <div id="pred-mortality-bar" class="bg-danger h-full w-0 transition-all"></div>
+                            </div>
+                            <p class="text-xs text-text-secondary mt-1" id="pred-mortality-text">-- %</p>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold mb-2">30-Day Readmission Risk</p>
+                            <div class="w-full bg-gray-700 h-3 rounded-full overflow-hidden">
+                                <div id="pred-readmission-bar" class="bg-warning h-full w-0 transition-all"></div>
+                            </div>
+                            <p class="text-xs text-text-secondary mt-1" id="pred-readmission-text">-- %</p>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold mb-2">Deterioration Risk (24h)</p>
+                            <div class="w-full bg-gray-700 h-3 rounded-full overflow-hidden">
+                                <div id="pred-deterioration-bar" class="bg-warning h-full w-0 transition-all"></div>
+                            </div>
+                            <p class="text-xs text-text-secondary mt-1" id="pred-deterioration-text">-- %</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ TRAJECTORIES TAB ============ -->
+            <div id="trajectories" class="tab-content">
+                <div class="metric-card mb-4">
+                    <p class="text-text-secondary text-xs uppercase mb-4">Vital Signs Trajectories</p>
+                    <div class="chart-container">
+                        <canvas id="vitalChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="metric-card mb-4">
+                    <p class="text-text-secondary text-xs uppercase mb-4">Medication Response Trajectories</p>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-sm font-semibold mb-2">Norepinephrine (mcg/kg/min): Expected vs Actual</p>
+                            <div class="chart-container">
+                                <canvas id="vasopressorChart"></canvas>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold mb-2">Antibiotic Efficacy (WBC × 10³/μL): Expected vs Actual</p>
+                            <div class="chart-container">
+                                <canvas id="antibioticChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <p id="medicationTrajectoryStatus" class="text-xs text-text-secondary mt-3"></p>
+                </div>
+
+                <div class="metric-card">
+                    <p class="text-text-secondary text-xs uppercase mb-4">Expected vs Actual Recovery</p>
+                    <div class="chart-container">
+                        <canvas id="recoveryChart"></canvas>
+                    </div>
+                    <p id="recoveryStatus" class="text-xs text-text-secondary mt-3"></p>
+                </div>
+            </div>
+
+            <!-- ============ MEDICAL HISTORY TAB ============ -->
+            <div id="medical-history" class="tab-content">
+                <div class="metric-card">
+                    <p class="text-text-secondary text-xs uppercase mb-4">Primary Diagnosis</p>
+                    <div id="diagnosisContainer" class="space-y-3">
+                        <p class="text-text-secondary text-sm">Loading diagnosis...</p>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <p class="text-text-secondary text-xs uppercase mb-4">Comorbidities</p>
+                    <div id="comorbiditiesContainer" class="space-y-2">
+                        <p class="text-text-secondary text-sm">Loading comorbidities...</p>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <p class="text-text-secondary text-xs uppercase mb-4">Surgical History</p>
+                    <div id="surgicalHistoryContainer" class="space-y-2">
+                        <p class="text-text-secondary text-sm">Loading surgical history...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ MEDICATIONS TAB ============ -->
+            <div id="medications" class="tab-content">
+                <div class="metric-card">
+                    <p class="text-text-secondary text-xs uppercase mb-4">Active Medications</p>
+                    <div id="medicationsContainer" class="space-y-3">
+                        <p class="text-text-secondary text-sm">Loading medications...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ TREATMENT PLAN TAB ============ -->
+            <div id="treatment-plan" class="tab-content">
+                <div class="metric-card">
+                    <p class="text-text-secondary text-xs uppercase mb-4">Current Treatment Goals</p>
+                    <div id="treatmentGoalsContainer" class="space-y-2">
+                        <p class="text-text-secondary text-sm">Loading treatment goals...</p>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <p class="text-text-secondary text-xs uppercase mb-4">Care Plan (Next 48 Hours)</p>
+                    <div id="careplanContainer" class="space-y-3">
+                        <p class="text-text-secondary text-sm">Loading care plan...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ LAB RESULTS TAB ============ -->
+            <div id="lab-results" class="tab-content">
+                <div class="metric-card">
+                    <p class="text-text-secondary text-xs uppercase mb-4">Recent Lab Results</p>
+                    <div id="labResultsContainer" class="space-y-3">
+                        <p class="text-text-secondary text-sm">Loading lab results...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ TEAM NOTES TAB ============ -->
+            <div id="team-notes" class="tab-content">
+                <div class="metric-card mb-4">
+                    <p class="text-text-secondary text-xs uppercase mb-4">Clinical Notes</p>
+                    <div id="teamNotesList" class="space-y-3">
+                        <div class="p-3 bg-white/5 rounded border-l-2 border-primary">
+                            <p class="text-xs text-text-secondary">Today, 14:30 - ICU Team</p>
+                            <p class="text-sm mt-2">Patient responding to fluid resuscitation. Lactate trending down from 4.1 to 3.2. Continuing vasopressor support. Plan for daily SBT tomorrow.</p>
+                        </div>
+                        <div class="p-3 bg-white/5 rounded border-l-2 border-primary">
+                            <p class="text-xs text-text-secondary">Today, 08:15 - Night Shift</p>
+                            <p class="text-sm mt-2">Urine output improved overnight. Continuing current antibiotic regimen. Watch for signs of bleeding.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <p class="text-text-secondary text-xs uppercase mb-4">Add Note</p>
+                    <textarea id="teamNoteInput" class="w-full bg-white/5 border border-card-border rounded p-3 text-sm text-white placeholder-text-secondary" placeholder="Add clinical note..." rows="4"></textarea>
+                    <button onclick="saveTeamNote()" class="mt-3 px-4 py-2 bg-primary hover:bg-primary/80 rounded text-white text-sm font-medium">Save Note</button>
+                </div>
+            </div>
+
+            <!-- ============ TEAM COMMUNICATION TAB ============ -->
+            <div id="team-communication" class="tab-content">
+                <div class="metric-card">
+                    <p class="text-text-secondary text-xs uppercase mb-4">Team Messages</p>
+                    <div id="teamMessagesList" class="space-y-3 mb-4">
+                        <div class="p-3 bg-white/5 rounded">
+                            <div class="flex justify-between items-start mb-2">
+                                <p class="font-semibold text-sm">Dr. Sarah Johnson</p>
+                                <p class="text-xs text-text-secondary">10:30 AM</p>
+                            </div>
+                            <p class="text-sm">Call Infectious Disease for additional antibiotic coverage</p>
+                        </div>
+                        <div class="p-3 bg-white/5 rounded">
+                            <div class="flex justify-between items-start mb-2">
+                                <p class="font-semibold text-sm">Nurse Alex Chen</p>
+                                <p class="text-xs text-text-secondary">09:15 AM</p>
+                            </div>
+                            <p class="text-sm">Patient is hemodynamically stable. Reduced Norep by 0.02</p>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-card-border pt-4">
+                        <input id="teamMessageInput" type="text" class="w-full bg-white/5 border border-card-border rounded p-3 text-sm text-white placeholder-text-secondary" placeholder="Type a message...">
+                        <button onclick="sendTeamMessage()" class="mt-2 px-4 py-2 bg-primary hover:bg-primary/80 rounded text-white text-sm font-medium">Send</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ HANDOFF TAB ============ -->
+            <div id="handoff" class="tab-content">
+                <div class="metric-card">
+                    <p class="text-text-secondary text-xs uppercase mb-4">Shift Handoff Report</p>
+                    <div class="space-y-4" id="handoffForm">
+                        <div>
+                            <p class="font-semibold text-sm mb-2">Patient Summary</p>
+                            <textarea id="handoffSummary" class="w-full bg-white/5 border border-card-border rounded p-3 text-sm text-white">62-year-old with sepsis, responding to treatment. Hemodynamically stable on vasopressors.</textarea>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-sm mb-2">Overnight Events</p>
+                            <textarea id="handoffEvents" class="w-full bg-white/5 border border-card-border rounded p-3 text-sm text-white">Lactate decreased from 4.1 to 3.2
+Urine output 180 mL
+No episodes of hypotension
+Sedation maintained</textarea>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-sm mb-2">Critical Issues to Monitor</p>
+                            <textarea id="handoffIssues" class="w-full bg-white/5 border border-card-border rounded p-3 text-sm text-white">Vasopressor weaning timeline
+Respiratory status for extubation readiness
+Renal function trending</textarea>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-sm mb-2">Pending Tasks</p>
+                            <textarea id="handoffPending" class="w-full bg-white/5 border border-card-border rounded p-3 text-sm text-white">Repeat lactate at 16:00
+ID consult follow-up
+Discuss family update plan</textarea>
+                        </div>
+                        <button onclick="saveHandoff()" class="px-4 py-2 bg-primary hover:bg-primary/80 rounded text-white text-sm font-medium">Save Handoff</button>
+                        <div id="handoffPreview" class="p-3 bg-white/5 rounded text-sm text-text-secondary"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ SETTINGS TAB ============ -->
+            <div id="settings" class="tab-content">
+                <div class="metric-card">
+                    <p class="text-text-secondary text-xs uppercase mb-4">Display Settings</p>
+                    <div class="space-y-4">
+                        <label class="flex items-center gap-3">
+                            <input id="setting-showPredicted" type="checkbox" checked class="w-4 h-4 rounded" onchange="saveSettings()">
+                            <span class="text-sm">Show predicted values on charts</span>
+                        </label>
+                        <label class="flex items-center gap-3">
+                            <input id="setting-enableAlerts" type="checkbox" checked class="w-4 h-4 rounded" onchange="saveSettings()">
+                            <span class="text-sm">Enable alerts for critical thresholds</span>
+                        </label>
+                        <label class="flex items-center gap-3">
+                            <input id="setting-showConfidence" type="checkbox" checked class="w-4 h-4 rounded" onchange="saveSettings()">
+                            <span class="text-sm">Show model confidence scores</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <p class="text-text-secondary text-xs uppercase mb-4">Notification Preferences</p>
+                    <div class="space-y-3">
+                        <label class="flex items-center gap-3">
+                            <input id="setting-notifyMortality" type="checkbox" checked class="w-4 h-4 rounded" onchange="saveSettings()">
+                            <span class="text-sm">Mortality risk changes > 10%</span>
+                        </label>
+                        <label class="flex items-center gap-3">
+                            <input id="setting-notifyVitals" type="checkbox" checked class="w-4 h-4 rounded" onchange="saveSettings()">
+                            <span class="text-sm">Critical vital sign changes</span>
+                        </label>
+                        <label class="flex items-center gap-3">
+                            <input id="setting-notifyMessages" type="checkbox" class="w-4 h-4 rounded" onchange="saveSettings()">
+                            <span class="text-sm">New team messages</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+</div>
+
+<script>
+    let currentTab = 'overview';
+    let predictionData = null;
+    let charts = {};
+    let isDemo = true;
+
+    let teamNotes = [];
+    let teamMessages = [];
+
+    const STORAGE_KEYS = {
+        teamNotes: 'carecast_team_notes',
+        teamMessages: 'carecast_team_messages',
+        handoff: 'carecast_shift_handoff',
+        settings: 'carecast_dashboard_settings',
+        theme: 'carecast_theme'
+    };
+
+    const defaultSettings = {
+        showPredicted: true,
+        enableAlerts: true,
+        showConfidence: true,
+        notifyMortality: true,
+        notifyVitals: true,
+        notifyMessages: false
+    };
+
+    function bootstrapDashboard() {
+        if (!enforceSessionRole()) {
+            return;
+        }
+
+        loadTheme();
+        loadSettings();
+        loadCollaborationData();
+        loadPredictions();
+    }
+
+    function enforceSessionRole() {
+        const patientId = (sessionStorage.getItem('patientId') || '').trim();
+        const userRole = (sessionStorage.getItem('userRole') || '').trim().toUpperCase();
+
+        if (!patientId || !['D', 'F'].includes(userRole)) {
+            window.location.href = '/login';
+            return false;
+        }
+
+        if (userRole === 'F') {
+            window.location.href = '/family-dashboard';
+            return false;
+        }
+
+        document.getElementById('ov-patient-id').textContent = patientId;
+        document.getElementById('viewModeText').textContent = 'Doctor View (Role Locked)';
+        return true;
+    }
+
+    function loadPredictions() {
+        try {
+            const predictionsStr = sessionStorage.getItem('predictions');
+            isDemo = sessionStorage.getItem('usingDemo') === 'true';
+
+            if (predictionsStr) {
+                predictionData = JSON.parse(predictionsStr);
+                updateDashboard();
+            } else {
+                populatePatientData();
+                createCharts(0);
+            }
+        } catch (err) {
+            console.error('Error loading predictions:', err);
+            populatePatientData();
+            createCharts(0);
+        }
+    }
+
+    function updateDashboard() {
+        if (!predictionData || !predictionData.predictions || predictionData.predictions.length === 0) {
+            populatePatientData();
+            createCharts(0);
+            return;
+        }
+
+        const pred = predictionData.predictions[0];
+        const mortality = Number(pred.mortality_risk || 0) * 100;
+
+        document.getElementById('ov-patient-id').textContent = pred.patient_id || sessionStorage.getItem('patientId') || 'Patient-001';
+        document.getElementById('ov-mortality').textContent = mortality.toFixed(1);
+        document.getElementById('ov-mortality-bar').style.width = Math.min(100, mortality) + '%';
+        document.getElementById('ov-risk-class').textContent = pred.risk_class || 'UNKNOWN';
+
+        const estimatedStay = Number(pred.expected_icu_stay_days || Math.max(3, Math.min(21, Math.round(mortality / 5))));
+        document.getElementById('ov-icu-stay').textContent = estimatedStay;
+
+        let riskColor = 'success';
+        if (mortality > 30) {
+            riskColor = 'danger';
+        } else if (mortality > 15) {
+            riskColor = 'warning';
+        }
+        document.getElementById('ov-risk-badge').className = `inline-flex items-center gap-2 px-3 py-1 rounded-full bg-${riskColor}/10 border border-${riskColor}/20`;
+
+        document.getElementById('ov-rf-pred').textContent = mortality.toFixed(1) + '%';
+        if (pred.fold_predictions) {
+            const lstmAvg = (pred.fold_predictions.reduce((a, b) => a + b, 0) / pred.fold_predictions.length * 100).toFixed(1);
+            document.getElementById('ov-lstm-pred').textContent = lstmAvg + '%';
+        }
+
+        document.getElementById('pred-mortality-bar').style.width = Math.min(100, mortality) + '%';
+        document.getElementById('pred-mortality-text').textContent = mortality.toFixed(1) + '%';
+        document.getElementById('pred-readmission-bar').style.width = Math.min(100, mortality * 0.6) + '%';
+        document.getElementById('pred-readmission-text').textContent = (mortality * 0.6).toFixed(1) + '%';
+        document.getElementById('pred-deterioration-bar').style.width = Math.min(100, mortality * 0.4) + '%';
+        document.getElementById('pred-deterioration-text').textContent = (mortality * 0.4).toFixed(1) + '%';
+
+        createCharts(mortality);
+        populatePatientData();
+    }
+
+    function chartOptions() {
+        return {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: { color: '#92b2c9' }
+                }
+            },
+            scales: {
+                y: { ticks: { color: '#92b2c9' }, grid: { color: '#2c3e4e' } },
+                x: { ticks: { color: '#92b2c9' }, grid: { color: '#2c3e4e' } }
+            }
+        };
+    }
+
+    function createCharts(mortalityRisk) {
+        if (isDemo) {
+            createDemoCharts(mortalityRisk);
+        } else {
+            createRealPatientCharts();
+        }
+    }
+
+    function createDemoCharts() {
+        document.getElementById('medicationTrajectoryStatus').textContent = 'Demo mode: Norepinephrine weaning (0.20 → 0.08 mcg/kg/min), Meropenem efficacy trend (WBC × 10³/μL), and Propofol details in medications tab.';
+        document.getElementById('recoveryStatus').textContent = 'Demo mode: patient is performing better than predicted recovery trajectory.';
+
+        const ctxVital = document.getElementById('vitalChart');
+        if (ctxVital) {
+            if (charts.vital) charts.vital.destroy();
+            charts.vital = new Chart(ctxVital, {
+                type: 'line',
+                data: {
+                    labels: ['0h', '4h', '8h', '12h', '16h', '20h', '24h'],
+                    datasets: [
+                        {
+                            label: 'Heart Rate (bpm)',
+                            data: [95, 98, 100, 96, 92, 90, 88],
+                            borderColor: '#ef4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            tension: 0.35
+                        },
+                        {
+                            label: 'SpO2 (%)',
+                            data: [92, 93, 94, 94, 95, 96, 96],
+                            borderColor: '#1392ec',
+                            backgroundColor: 'rgba(19, 146, 236, 0.1)',
+                            tension: 0.35
+                        }
+                    ]
+                },
+                options: chartOptions()
+            });
+        }
+
+        const ctxNorepi = document.getElementById('vasopressorChart');
+        if (ctxNorepi) {
+            if (charts.vasopressor) charts.vasopressor.destroy();
+            charts.vasopressor = new Chart(ctxNorepi, {
+                type: 'line',
+                data: {
+                    labels: ['0h', '6h', '12h', '18h', '24h', '30h', '36h', '42h'],
+                    datasets: [
+                        {
+                            label: 'Expected Norepinephrine (mcg/kg/min)',
+                            data: [0.20, 0.17, 0.14, 0.12, 0.10, 0.09, 0.08, 0.07],
+                            borderColor: '#1392ec',
+                            borderDash: [6, 4],
+                            tension: 0.35
+                        },
+                        {
+                            label: 'Actual Norepinephrine (mcg/kg/min)',
+                            data: [0.20, 0.18, 0.16, 0.15, 0.14, 0.12, 0.10, 0.08],
+                            borderColor: '#f59e0b',
+                            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                            tension: 0.35,
+                            fill: true
+                        }
+                    ]
+                },
+                options: chartOptions()
+            });
+        }
+
+        const ctxMero = document.getElementById('antibioticChart');
+        if (ctxMero) {
+            if (charts.antibiotic) charts.antibiotic.destroy();
+            charts.antibiotic = new Chart(ctxMero, {
+                type: 'line',
+                data: {
+                    labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5'],
+                    datasets: [
+                        {
+                            label: 'Expected WBC (× 10³/μL)',
+                            data: [15.8, 14.2, 13.1, 12.0, 11.2],
+                            borderColor: '#1392ec',
+                            borderDash: [6, 4],
+                            tension: 0.35
+                        },
+                        {
+                            label: 'Actual WBC (× 10³/μL)',
+                            data: [15.6, 13.8, 12.1, 10.9, 9.8],
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            tension: 0.35,
+                            fill: true
+                        }
+                    ]
+                },
+                options: chartOptions()
+            });
+        }
+
+        const ctxRecovery = document.getElementById('recoveryChart');
+        if (ctxRecovery) {
+            if (charts.recovery) charts.recovery.destroy();
+            charts.recovery = new Chart(ctxRecovery, {
+                type: 'line',
+                data: {
+                    labels: ['Day 0', 'Day 2', 'Day 4', 'Day 6', 'Day 8'],
+                    datasets: [
+                        {
+                            label: 'Expected Recovery Score (%)',
+                            data: [20, 34, 48, 61, 72],
+                            borderColor: '#1392ec',
+                            borderDash: [6, 4],
+                            tension: 0.35
+                        },
+                        {
+                            label: 'Current Recovery Score (%)',
+                            data: [24, 41, 57, 73, 88],
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            tension: 0.35,
+                            fill: true
+                        }
+                    ]
+                },
+                options: chartOptions()
+            });
+        }
+    }
+
+    function createRealPatientCharts() {
+        document.getElementById('medicationTrajectoryStatus').textContent = 'No detailed medication trajectory from EHR yet. Connect medication administration records to activate expected vs actual medicine curves.';
+        document.getElementById('recoveryStatus').textContent = 'Expected recovery is shown from model output. Current recovery track needs longitudinal bedside scores from EHR.';
+
+        const emptyOptions = chartOptions();
+
+        const ctxVital = document.getElementById('vitalChart');
+        if (ctxVital) {
+            if (charts.vital) charts.vital.destroy();
+            charts.vital = new Chart(ctxVital, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        { label: 'Heart Rate (bpm)', data: [], borderColor: '#ef4444', tension: 0.35 },
+                        { label: 'SpO2 (%)', data: [], borderColor: '#1392ec', tension: 0.35 }
+                    ]
+                },
+                options: emptyOptions
+            });
+        }
+
+        const ctxNorepi = document.getElementById('vasopressorChart');
+        if (ctxNorepi) {
+            if (charts.vasopressor) charts.vasopressor.destroy();
+            charts.vasopressor = new Chart(ctxNorepi, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        { label: 'Expected Norepinephrine (mcg/kg/min)', data: [], borderColor: '#1392ec', borderDash: [6, 4], tension: 0.35 },
+                        { label: 'Actual Norepinephrine (mcg/kg/min)', data: [], borderColor: '#f59e0b', tension: 0.35 }
+                    ]
+                },
+                options: emptyOptions
+            });
+        }
+
+        const ctxMero = document.getElementById('antibioticChart');
+        if (ctxMero) {
+            if (charts.antibiotic) charts.antibiotic.destroy();
+            charts.antibiotic = new Chart(ctxMero, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        { label: 'Expected WBC (× 10³/μL)', data: [], borderColor: '#1392ec', borderDash: [6, 4], tension: 0.35 },
+                        { label: 'Actual WBC (× 10³/μL)', data: [], borderColor: '#10b981', tension: 0.35 }
+                    ]
+                },
+                options: emptyOptions
+            });
+        }
+
+        const ctxRecovery = document.getElementById('recoveryChart');
+        if (ctxRecovery) {
+            if (charts.recovery) charts.recovery.destroy();
+            charts.recovery = new Chart(ctxRecovery, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        { label: 'Expected Recovery Score (%)', data: [], borderColor: '#1392ec', borderDash: [6, 4], tension: 0.35 },
+                        { label: 'Current Recovery Score (%)', data: [], borderColor: '#10b981', tension: 0.35 }
+                    ]
+                },
+                options: emptyOptions
+            });
+        }
+    }
+
+    function populatePatientData() {
+        if (isDemo) {
+            populateDemoPatientData();
+        } else {
+            populateRealPatientData();
+        }
+    }
+
+    function populateDemoPatientData() {
+        const sessionPatientId = (sessionStorage.getItem('patientId') || 'DEMO-ICU-001').trim();
+
+        document.getElementById('ov-patient-id').textContent = sessionPatientId;
+        document.getElementById('ov-patient-age').textContent = 'Age: 62 | Admitted: 2 days ago';
+        document.getElementById('ov-mortality').textContent = '18.4';
+        document.getElementById('ov-mortality-bar').style.width = '18.4%';
+        document.getElementById('ov-icu-stay').textContent = '7';
+        document.getElementById('ov-risk-class').textContent = 'MODERATE';
+        document.getElementById('ov-risk-badge').className = 'inline-flex items-center gap-2 px-3 py-1 rounded-full bg-warning/10 border border-warning/20';
+        document.getElementById('ov-risk-badge').innerHTML = `
+            <span class="material-symbols-outlined text-warning text-sm">warning</span>
+            <span class="text-warning text-sm font-semibold">Moderate Risk</span>
+        `;
+
+        document.getElementById('ov-hr').textContent = '88';
+        document.getElementById('ov-rr').textContent = '20';
+        document.getElementById('ov-spo2').textContent = '96';
+        document.getElementById('ov-temp').textContent = '37.2';
+
+        document.getElementById('ov-rf-pred').textContent = '18.4%';
+        document.getElementById('ov-lstm-pred').textContent = '16.9%';
+
+        document.getElementById('pred-mortality-bar').style.width = '18.4%';
+        document.getElementById('pred-mortality-text').textContent = '18.4%';
+        document.getElementById('pred-readmission-bar').style.width = '11.0%';
+        document.getElementById('pred-readmission-text').textContent = '11.0%';
+        document.getElementById('pred-deterioration-bar').style.width = '7.4%';
+        document.getElementById('pred-deterioration-text').textContent = '7.4%';
+
+        document.getElementById('diagnosisContainer').innerHTML = `
+            <div class="p-3 bg-white/5 rounded">
+                <p class="font-semibold">Sepsis</p>
+                <p class="text-sm text-text-secondary mt-1">Confirmed on admission · ICD-10: A41.9</p>
+            </div>
+        `;
+
+        document.getElementById('comorbiditiesContainer').innerHTML = `
+            <p class="text-sm">• Hypertension (HTN)</p>
+            <p class="text-sm">• Diabetes Mellitus Type 2 (DM2)</p>
+            <p class="text-sm">• Chronic Kidney Disease Stage 3</p>
+            <p class="text-sm">• COPD</p>
+        `;
+
+        document.getElementById('surgicalHistoryContainer').innerHTML = `
+            <p class="text-sm">• Cholecystectomy (2015)</p>
+            <p class="text-sm">• Appendectomy (2008)</p>
+        `;
+
+        document.getElementById('medicationsContainer').innerHTML = `
+            <div class="p-3 bg-white/5 rounded">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="font-semibold">Norepinephrine</p>
+                        <p class="text-sm text-text-secondary mt-1">Vasopressor · IV infusion · Weaning trajectory active</p>
+                    </div>
+                    <span class="text-xs bg-warning/20 text-warning px-2 py-1 rounded">0.20 → 0.08 mcg/kg/min</span>
+                </div>
+            </div>
+            <div class="p-3 bg-white/5 rounded">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="font-semibold">Meropenem</p>
+                        <p class="text-sm text-text-secondary mt-1">Antibiotic · 1g IV q8h · WBC response tracked</p>
+                    </div>
+                    <span class="text-xs bg-primary/20 text-primary px-2 py-1 rounded">1 g IV q8h</span>
+                </div>
+            </div>
+            <div class="p-3 bg-white/5 rounded">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="font-semibold">Propofol</p>
+                        <p class="text-sm text-text-secondary mt-1">Sedative · Continuous IV infusion</p>
+                    </div>
+                    <span class="text-xs bg-success/20 text-success px-2 py-1 rounded">4 mg/kg/hr</span>
+                </div>
+            </div>
+        `;
+
+        document.getElementById('treatmentGoalsContainer').innerHTML = `
+            <p class="text-sm">✓ Control source of infection</p>
+            <p class="text-sm">✓ Restore tissue perfusion</p>
+            <p class="text-sm">✓ Prevent organ dysfunction</p>
+            <p class="text-sm">✓ Wean from vasopressors</p>
+        `;
+
+        document.getElementById('careplanContainer').innerHTML = `
+            <div class="p-3 bg-success/10 rounded border border-success/20">
+                <p class="text-sm font-semibold text-success">✓ Complete</p>
+                <p class="text-sm text-text-secondary">Fluid resuscitation to normalize lactate</p>
+            </div>
+            <div class="p-3 bg-primary/10 rounded border border-primary/20">
+                <p class="text-sm font-semibold text-primary">→ In Progress</p>
+                <p class="text-sm text-text-secondary">Vasopressor titration for MAP > 65</p>
+            </div>
+            <div class="p-3 bg-white/5 rounded border border-card-border">
+                <p class="text-sm font-semibold">→ Pending</p>
+                <p class="text-sm text-text-secondary">Daily sedation holiday & spontaneous breathing trial</p>
+            </div>
+        `;
+
+        document.getElementById('labResultsContainer').innerHTML = `
+            <div class="grid grid-cols-2 gap-3">
+                <div class="p-3 bg-danger/10 rounded border border-danger/20">
+                    <p class="text-xs text-text-secondary">Lactate</p>
+                    <p class="text-lg font-bold text-danger">3.2 mmol/L</p>
+                    <p class="text-xs text-danger">↑ Elevated</p>
+                </div>
+                <div class="p-3 bg-danger/10 rounded border border-danger/20">
+                    <p class="text-xs text-text-secondary">Creatinine</p>
+                    <p class="text-lg font-bold text-danger">1.8 mg/dL</p>
+                    <p class="text-xs text-danger">↑ Elevated</p>
+                </div>
+                <div class="p-3 bg-warning/10 rounded border border-warning/20">
+                    <p class="text-xs text-text-secondary">WBC</p>
+                    <p class="text-lg font-bold text-warning">14.2 × 10³/μL</p>
+                    <p class="text-xs text-warning">↑ Elevated</p>
+                </div>
+                <div class="p-3 bg-success/10 rounded border border-success/20">
+                    <p class="text-xs text-text-secondary">Platelets</p>
+                    <p class="text-lg font-bold text-success">185 × 10³/μL</p>
+                    <p class="text-xs text-success">✓ Normal</p>
+                </div>
+            </div>
+        `;
+    }
+
+    function populateRealPatientData() {
+        document.getElementById('diagnosisContainer').innerHTML = '<p class="text-text-secondary text-sm italic">No diagnosis data available from EHR</p>';
+        document.getElementById('comorbiditiesContainer').innerHTML = '<p class="text-text-secondary text-sm italic">No comorbidity data available from EHR</p>';
+        document.getElementById('surgicalHistoryContainer').innerHTML = '<p class="text-text-secondary text-sm italic">No surgical history available from EHR</p>';
+
+        document.getElementById('medicationsContainer').innerHTML = '<p class="text-text-secondary text-sm italic">Connect hospital medication system to activate this module.</p>';
+        document.getElementById('treatmentGoalsContainer').innerHTML = '<p class="text-text-secondary text-sm italic">No treatment plan available from EHR</p>';
+        document.getElementById('careplanContainer').innerHTML = '<p class="text-text-secondary text-sm italic">Connect hospital care planning system to activate this module.</p>';
+        document.getElementById('labResultsContainer').innerHTML = '<p class="text-text-secondary text-sm italic">Connect hospital lab system to activate this module.</p>';
+    }
+
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab-content').forEach((tab) => tab.classList.remove('active'));
+        const target = document.getElementById(tabName);
+        if (target) target.classList.add('active');
+        currentTab = tabName;
+
+        const titles = {
+            overview: 'Overview',
+            predictions: 'Risk Predictions',
+            trajectories: 'Vital Trajectories',
+            'medical-history': 'Medical History & Diagnosis',
+            medications: 'Current Medications',
+            'treatment-plan': 'Treatment Plan',
+            'lab-results': 'Lab Results',
+            'team-notes': 'Team Notes',
+            'team-communication': 'Communication',
+            handoff: 'Shift Handoff',
+            settings: 'Settings'
+        };
+        document.getElementById('pageTitle').textContent = titles[tabName] || 'Dashboard';
+    }
+
+    function toggleMenu(menuId) {
+        const menu = document.getElementById(menuId);
+        const icon = document.getElementById(menuId + 'Icon');
+        const isOpen = menu.style.maxHeight && menu.style.maxHeight !== '0px';
+        menu.style.maxHeight = isOpen ? '0px' : menu.scrollHeight + 'px';
+        icon.textContent = isOpen ? 'expand_more' : 'expand_less';
+    }
+
+    function enforceRoleView() {
+        document.getElementById('pageSubtitle').textContent = 'Role-locked: IDs ending with D can access only Doctor Dashboard.';
+    }
+
+    function loadTheme() {
+        const theme = localStorage.getItem(STORAGE_KEYS.theme) || 'dark';
+        applyTheme(theme);
+    }
+
+    function toggleTheme() {
+        const nextTheme = document.body.classList.contains('light-mode') ? 'dark' : 'light';
+        localStorage.setItem(STORAGE_KEYS.theme, nextTheme);
+        applyTheme(nextTheme);
+    }
+
+    function applyTheme(theme) {
+        document.body.classList.remove('dark-mode', 'light-mode');
+        document.body.classList.add(theme === 'light' ? 'light-mode' : 'dark-mode');
+        document.getElementById('themeIcon').textContent = theme === 'light' ? 'dark_mode' : 'light_mode';
+    }
+
+    function loadSettings() {
+        const loaded = JSON.parse(localStorage.getItem(STORAGE_KEYS.settings) || '{}');
+        const settings = { ...defaultSettings, ...loaded };
+
+        document.getElementById('setting-showPredicted').checked = settings.showPredicted;
+        document.getElementById('setting-enableAlerts').checked = settings.enableAlerts;
+        document.getElementById('setting-showConfidence').checked = settings.showConfidence;
+        document.getElementById('setting-notifyMortality').checked = settings.notifyMortality;
+        document.getElementById('setting-notifyVitals').checked = settings.notifyVitals;
+        document.getElementById('setting-notifyMessages').checked = settings.notifyMessages;
+
+        applySettings(settings);
+    }
+
+    function saveSettings() {
+        const settings = {
+            showPredicted: document.getElementById('setting-showPredicted').checked,
+            enableAlerts: document.getElementById('setting-enableAlerts').checked,
+            showConfidence: document.getElementById('setting-showConfidence').checked,
+            notifyMortality: document.getElementById('setting-notifyMortality').checked,
+            notifyVitals: document.getElementById('setting-notifyVitals').checked,
+            notifyMessages: document.getElementById('setting-notifyMessages').checked
+        };
+
+        localStorage.setItem(STORAGE_KEYS.settings, JSON.stringify(settings));
+        applySettings(settings);
+    }
+
+    function applySettings(settings) {
+        const alerts = document.getElementById('alerts-container');
+        if (alerts) {
+            alerts.style.display = settings.enableAlerts ? '' : 'none';
+        }
+        document.getElementById('pageSubtitle').textContent = settings.showPredicted
+            ? 'Patient clinical information and monitoring'
+            : 'Observed values prioritized (predicted overlays disabled)';
+    }
+
+    function loadCollaborationData() {
+        const defaultNotes = [
+            { author: 'ICU Team', timestamp: 'Today, 14:30', content: 'Patient responding to fluid resuscitation. Lactate trending down from 4.1 to 3.2. Continuing vasopressor support.' },
+            { author: 'Night Shift', timestamp: 'Today, 08:15', content: 'Urine output improved overnight. Continuing current antibiotic regimen. Watch for signs of bleeding.' }
+        ];
+
+        const defaultMessages = [
+            { author: 'Dr. Sarah Johnson', time: '10:30 AM', content: 'Call Infectious Disease for additional antibiotic coverage' },
+            { author: 'Nurse Alex Chen', time: '09:15 AM', content: 'Patient is hemodynamically stable. Reduced Norep by 0.02' }
+        ];
+
+        teamNotes = JSON.parse(localStorage.getItem(STORAGE_KEYS.teamNotes) || 'null') || defaultNotes;
+        teamMessages = JSON.parse(localStorage.getItem(STORAGE_KEYS.teamMessages) || 'null') || defaultMessages;
+
+        renderTeamNotes();
+        renderTeamMessages();
+        loadHandoff();
+    }
+
+    function renderTeamNotes() {
+        const container = document.getElementById('teamNotesList');
+        container.innerHTML = '';
+
+        teamNotes.forEach((note) => {
+            const div = document.createElement('div');
+            div.className = 'p-3 bg-white/5 rounded border-l-2 border-primary';
+            div.innerHTML = `
+                <p class="text-xs text-text-secondary">${note.timestamp} - ${note.author}</p>
+                <p class="text-sm mt-2">${note.content}</p>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function saveTeamNote() {
+        const input = document.getElementById('teamNoteInput');
+        const content = input.value.trim();
+        if (!content) return;
+
+        const now = new Date();
+        teamNotes.unshift({
+            author: 'Current ICU User',
+            timestamp: now.toLocaleString(),
+            content: content
+        });
+        localStorage.setItem(STORAGE_KEYS.teamNotes, JSON.stringify(teamNotes));
+        input.value = '';
+        renderTeamNotes();
+    }
+
+    function renderTeamMessages() {
+        const container = document.getElementById('teamMessagesList');
+        container.innerHTML = '';
+
+        teamMessages.forEach((message) => {
+            const div = document.createElement('div');
+            div.className = 'p-3 bg-white/5 rounded';
+            div.innerHTML = `
+                <div class="flex justify-between items-start mb-2">
+                    <p class="font-semibold text-sm">${message.author}</p>
+                    <p class="text-xs text-text-secondary">${message.time}</p>
+                </div>
+                <p class="text-sm">${message.content}</p>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function sendTeamMessage() {
+        const input = document.getElementById('teamMessageInput');
+        const content = input.value.trim();
+        if (!content) return;
+
+        const now = new Date();
+        teamMessages.unshift({
+            author: 'Current ICU User',
+            time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            content: content
+        });
+        localStorage.setItem(STORAGE_KEYS.teamMessages, JSON.stringify(teamMessages));
+        input.value = '';
+        renderTeamMessages();
+    }
+
+    function loadHandoff() {
+        const stored = JSON.parse(localStorage.getItem(STORAGE_KEYS.handoff) || 'null');
+        if (stored) {
+            document.getElementById('handoffSummary').value = stored.summary || '';
+            document.getElementById('handoffEvents').value = stored.events || '';
+            document.getElementById('handoffIssues').value = stored.issues || '';
+            document.getElementById('handoffPending').value = stored.pending || '';
+        }
+        renderHandoffPreview();
+    }
+
+    function saveHandoff() {
+        const handoff = {
+            summary: document.getElementById('handoffSummary').value.trim(),
+            events: document.getElementById('handoffEvents').value.trim(),
+            issues: document.getElementById('handoffIssues').value.trim(),
+            pending: document.getElementById('handoffPending').value.trim(),
+            savedAt: new Date().toLocaleString()
+        };
+        localStorage.setItem(STORAGE_KEYS.handoff, JSON.stringify(handoff));
+        renderHandoffPreview();
+    }
+
+    function renderHandoffPreview() {
+        const preview = document.getElementById('handoffPreview');
+        const summary = document.getElementById('handoffSummary').value.trim();
+        const events = document.getElementById('handoffEvents').value.trim();
+        const issues = document.getElementById('handoffIssues').value.trim();
+        const pending = document.getElementById('handoffPending').value.trim();
+
+        preview.innerHTML = `
+            <p><strong>Structured Handoff Preview</strong></p>
+            <p><strong>Summary:</strong> ${summary || '-'}</p>
+            <p><strong>Overnight Events:</strong> ${(events || '-').replace(/\n/g, ' | ')}</p>
+            <p><strong>Critical Issues:</strong> ${(issues || '-').replace(/\n/g, ' | ')}</p>
+            <p><strong>Pending Tasks:</strong> ${(pending || '-').replace(/\n/g, ' | ')}</p>
+        `;
+    }
+
+    function logout() {
+        sessionStorage.clear();
+        window.location.href = '/login';
+    }
+
+    window.addEventListener('DOMContentLoaded', bootstrapDashboard);
+</script>
+
+</body>
+</html>
